@@ -630,7 +630,16 @@ const sfx={ok:a=>tone(SCALE[Math.min(9,Math.floor(Math.log2(a)*2))],.2),bad:()=>
 let sheetOpen=false,sheetLocked=false;
 const syncLock=()=>document.documentElement.classList.toggle('lock',sheetOpen||!$('#gallery').classList.contains('on'));
 addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('[role=button]')){e.preventDefault();e.target.click()}});
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));syncLock();scrollTo(0,0);if(id==='home')refreshHome();if(id==='game')resize();if(id==='gallery')renderGallery()}
+let navDepth=0,navSkip=false,inPop=false,backArmed=0;
+const navPush=()=>{try{history.pushState({px:1},'');navDepth++}catch(e){}};
+addEventListener('popstate',()=>{if(navSkip){navSkip=false;return}navDepth=Math.max(0,navDepth-1);inPop=true;
+  try{if(sheetOpen){if(!sheetLocked)closeSheet();navPush()}
+    else if($('#game').classList.contains('on')&&G&&!G.won){if(Date.now()-backArmed<2500){backArmed=0;$('#gBack').onclick()}else{backArmed=Date.now();toast('Noch einmal zurück, dann verlässt du das Spiel. Dein Stand bleibt gespeichert.',2400);navPush()}}
+    else if(!$('#home').classList.contains('on'))show('home')}finally{inPop=false}});
+addEventListener('pagehide',()=>saveNow());
+function show(id){const was=document.querySelector('.screen.on');if(id!=='home'&&was&&was.id==='home')navPush();
+  if(id==='home'&&!inPop&&navDepth>0){navSkip=true;const n=navDepth;navDepth=0;try{history.go(-n)}catch(e){navSkip=false}}
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));syncLock();scrollTo(0,0);if(id==='home')refreshHome();if(id==='game')resize();if(id==='gallery')renderGallery()}
 function openSheet(html,locked){const s=$('#sheet');s.innerHTML=html;s.scrollTop=0;s.classList.add('on');$('#scrim').classList.add('on');sheetOpen=true;sheetLocked=!!locked;syncLock();
   const x=s.querySelector('[data-x]');if(x)x.onclick=closeSheet;return s}
 function closeSheet(){$('#sheet').classList.remove('on');$('#scrim').classList.remove('on');sheetOpen=false;syncLock()}
@@ -803,7 +812,7 @@ function init3D(){
   R3.points=new T.Points(pg,R3.partMat);R3.points.frustumCulled=false;R3.points.renderOrder=3;R3.scene.add(R3.points);
   R3.capT=0;R3.capC=0;R3.ready=true;
 }
-R3.alloc=(geo,specs,n)=>{for(const[name,z]of specs){const a=new THREE.InstancedBufferAttribute(new Float32Array(n*z),z);a.setUsage(THREE.DynamicDrawUsage);geo.setAttribute(name,a)}};
+R3.alloc=(geo,specs,n)=>{delete geo._maxInstanceCount;for(const[name,z]of specs){const a=new THREE.InstancedBufferAttribute(new Float32Array(n*z),z);a.setUsage(THREE.DynamicDrawUsage);geo.setAttribute(name,a)}};
 R3.col=h=>R3.rgb[h]||(R3.rgb[h]=hex2rgb(h).map(v=>v/255));
 R3.syncCam=()=>{const s=V.s,c=R3.cam,tx=(cw/2-V.ox)/s,ty=(ch/2-V.oy)/s,d=(ch/s)/(2*Math.tan(c.fov*Math.PI/360)),t=R3.tilt;
   c.aspect=cw/ch;c.near=d*.05;c.far=d*5+60;c.position.set(tx,-ty-d*Math.sin(t),d*Math.cos(t));c.up.set(0,1,0);c.lookAt(tx,-ty,0);c.updateProjectionMatrix();c.updateMatrixWorld(true)};
