@@ -175,6 +175,10 @@ canvas.px{image-rendering:pixelated;image-rendering:crisp-edges}
 .mo{flex:none;width:68px;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--muted)}
 .mo canvas,.mo .up{width:60px;height:60px;border-radius:13px;border:2px solid transparent;background:rgba(4,14,20,.5);object-fit:cover}
 .mo .up{display:grid;place-items:center;border:2px dashed var(--line);font:700 26px var(--display);color:var(--text)}
+.mo .up svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:14px 8px}.pgrid .mo{width:auto}.pgrid .mo canvas{width:100%;height:auto;aspect-ratio:1}
+#sheet h3 output{font-size:12px}
+#motifs{gap:7px}#motifs .mo{width:59px;font-size:11px}#motifs .mo canvas,#motifs .mo .up{width:55px;height:55px}
 .mo.sel{color:var(--text)} .mo.sel canvas{border-color:var(--amber);box-shadow:0 0 0 3px rgba(255,200,87,.25)}
 .pal{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--muted)}
 .pal i{display:block;width:62px;height:34px;border-radius:11px;border:2px solid transparent}
@@ -356,7 +360,7 @@ window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
 addEventListener('load',()=>setTimeout(()=>{const s=document.getElementById('splash');s.classList.add('off');setTimeout(()=>s.remove(),600)},900));
-window.PX_VER='25.11.2026 14:31 · 00795';
+window.PX_VER='25.11.2026 15:15 · 71cf1';
 if('serviceWorker'in navigator){let reg=null,had=!!navigator.serviceWorker.controller;
   addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(r=>{reg=r;r.update().catch(()=>{});document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update().catch(()=>{})})}).catch(()=>{}));
   window.PX_CHECK=()=>{if(reg)reg.update().catch(()=>{})};
@@ -783,7 +787,7 @@ const I={back:svg('<path d="M15 5l-7 7 7 7"/>'),undo:svg('<path d="M8 5L3 10l5 5
   draw:svg('<rect x="4" y="6" width="16" height="12" rx="2" stroke-dasharray="3 3"/>'),
   pan:svg('<path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/>'),
   fit:svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),restart:svg('<path d="M5 12a7 7 0 107-7H8"/><path d="M11 2L8 5l3 3"/>'),
-  son:svg('<path d="M4 10v4h4l5 4V6L8 10H4z"/><path d="M17 9a4 4 0 010 6"/>'),soff:svg('<path d="M4 10v4h4l5 4V6L8 10H4z"/><path d="M17 9l5 6M22 9l-5 6"/>'),x:svg('<path d="M6 6l12 12M18 6L6 18"/>'),gear:svg('<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>')};
+  son:svg('<path d="M4 10v4h4l5 4V6L8 10H4z"/><path d="M17 9a4 4 0 010 6"/>'),soff:svg('<path d="M4 10v4h4l5 4V6L8 10H4z"/><path d="M17 9l5 6M22 9l-5 6"/>'),x:svg('<path d="M6 6l12 12M18 6L6 18"/>'),grid:svg('<rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/>'),gear:svg('<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>')};
 const DIFFS=[
  {id:'easy',name:'Entspannt',max:6,color:true,check:true,desc:'Kleine Blöcke, farbige Zahlen, und falsch gesetzte Rechtecke werden rot markiert.'},
  {id:'normal',name:'Klassisch',max:12,color:true,check:false,desc:'Blöcke bis 12 Felder. Die farbigen Zahlen verraten, welche Farbe ein Block bekommt.'},
@@ -868,8 +872,19 @@ const finalImage=()=>applyPalette(baseImage(),(RAMPS.find(r=>r.id===cfg.pal)||RA
 const isFixed=()=>!!SPRITES.find(s=>s.id===cfg.motif);
 
 /* ---------- Setup ---------- */
-function openSetup(){
+let SUGG=[];
+const thumbOf=id=>{const sp=SPRITES.find(s=>s.id===id);if(sp)return spriteImage(sp);const sc=SCENES.find(s=>s.id===id);return compact(sc.gen(id==='pixling'?12:20,mulberry32(11)))};
+const nameOf=id=>(SPRITES.find(s=>s.id===id)||SCENES.find(s=>s.id===id)).name;
+function openPicker(){
+  const s=openSheet(`<div class="sh-head"><h2>Alle Motive</h2><button class="ib" id="pkX" aria-label="Zurück zur Auswahl">${I.x}</button></div>
+  <h3>Szenen<output>jede Größe, immer neu</output></h3><div class="pgrid" id="pg1"></div><h3>Motive<output>feste Größe</output></h3><div class="pgrid" id="pg2"></div>`);
+  const add=(host,id)=>{const b=document.createElement('button');b.className='mo'+(id===cfg.motif?' sel':'');const cv=document.createElement('canvas');cv.className='px';paintImg(cv,thumbOf(id));b.append(cv,nameOf(id));
+    b.onclick=()=>{cfg.motif=id;seed=(Math.random()*2**32)>>>0;openSetup()};host.append(b)};
+  SCENES.forEach(sc=>add(s.querySelector('#pg1'),sc.id));SPRITES.forEach(sp=>add(s.querySelector('#pg2'),sp.id));
+  s.querySelector('#pkX').onclick=()=>openSetup();const sel=s.querySelector('.mo.sel');if(sel)sel.scrollIntoView({block:'center'})}
+function openSetup(fresh){
   if(cfg.motif==='upload'&&!uploadSrc)cfg.motif='katze';
+  if(fresh||SUGG.length<3){const mix=a=>a.map(x=>x.id).filter(i=>i!==cfg.motif).sort(()=>Math.random()-.5),sc=mix(SCENES),sp=mix(SPRITES);SUGG=[sc[0],sp[0],sc[1]]}
   const s=openSheet(`<div class="sh-head"><h2>Neues Bild</h2><button class="ib" data-x aria-label="Schließen">${I.x}</button></div>
   <div class="pvrow"><div class="frame"><canvas class="px" id="pv"></canvas></div><div><b id="pvName"></b><p id="pvInfo"></p><button class="ghost" id="reroll" style="margin-top:8px;min-height:38px">Neu würfeln</button></div></div>
   <h3>Motiv</h3><div class="strip" id="motifs"></div>
@@ -880,8 +895,8 @@ function openSetup(){
   const mo=s.querySelector('#motifs');
   const addMo=(id,name,img)=>{const b=document.createElement('button');b.className='mo';b.dataset.m=id;const cv=document.createElement('canvas');cv.className='px';if(img)paintImg(cv,img);b.append(cv,name);mo.append(b);return cv};
   if(uploadSrc){const cv=addMo('upload','Dein Bild');cv.className='';cv.width=cv.height=120;const a=uploadSrc.width/uploadSrc.height,c=cv.getContext('2d'),tc=document.createElement('canvas');tc.width=uploadSrc.width;tc.height=uploadSrc.height;tc.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(uploadSrc.data),uploadSrc.width,uploadSrc.height),0,0);c.drawImage(tc,a>1?(uploadSrc.width-uploadSrc.height)/2:0,a>1?0:(uploadSrc.height-uploadSrc.width)/2,Math.min(uploadSrc.width,uploadSrc.height),Math.min(uploadSrc.width,uploadSrc.height),0,0,120,120)}
-  SCENES.forEach(sc=>addMo(sc.id,sc.name,compact(sc.gen(sc.id==='pixling'?12:20,mulberry32(11)))));
-  SPRITES.forEach(sp=>addMo(sp.id,sp.name,spriteImage(sp)));
+  [...new Set([cfg.motif,...SUGG])].filter(id=>id!=='upload').forEach(id=>addMo(id,nameOf(id),thumbOf(id)));
+  const all=document.createElement('button');all.className='mo';all.innerHTML=`<span class="up">${I.grid}</span>Alle ${SCENES.length+SPRITES.length}`;all.onclick=openPicker;mo.append(all);
   const up=document.createElement('button');up.className='mo';up.innerHTML='<span class="up">+</span>Foto';up.onclick=()=>$('#file').click();mo.append(up);
   const pals=s.querySelector('#pals');
   const strips=[mo,pals].map(el=>{const w=document.createElement('div');w.className='sw';el.replaceWith(w);
@@ -1279,7 +1294,7 @@ function showWin(){if(!G||!G.won)return;const p=G.puz,blocks=p.rects.filter(r=>r
   <div class="btns">${exportBtn(p,G.meta.name)}<button class="ghost" id="wHome">Zur Übersicht</button><button class="primary" id="wNext">Nächstes Bild</button></div>`,true);
   paintImg(s.querySelector('#winArt'),p).style.aspectRatio=p.W+'/'+p.H;
   s.querySelector('#wHome').onclick=()=>{closeSheet();G=null;show('home')};
-  s.querySelector('#wNext').onclick=()=>{closeSheet();G=null;show('home');seed=(Math.random()*2**32)>>>0;openSetup()}}
+  s.querySelector('#wNext').onclick=()=>{closeSheet();G=null;show('home');seed=(Math.random()*2**32)>>>0;openSetup(true)}}
 function celebrate(cols,n,delay){if(reduce)return;setTimeout(()=>{const f=$('#flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');fireworks(cols,n)},delay)}
 function fireworks(cols,n){
   const cv=$('#fx'),c=cv.getContext('2d'),d=Math.min(2,devicePixelRatio||1),w=innerWidth,h=innerHeight,P=[],t0=performance.now();cv.width=w*d;cv.height=h*d;
@@ -1379,7 +1394,7 @@ async function heroStart(){const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d
     const t0=performance.now();seq.forEach((i,n)=>born[i]=t0+500+n*95);const end=t0+500+seq.length*95+400;
     await new Promise(res=>{(function f(now){if(run!==heroRun)return res();const k=now<end?1:Math.max(0,1-(now-end)/600);paint(now,k);if(now<end+2600)requestAnimationFrame(f);else res()})(t0)});
   }}
-$('#bPlay').onclick=()=>{seed=(Math.random()*2**32)>>>0;openSetup()};
+$('#bPlay').onclick=()=>{seed=(Math.random()*2**32)>>>0;openSetup(true)};
 $('#bCont').onclick=resume;$('#bDaily').onclick=startDaily;$('#bArcade').onclick=arcadeStart;$('#bGal').onclick=()=>show('gallery');
 $('#bSet').onclick=openSettings;
 $('#bUpload').onclick=()=>$('#file').click();
