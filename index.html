@@ -356,7 +356,7 @@ window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
 addEventListener('load',()=>setTimeout(()=>{const s=document.getElementById('splash');s.classList.add('off');setTimeout(()=>s.remove(),600)},900));
-window.PX_VER='25.11.2026 11:48 · caa33';
+window.PX_VER='25.11.2026 13:09 · 0774b';
 if('serviceWorker'in navigator){let reg=null,had=!!navigator.serviceWorker.controller;
   addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(r=>{reg=r;r.update().catch(()=>{});document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update().catch(()=>{})})}).catch(()=>{}));
   window.PX_CHECK=()=>{if(reg)reg.update().catch(()=>{})};
@@ -769,7 +769,7 @@ function resume(){const sv=store.get('save');if(!sv)return;const rects=[];for(le
 
 /* ---------- 3D-Ansicht (three.js, wird erst beim Einschalten geladen) ---------- */
 const R3={on:store.get('view','3d')==='3d',ready:false,failed:!(()=>{try{const c=document.createElement('canvas');return c.getContext('webgl2')||c.getContext('webgl')}catch(e){return null}})(),p:null,tilt:12*Math.PI/180,hT:.46,parts:[],light:{t0:-1e9,i:0},last:0,rgb:{}};
-const use3D=()=>R3.on&&R3.ready&&!R3.failed;
+const use3D=()=>R3.on&&R3.ready&&!R3.failed&&!R3.lost;
 function load3D(){
   if(R3.p)return R3.p;
   R3.p=new Promise((res,rej)=>{if(window.THREE)return res();const s=document.createElement('script');s.src='vendor/three.min.js';s.onload=()=>res();s.onerror=()=>rej(new Error('load'));document.head.append(s)})
@@ -1234,10 +1234,24 @@ $('#file').onchange=async e=>{const inp=e.target,f=inp.files&&inp.files[0];if(!f
   inp.value=''};
 
 drawLogo(true);let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if($('#home').classList.contains('on')){drawLogo(false);heroStart()}},200)});
-paintImg($('#icDaily'),compact(pixling(12,12,mulberry32(hashStr('daily-'+today())))));
-paintImg($('#icArcade'),spriteImage(SPRITES.find(s=>s.id==='rakete')));
-paintImg($('#icUpload'),spriteImage(SPRITES.find(s=>s.id==='kaktus')));
-paintImg($('#icGal'),spriteImage(SPRITES.find(s=>s.id==='diamant')));
+function paintIcons(){paintImg($('#icDaily'),compact(pixling(12,12,mulberry32(hashStr('daily-'+today())))));
+  paintImg($('#icArcade'),spriteImage(SPRITES.find(s=>s.id==='rakete')));paintImg($('#icUpload'),spriteImage(SPRITES.find(s=>s.id==='kaktus')));paintImg($('#icGal'),spriteImage(SPRITES.find(s=>s.id==='diamant')))}
+paintIcons();
+/* Nach einer Pause wirft Android gezeichnete Flächen weg: beim Zurückkehren alles neu zeichnen */
+function refreshVisuals(){
+  try{paintIcons();
+    if($('#home').classList.contains('on')){drawLogo(false);refreshHome()}
+    if($('#gallery').classList.contains('on'))renderGallery();
+    if(G){G.pctx.clearRect(0,0,G.W,G.H);for(const r of G.rects.values())if(r.valid){G.pctx.fillStyle=r.col;G.pctx.fillRect(r.x,r.y,r.w,r.h)}
+      if(R3.ready){R3.lost=R3.r.getContext().isContextLost();if(R3.atlas)R3.atlas.needsUpdate=true;$('#gl').hidden=!use3D()}
+      if($('#game').classList.contains('on')){resize();requestDraw()}}
+    const d=document.documentElement;d.style.opacity='.999';requestAnimationFrame(()=>requestAnimationFrame(()=>{d.style.opacity=''}))}catch(e){}}
+let rvT=0,hidAt=0;
+const wake=()=>{if(document.hidden){hidAt=Date.now();return}clearTimeout(rvT);refreshVisuals();rvT=setTimeout(refreshVisuals,700)};
+document.addEventListener('visibilitychange',wake);addEventListener('pageshow',e=>{if(e.persisted)wake()});
+$('#gl').addEventListener('webglcontextrestored',()=>{R3.lost=false;setTimeout(refreshVisuals,50)});
+$('#gl').addEventListener('webglcontextlost',()=>{R3.lost=true;$('#gl').hidden=true;if(G)requestDraw()});
+for(const id of['logo','hero','board','miniCv','contCv','icDaily','icArcade','icUpload','icGal'])document.getElementById(id).addEventListener('contextrestored',()=>{clearTimeout(rvT);rvT=setTimeout(refreshVisuals,60)});
 window.claude?.hot?.snapshot?.(()=>{saveNow();return{}});
 document.fonts&&document.fonts.ready.then(()=>{if(G)requestDraw()});
 refreshHome();
