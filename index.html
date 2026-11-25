@@ -354,7 +354,7 @@ window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
 addEventListener('load',()=>setTimeout(()=>{const s=document.getElementById('splash');s.classList.add('off');setTimeout(()=>s.remove(),600)},900));
-window.PX_VER='25.11.2026 11:27 · 3869a';
+window.PX_VER='25.11.2026 11:30 · fab0f';
 if('serviceWorker'in navigator){let reg=null,had=!!navigator.serviceWorker.controller;
   addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(r=>{reg=r;r.update().catch(()=>{});document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update().catch(()=>{})})}).catch(()=>{}));
   window.PX_CHECK=()=>{if(reg)reg.update().catch(()=>{})};
@@ -1227,7 +1227,7 @@ $('#file').onchange=async e=>{const inp=e.target,f=inp.files&&inp.files[0];if(!f
     if(!src)src=await new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=rej;fr.onload=()=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=fr.result};fr.readAsDataURL(f)});
     const k=Math.min(1,480/Math.max(src.width,src.height)),cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(src.width*k));cv.height=Math.max(1,Math.round(src.height*k));
     const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);c.drawImage(src,0,0,cv.width,cv.height);const px=c.getImageData(0,0,cv.width,cv.height);if(src.close)src.close();
-    uploadSrc={width:cv.width,height:cv.height,data:new Uint8ClampedArray(px.data)};cfg.motif='upload';if(cfg.size<5)cfg.size=7;openSetup()}
+    uploadSrc={width:cv.width,height:cv.height,data:new Uint8ClampedArray(px.data)};cfg.motif='upload';cfg.pal='orig';if(cfg.size<5)cfg.size=7;openSetup()}
   catch(err){toast('Dieses Bild konnte der Browser nicht lesen. Mit JPG oder PNG klappt es.',3500)}
   inp.value=''};
 
