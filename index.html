@@ -221,6 +221,11 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:9px;bac
 #coach{position:absolute;left:12px;right:12px;bottom:calc(96px + var(--sab));max-width:520px;margin:0 auto;padding:13px 15px 11px;display:flex;flex-direction:column;gap:9px;background:linear-gradient(160deg,rgba(40,66,78,.92),rgba(14,32,42,.95))}
 #coach p{font-size:15.5px;line-height:1.4;font-weight:600}#coach .row{justify-content:space-between}
 #coachStep{font:700 13px var(--display);color:var(--amber);letter-spacing:.1em}#coachSkip{min-height:36px;font-size:12.5px;padding:0 12px}
+.svl{display:flex;flex-direction:column;gap:10px}.svi{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:stretch}
+.svo{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;text-align:left;padding:8px 12px 8px 8px;border-radius:14px;background:rgba(4,14,20,.4);border:1px solid var(--line);min-width:0}
+.svo img{width:54px;height:54px;object-fit:contain;border-radius:8px;background:rgba(4,14,20,.6)}
+.svo b{display:block;font:700 16px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.svo small{font-size:12.5px;color:var(--muted)}
+.svd{min-height:0;padding:0 12px;font-size:12px}
 /* Galerie */
 .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}
 .gi{padding:10px;display:flex;flex-direction:column;gap:8px;text-align:left}
@@ -326,7 +331,7 @@ html.k3:not(.arc) .tagline{color:#bfe9f0}
   <h1 class="vh">Pixaku</h1><canvas id="logo" aria-hidden="true"></canvas><p class="tagline">Shikaku trifft Pixel-Art</p></div>
   <div class="zone z2 stage"><canvas id="hero" aria-hidden="true"></canvas></div>
   <div class="zone z3 menu">
-    <button class="gbtn go" id="bCont" hidden><canvas class="px" id="contCv"></canvas><span><b>Weitermalen</b><small><span id="contName"></span>, <span id="contInfo"></span></small></span></button>
+    <button class="gbtn go" id="bCont" hidden><canvas class="px" id="contCv"></canvas><span><b>Weitermalen</b><small><span id="contName"></span>, <span id="contInfo"></span></small></span><i class="tag info" id="contN" hidden></i></button>
     <button class="gbtn go" id="bPlay">Neues Bild</button>
     <div class="quad">
       <button class="gbtn sq" id="bDaily"><canvas class="px" id="icDaily"></canvas>Tagesbild<i class="tag" id="dailyTag">Heute</i></button>
@@ -369,7 +374,7 @@ html.k3:not(.arc) .tagline{color:#bfe9f0}
 window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{const f=new File([data],filename,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
-window.PX_VER='25.11.2026 21:01 · 06f1b';
+window.PX_VER='25.11.2026 22:11 · d484b';
 (()=>{let fresh=false;try{fresh=!!sessionStorage.getItem('pxr');sessionStorage.removeItem('pxr')}catch(e){}
   const t0=performance.now(),hide=()=>{const s=document.getElementById('splash');if(!s)return;setTimeout(()=>{s.classList.add('off');setTimeout(()=>s.remove(),600)},Math.max(0,(fresh?350:900)-(performance.now()-t0)))};
   const reload=()=>{try{sessionStorage.setItem('pxr','1')}catch(e){}location.reload()};
@@ -953,6 +958,7 @@ function openSetup(fresh){
 async function build(img,max,rng){const big=img.W*img.H>3000;
   return buildPuzzle(img,max,rng,big?async(it,un)=>{loader(true,un?`Rätsel wird geschärft, noch ${un} offene Stellen`:'Fast fertig');await frame()}:null)}
 async function startArt(){
+  if(slotsFull())return;
   loader(true,'Rätsel wird gebaut');await frame();
   try{const img=finalImage(),d=DIFFS.find(x=>x.id===cfg.diff),puz=await build(img,d.max,mulberry32((Math.random()*2**32)>>>0));
     A=null;newGame(puz,{mode:'art',name:motifName(),diff:cfg.diff})}
@@ -961,11 +967,24 @@ async function startArt(){
 }
 async function startDaily(){
   const id='daily-'+today();if(store.get('gal',[]).some(g=>g.id===id)){toast('Das heutige Tagesbild hängt schon in deiner Galerie.');return}
-  const sv=store.get('save');if(sv&&sv.meta.id===id){resume();return}
+  const dv=saves().find(s=>s.id===id);if(dv){resume(dv.sid);return}
+  if(slotsFull())return;
   loader(true,'Tagesbild wird gebaut');await frame();const rng=mulberry32(hashStr(id)),puz=await build(compact(pixling(12,12,rng)),12,rng);
   A=null;newGame(puz,{mode:'art',name:'Tagesbild',diff:'normal',id});loader(false);
 }
-function resume(){const sv=store.get('save');if(!sv)return;const rects=[];for(let i=0;i<sv.sol.length;i+=6)rects.push({x:sv.sol[i],y:sv.sol[i+1],w:sv.sol[i+2],h:sv.sol[i+3],cx:sv.sol[i+4],cy:sv.sol[i+5]});
+const MAXS=10,saves=()=>store.get('saves',[]);
+{const old=store.get('save');if(old&&old.meta){const sid='s'+Date.now().toString(36);old.meta.sid=sid;if(store.set('sv.'+sid,old)){const ix=saves();ix.unshift({sid,name:old.meta.name,id:old.meta.id||null,W:old.W,H:old.H,pct:old.pct,time:old.time,at:Date.now(),thumb:old.thumb});store.set('saves',ix);store.del('save')}}}
+function dropSave(sid){if(!sid)return;store.del('sv.'+sid);store.set('saves',saves().filter(s=>s.sid!==sid))}
+function slotsFull(){if(saves().length<MAXS)return false;openSaves(true);return true}
+function openSaves(full){const ix=saves();
+  const s=openSheet(`<div class="sh-head"><h2>Angefangene Bilder</h2><button class="ib" data-x aria-label="Schließen">${I.x}</button></div>
+  <p>${full?`Alle ${MAXS} Speicherplätze sind belegt. Lösche ein Bild oder male eines fertig, dann ist wieder Platz für ein neues.`:`Jedes angefangene Bild behält seinen eigenen Platz, bis es fertig ist. ${ix.length} von ${MAXS} Plätzen sind belegt.`}</p><div class="svl" id="svl"></div>`),host=s.querySelector('#svl');
+  if(!ix.length)host.innerHTML='<p>Gerade ist kein Bild angefangen.</p>';
+  ix.forEach(e=>{const row=document.createElement('div');row.className='svi';
+    row.innerHTML=`<button class="svo"><img class="px" alt="" src="${e.thumb}"><span><b></b><small>${e.W} × ${e.H}, ${e.pct} %, ${fmt(e.time)}</small></span></button><button class="ghost svd">Löschen</button>`;
+    row.querySelector('b').textContent=e.name;row.querySelector('.svo').onclick=()=>{closeSheet();resume(e.sid)};
+    const d=row.querySelector('.svd');let armed=false;d.onclick=()=>{if(!armed){armed=true;d.textContent='Sicher?';return}dropSave(e.sid);row.remove();refreshHome();if(!host.children.length)closeSheet()};host.append(row)})}
+function resume(sid){const ix=saves(),e=sid?ix.find(s=>s.sid===sid):ix[0];if(!e)return;const sv=store.get('sv.'+e.sid);if(!sv){dropSave(e.sid);refreshHome();toast('Dieser Stand ließ sich nicht mehr lesen.');return}sv.meta.sid=e.sid;const rects=[];for(let i=0;i<sv.sol.length;i+=6)rects.push({x:sv.sol[i],y:sv.sol[i+1],w:sv.sol[i+2],h:sv.sol[i+3],cx:sv.sol[i+4],cy:sv.sol[i+5]});
   A=null;newGame({W:sv.W,H:sv.H,colors:sv.colors,cells:dec(sv.data),rects},sv.meta,sv)}
 
 /* ---------- 3D-Ansicht (three.js, wird erst beim Einschalten geladen) ---------- */
@@ -1143,9 +1162,11 @@ function hud(){if(!G)return;
 function toolbar(){const b=(id,ic,l)=>{$(id).innerHTML=ic+`<span>${l}</span>`};b('#tUndo',I.undo,'Zurück');b('#tHint',I.hint,A?'Tipp −8 s':'Tipp');
   b('#tMode',tool==='draw'?I.draw:I.pan,tool==='draw'?'Zeichnen':'Schieben');$('#tMode').classList.toggle('act',tool==='pan');b('#tFit',I.fit,'Ganz');b('#tSet',I.gear,'Optionen')}
 let saveT=0;
-function saveNow(){if(!G||A||TUT||G.won)return;const p=G.puz;
-  store.set('save',{meta:G.meta,W:p.W,H:p.H,colors:p.colors,data:enc(p.cells),sol:p.rects.flatMap(r=>[r.x,r.y,r.w,r.h,r.cx,r.cy]),
-    pl:[...G.rects.values()].filter(r=>!(r.lock&&r.w*r.h===1)).map(r=>[r.x,r.y,r.w,r.h,r.lock]),time:Math.round(G.time),hints:G.hints,pct:pct(),thumb:G.paint.toDataURL()})}
+function saveNow(){if(!G||A||TUT||G.won)return;const p=G.puz,pl=[...G.rects.values()].filter(r=>!(r.lock&&r.w*r.h===1)).map(r=>[r.x,r.y,r.w,r.h,r.lock]);
+  if(!pl.length&&!G.meta.sid)return;const sid=G.meta.sid||(G.meta.sid='s'+Date.now().toString(36)+Math.floor(Math.random()*1e3)),thumb=G.paint.toDataURL();
+  if(!store.set('sv.'+sid,{meta:G.meta,W:p.W,H:p.H,colors:p.colors,data:enc(p.cells),sol:p.rects.flatMap(r=>[r.x,r.y,r.w,r.h,r.cx,r.cy]),pl,time:Math.round(G.time),hints:G.hints,pct:pct(),thumb})){
+    if(!saveNow.warned){saveNow.warned=1;toast('Der Speicher des Geräts ist voll, dieses Bild wird gerade nicht gesichert. Lösche ein angefangenes Bild, um Platz zu schaffen.',6000)}return}
+  const ix=saves().filter(s=>s.sid!==sid);ix.unshift({sid,name:G.meta.name,id:G.meta.id||null,W:p.W,H:p.H,pct:pct(),time:Math.round(G.time),at:Date.now(),thumb});store.set('saves',ix)}
 function changed(){hud();requestDraw();clearTimeout(saveT);saveT=setTimeout(saveNow,1200);if(G.covered===G.N&&!G.won)win();else tutCheck()}
 
 /* ---------- Ansicht ---------- */
@@ -1293,7 +1314,7 @@ function openSettings(){
   sync()}
 $('#tSet').onclick=openSettings;
 $('#gBack').innerHTML=I.back;$('#galBack').innerHTML=I.back;
-$('#gBack').onclick=()=>{if(TUT){tutEnd();G=null;show('home');return}if(A){endArcade(true);return}clearTimeout(saveT);saveNow();G=null;show('home')};
+$('#gBack').onclick=()=>{if(TUT){tutEnd();G=null;show('home');return}if(A){endArcade(true);return}clearTimeout(saveT);saveNow();const kept=!!G.meta.sid;G=null;show('home');if(kept)toast('Stand gespeichert.',1500)};
 $('#galBack').onclick=()=>show('home');
 
 /* ---------- Tutorial ---------- */
@@ -1305,7 +1326,7 @@ const TUT_COL=['#ffc857','#ff7a59','#4fe3c1','#5cc8ff','#ff5d8f'],
    'Vertan? Ein Tipp auf einen Block entfernt ihn wieder. Tippe den Block mit der 4 an.',
    'Und jetzt setz ihn wieder an dieselbe Stelle.',
    'Jetzt du: Jede Zahl bekommt ihr Rechteck, kein Feld bleibt frei. Hängst du fest, hilft der Tipp-Knopf unten.'];
-const needTut=()=>!store.get('tut')&&!store.get('seen')&&!store.get('save')&&!store.get('gal',[]).length&&!store.get('best',0);
+const needTut=()=>!store.get('tut')&&!store.get('seen')&&!saves().length&&!store.get('gal',[]).length&&!store.get('best',0);
 function startTutorial(){closeSheet();A=null;const rects=TUT_R.map(r=>({x:r[0],y:r[1],w:r[2],h:r[3],cx:r[4],cy:r[5]})),cells=new Uint8Array(25);
   TUT_R.forEach(r=>{for(let y=r[1];y<r[1]+r[3];y++)for(let x=r[0];x<r[0]+r[2];x++)cells[y*5+x]=r[6]});
   TUT={step:0};newGame({W:5,H:5,colors:TUT_COL,cells,rects},{mode:'tut',name:'Erste Schritte',diff:'easy'});tutShow()}
@@ -1339,7 +1360,7 @@ function win(){G.won=true;G.winAt=performance.now();R3.winFx();sfx.win();buzz([2
   if(G.W*V.s>cw||G.H*V.s>ch-INS.top-INS.bot)tweenTo(fitTarget(),700);requestDraw();
   if(A){const z=G.W,bonus=6+z;A.score+=G.N*10+Math.round(A.time);A.time=Math.min(99,A.time+bonus);A.coll.push({W:G.W,H:G.H,colors:G.puz.colors,cells:G.puz.cells});
     toast(`+${bonus} Sekunden`,1100);hud();celebrate(G.puz.colors,2,380);setTimeout(()=>{if(A)arcadeNext()},reduce?500:1500);return}
-  store.del('save');clearTimeout(saveT);addGallery();celebrate(G.puz.colors,3,700);setTimeout(showWin,reduce?200:2100)}
+  dropSave(G.meta.sid);clearTimeout(saveT);addGallery();celebrate(G.puz.colors,3,700);setTimeout(showWin,reduce?200:2100)}
 function addGallery(){const p=G.puz,g=store.get('gal',[]),it={id:G.meta.id||('w'+Date.now()),name:G.meta.name,W:p.W,H:p.H,colors:p.colors,data:enc(p.cells),time:Math.round(G.time),hints:G.hints,diff:G.meta.diff,date:today()};
   const i=g.findIndex(x=>x.id===it.id);if(i>=0)g.splice(i,1);g.unshift(it);while(g.length>60)g.pop();while(!store.set('gal',g)&&g.length>1)g.pop()}
 function exportBtn(img,name){if(!downloads)return'';setTimeout(()=>{const b=$('#bSave');if(b)b.onclick=async()=>{const k=Math.max(1,Math.floor(1200/Math.max(img.W,img.H))),cv=document.createElement('canvas');cv.width=img.W*k;cv.height=img.H*k;
@@ -1402,9 +1423,9 @@ function openWork(it){const img=galImg(it),d=DIFFS.find(x=>x.id===it.diff);
 
 /* ---------- Home ---------- */
 function refreshHome(){
-  const sv=store.get('save'),gal=store.get('gal',[]),best=store.get('best',0);
+  const ix=saves(),sv=ix[0],gal=store.get('gal',[]),best=store.get('best',0);$('#contN').hidden=ix.length<2;$('#contN').textContent=ix.length;
   $('#bCont').hidden=!sv;$('#bPlay').classList.toggle('go',!sv);$('.menu').classList.toggle('has',!!sv);
-  if(sv){$('#contName').textContent=sv.meta.name;$('#contInfo').textContent=`${sv.W} × ${sv.H}, ${sv.pct} %`;const cv=$('#contCv');cv.width=sv.W;cv.height=sv.H;const im=new Image();im.onload=()=>cv.getContext('2d').drawImage(im,0,0);im.src=sv.thumb}
+  if(sv){$('#contName').textContent=sv.name;$('#contInfo').textContent=`${sv.W} × ${sv.H}, ${sv.pct} %`;const cv=$('#contCv');cv.width=sv.W;cv.height=sv.H;const im=new Image();im.onload=()=>cv.getContext('2d').drawImage(im,0,0);im.src=sv.thumb}
   const done=gal.some(g=>g.id==='daily-'+today());$('#dailyTag').textContent=done?'Gelöst':'Heute';$('#dailyTag').classList.toggle('done',done);
   $('#icDaily').classList.toggle('mute',!done);
   $('#galTxt').hidden=!gal.length;$('#galTxt').textContent=gal.length;$('#arcTxt').hidden=!best;$('#arcTxt').textContent=best;
@@ -1454,7 +1475,7 @@ async function heroStart(){const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d
     await new Promise(res=>{(function f(now){if(run!==heroRun)return res();const k=now<end?1:Math.max(0,1-(now-end)/600);paint(now,k);if(now<end+2600)requestAnimationFrame(f);else res()})(t0)});
   }}
 $('#bPlay').onclick=()=>{if(needTut()){startTutorial();return}seed=(Math.random()*2**32)>>>0;openSetup(true)};
-$('#bCont').onclick=resume;$('#bDaily').onclick=()=>needTut()?startTutorial():startDaily();$('#bArcade').onclick=()=>needTut()?startTutorial():arcadeStart();$('#bGal').onclick=()=>show('gallery');
+$('#bCont').onclick=()=>saves().length>1?openSaves():resume();$('#bDaily').onclick=()=>needTut()?startTutorial():startDaily();$('#bArcade').onclick=()=>needTut()?startTutorial():arcadeStart();$('#bGal').onclick=()=>show('gallery');
 $('#bSet').onclick=openSettings;
 $('#bUpload').onclick=()=>$('#file').click();
 $('#bHelp').onclick=()=>openSheet(`<div class="sh-head"><h2>So geht Pixaku</h2><button class="ib" data-x aria-label="Schließen">${I.x}</button></div>
