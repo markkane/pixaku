@@ -360,7 +360,7 @@ html.k3:not(.arc) .tagline{color:#bfe9f0}
 window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{const f=new File([data],filename,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
-window.PX_VER='25.11.2026 16:07 · 4b34d';
+window.PX_VER='25.11.2026 16:11 · e306a';
 (()=>{let fresh=false;try{fresh=!!sessionStorage.getItem('pxr');sessionStorage.removeItem('pxr')}catch(e){}
   const t0=performance.now(),hide=()=>{const s=document.getElementById('splash');if(!s)return;setTimeout(()=>{s.classList.add('off');setTimeout(()=>s.remove(),600)},Math.max(0,(fresh?350:900)-(performance.now()-t0)))};
   const reload=()=>{try{sessionStorage.setItem('pxr','1')}catch(e){}location.reload()};
@@ -1437,9 +1437,9 @@ function refreshVisuals(){
     if(G){G.pctx.clearRect(0,0,G.W,G.H);for(const r of G.rects.values())if(r.valid){G.pctx.fillStyle=r.col;G.pctx.fillRect(r.x,r.y,r.w,r.h)}
       if(R3.ready){R3.lost=R3.r.getContext().isContextLost();if(R3.atlas)R3.atlas.needsUpdate=true;$('#gl').hidden=!use3D()}
       if($('#game').classList.contains('on')){resize();requestDraw()}}
-    const d=document.documentElement;d.style.opacity='.999';requestAnimationFrame(()=>requestAnimationFrame(()=>{d.style.opacity=''}))}catch(e){}}
+  }catch(e){}}
 let rvT=0,hidAt=0;
-const wake=()=>{if(document.hidden){hidAt=Date.now();return}clearTimeout(rvT);refreshVisuals();rvT=setTimeout(refreshVisuals,700)};
+const wake=()=>{if(document.hidden){hidAt=Date.now();return}if(!hidAt||performance.now()<5000||Date.now()-hidAt<1500)return;hidAt=0;clearTimeout(rvT);refreshVisuals();rvT=setTimeout(refreshVisuals,700)};
 document.addEventListener('visibilitychange',wake);addEventListener('pageshow',e=>{if(e.persisted)wake()});
 $('#gl').addEventListener('webglcontextrestored',()=>{R3.lost=false;setTimeout(refreshVisuals,50)});
 $('#gl').addEventListener('webglcontextlost',()=>{R3.lost=true;$('#gl').hidden=true;if(G)requestDraw()});
