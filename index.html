@@ -283,6 +283,22 @@ html.k3 #hero{box-shadow:0 0 0 1px rgba(190,236,242,.25),0 10px 30px rgba(0,0,0,
 html.k3 #sheet.on{transform:perspective(1300px) rotateX(3deg);transform-origin:50% 100%}
 html.k3 .gal{transform:perspective(1100px) rotateX(5deg);transform-origin:50% 0}
 @media(min-width:720px){html.k3 #sheet.on{transform:translate(-50%,50%) perspective(1300px) rotateX(4deg);transform-origin:50% 50%}}
+#strip .grid line{stroke:rgba(255,255,255,.075);stroke-width:1}html.arc #strip .grid{display:none}
+/* 3D-Look der Startseite: das Menü als Spielbrett, Tasten als farbige Glasquader */
+html.k3:not(.arc){--s1a:rgba(4,14,20,.74);--s1b:rgba(12,34,46,.62);--s2a:rgba(16,42,56,.64);--s2b:rgba(4,14,20,.8);--s3a:rgba(4,14,20,.82);--s3b:rgba(12,34,46,.62);--edge:rgba(170,225,235,.8)}
+html.k3:not(.arc) #strip .edge{stroke-width:2;filter:drop-shadow(0 0 6px rgba(120,220,235,.6))}
+html.k3:not(.arc) .gbtn{border:0;-webkit-backdrop-filter:none;backdrop-filter:none;color:#0b1a24;background:linear-gradient(180deg,var(--ht,#d2f1f6),var(--bc,#93cad5));box-shadow:0 9px 0 var(--bd,#2f6672),0 18px 22px rgba(0,0,0,.45),0 0 26px var(--gl,rgba(120,220,235,.28)),inset 0 0 0 1px rgba(255,255,255,.5),inset 0 3px 0 rgba(255,255,255,.6)}
+html.k3:not(.arc) .gbtn:active{transform:translateY(6px);box-shadow:0 3px 0 var(--bd,#2f6672),0 8px 12px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.5),inset 0 3px 0 rgba(255,255,255,.6)}
+html.k3:not(.arc) .gbtn.go{--ht:#ffe08a;--bc:#ff8f5e;--bd:#a3421d;--gl:rgba(255,150,90,.55)}
+html.k3:not(.arc) #bDaily{--ht:#ffa3bd;--bc:#ff5d8f;--bd:#9c2550;--gl:rgba(255,93,143,.42)}
+html.k3:not(.arc) #bArcade{--ht:#ffe7a6;--bc:#ffc857;--bd:#a37418;--gl:rgba(255,200,87,.42)}
+html.k3:not(.arc) #bUpload{--ht:#b0f7e6;--bc:#4fe3c1;--bd:#1b8a70;--gl:rgba(79,227,193,.42)}
+html.k3:not(.arc) #bGal{--ht:#bfe9ff;--bc:#5cc8ff;--bd:#1f76a8;--gl:rgba(92,200,255,.42)}
+html.k3:not(.arc) .gbtn.sq canvas{border:2px solid rgba(255,255,255,.8);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+html.k3:not(.arc) .hm-top .ib{background:linear-gradient(180deg,#d2f1f6,#93cad5);color:#0b1a24;border:0;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 4px 0 #2f6672,0 0 14px rgba(120,220,235,.3),inset 0 2px 0 rgba(255,255,255,.65)}
+html.k3:not(.arc) .menu{gap:21px}html.k3:not(.arc) .menu.has{gap:19px}html.k3:not(.arc) .quad{padding-bottom:8px}
+html.k3:not(.arc) #hero{background:rgba(3,12,18,.78);border:1px solid rgba(170,225,235,.65);box-shadow:0 0 0 5px rgba(150,220,232,.1),0 0 30px rgba(110,215,232,.32),inset 0 0 30px rgba(0,0,0,.5)}
+html.k3:not(.arc) .tagline{color:#bfe9f0}
 @media(prefers-reduced-motion:reduce){#bg i,#loader s u{animation:none}#sheet,#scrim{transition:none}}
 </style>
 </head>
@@ -338,7 +354,12 @@ window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
 addEventListener('load',()=>setTimeout(()=>{const s=document.getElementById('splash');s.classList.add('off');setTimeout(()=>s.remove(),600)},900));
-if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+window.PX_VER='25.11.2026 11:27 · 3869a';
+if('serviceWorker'in navigator){let reg=null,had=!!navigator.serviceWorker.controller;
+  addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(r=>{reg=r;r.update().catch(()=>{});document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update().catch(()=>{})})}).catch(()=>{}));
+  window.PX_CHECK=()=>{if(reg)reg.update().catch(()=>{})};
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had){had=true;return}window.PX_UPD=1});
+  setInterval(()=>{if(window.PX_UPD&&document.getElementById('home').classList.contains('on')&&!document.getElementById('sheet').classList.contains('on')){window.PX_UPD=0;location.reload()}},1500)}
 </script>
 <script>
 /* ================= CORE: Zufall, Farben, Motive, Generator, Löser ================= */
@@ -658,9 +679,11 @@ function tile(c,x,y,w,h,col,s,k){const g=Math.min(1.5,s*.05)*k,rad=Math.min(s*.2
   if(k>.02){const gr=c.createLinearGradient(0,y,0,y+h);gr.addColorStop(0,`rgba(255,255,255,${.3*k})`);gr.addColorStop(.45,'rgba(255,255,255,0)');gr.addColorStop(1,`rgba(0,0,0,${.18*k})`);
     c.fillStyle=gr;c.fill();c.strokeStyle=`rgba(255,255,255,${.3*k})`;c.lineWidth=1;c.stroke()}}
 
+const shade=(h,f)=>{const c=hex2rgb(h);return rgb2hex(c[0]*f,c[1]*f,c[2]*f)};
+function cubo(c,x,y,w,h,col,s,k){if(SKIN==='rund'||k<.05){tile(c,x,y,w,h,col,s,k);return}const d=Math.min(h*.3,s*.2)*k,g=Math.min(1.5,s*.05)*k;c.fillStyle=shade(col,.5);c.fillRect(x+g,y+h-d-g,w-2*g,d);tile(c,x,y,w,h-d,col,s,k)}
 /* ---------- Motive ---------- */
 const sizeOf=()=>SIZES[cfg.size];
-function uploadPixels(W,H){const sw=uploadSrc.width,sh=uploadSrc.height,src=uploadSrc.getContext('2d',{willReadFrequently:true}).getImageData(0,0,sw,sh).data,out=new Uint8ClampedArray(W*H*4);
+function uploadPixels(W,H){const sw=uploadSrc.width,sh=uploadSrc.height,src=uploadSrc.data,out=new Uint8ClampedArray(W*H*4);
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){const x0=Math.floor(x*sw/W),x1=Math.max(x0+1,Math.floor((x+1)*sw/W)),y0=Math.floor(y*sh/H),y1=Math.max(y0+1,Math.floor((y+1)*sh/H));let r=0,g=0,b=0,n=0;
     for(let yy=y0;yy<y1;yy++)for(let xx=x0;xx<x1;xx++){const i=(yy*sw+xx)*4;r+=src[i];g+=src[i+1];b+=src[i+2];n++}
     const o=(y*W+x)*4;out[o]=r/n;out[o+1]=g/n;out[o+2]=b/n;out[o+3]=255}
@@ -687,7 +710,7 @@ function openSetup(){
   <button class="primary" id="go">Los geht's</button>`);
   const mo=s.querySelector('#motifs');
   const addMo=(id,name,img)=>{const b=document.createElement('button');b.className='mo';b.dataset.m=id;const cv=document.createElement('canvas');cv.className='px';if(img)paintImg(cv,img);b.append(cv,name);mo.append(b);return cv};
-  if(uploadSrc){const cv=addMo('upload','Dein Bild');cv.className='';cv.width=cv.height=120;const a=uploadSrc.width/uploadSrc.height,c=cv.getContext('2d');c.drawImage(uploadSrc,a>1?(uploadSrc.width-uploadSrc.height)/2:0,a>1?0:(uploadSrc.height-uploadSrc.width)/2,Math.min(uploadSrc.width,uploadSrc.height),Math.min(uploadSrc.width,uploadSrc.height),0,0,120,120)}
+  if(uploadSrc){const cv=addMo('upload','Dein Bild');cv.className='';cv.width=cv.height=120;const a=uploadSrc.width/uploadSrc.height,c=cv.getContext('2d'),tc=document.createElement('canvas');tc.width=uploadSrc.width;tc.height=uploadSrc.height;tc.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(uploadSrc.data),uploadSrc.width,uploadSrc.height),0,0);c.drawImage(tc,a>1?(uploadSrc.width-uploadSrc.height)/2:0,a>1?0:(uploadSrc.height-uploadSrc.width)/2,Math.min(uploadSrc.width,uploadSrc.height),Math.min(uploadSrc.width,uploadSrc.height),0,0,120,120)}
   SCENES.forEach(sc=>addMo(sc.id,sc.name,compact(sc.gen(sc.id==='pixling'?12:20,mulberry32(11)))));
   SPRITES.forEach(sp=>addMo(sp.id,sp.name,spriteImage(sp)));
   const up=document.createElement('button');up.className='mo';up.innerHTML='<span class="up">+</span>Foto';up.onclick=()=>$('#file').click();mo.append(up);
@@ -789,8 +812,8 @@ function init3D(){
       gl_FragColor=vec4(col,a);}`});
   R3.tiles=new T.Mesh(R3.tg,R3.tileMat);R3.tiles.frustumCulled=false;R3.tiles.renderOrder=1;R3.scene.add(R3.tiles);
   /* Zahlen */
-  const ac=document.createElement('canvas');ac.width=1024;ac.height=512;const ax=ac.getContext('2d');ax.fillStyle='#fff';ax.textAlign='center';ax.textBaseline='middle';
-  for(let n=1;n<128;n++){ax.font=`800 ${n>9?40:46}px Figtree,system-ui,sans-serif`;ax.fillText(n,(n%16)*64+32,Math.floor(n/16)*64+34)}
+  const ac=document.createElement('canvas');ac.width=2048;ac.height=1024;const ax=ac.getContext('2d');ax.fillStyle='#fff';ax.textAlign='center';ax.textBaseline='middle';
+  for(let n=1;n<128;n++){ax.font=`800 ${n>9?80:92}px Figtree,system-ui,sans-serif`;ax.fillText(n,(n%16)*128+64,Math.floor(n/16)*128+68)}
   R3.atlas=new T.CanvasTexture(ac);R3.atlas.anisotropy=4;
   R3.cg=inst(new T.PlaneGeometry(1,1));
   R3.clueMat=new T.ShaderMaterial({transparent:true,depthWrite:false,depthTest:false,uniforms:{uTex:{value:R3.atlas}},
@@ -1052,7 +1075,9 @@ function openSettings(){
   <button class="opt" id="oSound" role="switch"><span><b>Ton</b><small>Klänge beim Setzen und Lösen</small></span><i class="tg"></i></button>
   <button class="opt" id="o3d" role="switch"><span><b>3D-Ansicht</b><small id="o3dTxt"></small></span><i class="tg"></i></button>
   <div class="opt col"><span><b>Look</b><small id="oSkinTxt"></small></span><div class="seg s3" id="oSkin"><button data-s="rund">Klassisch</button><button data-s="k3">3D</button><button data-s="arc">Retro</button></div></div>
-  <div class="btns"><button class="ghost" id="oHelp">Spielregeln</button>${inGame?'<button class="ghost" id="oClear">Brett leeren</button>':''}</div>`);
+  <div class="btns"><button class="ghost" id="oHelp">Spielregeln</button>${inGame?'<button class="ghost" id="oClear">Brett leeren</button>':''}${window.PX_CHECK?'<button class="ghost" id="oUpd">Update suchen</button>':''}</div>
+  <p style="text-align:center;font-size:12px">Version ${window.PX_VER||'Vorschau in Claude'}</p>`);
+  const up=s.querySelector('#oUpd');if(up)up.onclick=()=>{toast('Suche nach einer neuen Version. Sie wird beim nächsten Besuch der Startseite geladen.',3200);window.PX_CHECK()};
   const a=s.querySelector('#oSound'),b=s.querySelector('#o3d'),sync=()=>{const on3=R3.on&&!R3.failed;a.classList.toggle('on',S.sound);a.setAttribute('aria-checked',S.sound);b.classList.toggle('on',on3);b.setAttribute('aria-checked',on3);b.disabled=R3.failed;s.querySelectorAll('#oSkin button').forEach(x=>x.classList.toggle('sel',x.dataset.s===SKIN));s.querySelector('#oSkinTxt').textContent={rund:'Runde Glasflächen, alles gerade.',k3:'Harte Kanten, Leuchtrand und eine gefaltete Glasbahn auf der Startseite.',arc:'Die Startseite als Spielautomat mit Leuchtschild, Bildschirm und Pult.'}[SKIN];
     s.querySelector('#o3dTxt').textContent=R3.failed?'Auf diesem Gerät nicht verfügbar, das Brett läuft in 2D.':'Glasquader mit Licht und Funken. Ausgeschaltet läuft das flache 2D-Brett.'};
   a.onclick=()=>{S.sound=!S.sound;store.set('snd',S.sound);if(S.sound)sfx.ok(4);sync()};
@@ -1156,10 +1181,12 @@ function layoutHome(){const hm=$('.hm');if(!hm.clientWidth)return;const k3=docum
     wB=c*1.85,w2=c*.93,w1=c*1.17,wT=c*.7,P=(a,ya,b,yb)=>`${cx-a},${ya} ${cx+a},${ya} ${cx+b},${yb} ${cx-b},${yb}`,
     G=(id,a,b,ya,yb)=>`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="${ya}" y2="${yb}"><stop offset="0" style="stop-color:var(${a})"/><stop offset="1" style="stop-color:var(${b})"/></linearGradient>`,
     E=sg=>`${cx+sg*wT},${yT} ${cx+sg*w1},${y1} ${cx+sg*w2},${y2} ${cx+sg*wB},${yB}`;
+  let gl='';for(const[a,ya,b,yb]of[[wT,yT,w1,y1],[w1,y1,w2,y2],[w2,y2,wB,yB]]){for(let i=1;i<8;i++){const f=i/4-1;gl+=`<line x1="${cx+a*f}" y1="${ya}" x2="${cx+b*f}" y2="${yb}"/>`}
+    const m=Math.max(2,Math.round(Math.abs(yb-ya)/46));for(let q=1;q<m;q++){const u=q/m,yy=ya+(yb-ya)*u,ww=a+(b-a)*u;gl+=`<line x1="${cx-ww}" y1="${yy}" x2="${cx+ww}" y2="${yy}"/>`}}
   sv.setAttribute('viewBox',`0 0 ${W} ${H}`);
   sv.innerHTML=`<defs>${G('sg1','--s1a','--s1b',Math.max(0,yT),y1)}${G('sg2','--s2a','--s2b',y1,y2)}${G('sg3','--s3a','--s3b',y2,H)}</defs>
    <polygon points="${P(wT,yT,w1,y1)}" fill="url(#sg1)"/><polygon points="${P(w1,y1,w2,y2)}" fill="url(#sg2)"/><polygon points="${P(w2,y2,wB,yB)}" fill="url(#sg3)"/>
-   <polyline class="cheek" points="${E(-1)}"/><polyline class="cheek" points="${E(1)}"/><polyline class="edge" points="${E(-1)}"/><polyline class="edge" points="${E(1)}"/>
+   <g class="grid">${gl}</g><polyline class="cheek" points="${E(-1)}"/><polyline class="cheek" points="${E(1)}"/><polyline class="edge" points="${E(-1)}"/><polyline class="edge" points="${E(1)}"/>
    <line class="fold" x1="${cx-w1}" x2="${cx+w1}" y1="${y1}" y2="${y1}"/><line class="fold" x1="${cx-w2}" x2="${cx+w2}" y1="${y2}" y2="${y2}"/>`}
 let logoRun=0;
 function drawLogo(anim){layoutHome();const run=++logoRun;
@@ -1168,7 +1195,7 @@ function drawLogo(anim){layoutHome();const run=++logoRun;
   cv.style.width=28*s+'px';cv.style.height=5*s+'px';cv.width=28*s*d;cv.height=5*s*d;const c=cv.getContext('2d'),t0=performance.now();
   (function f(now){if(run!==logoRun)return;c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,28*s,5*s);let x0=0,more=false;
     L.forEach((g,li)=>{g.forEach((row,y)=>[...row].forEach((b,x)=>{if(b!=='1')return;const age=anim&&!reduce?(now-t0-(x0+x)*38-y*22)/260:1;if(age<=0){more=true;return}
-      const t=Math.min(1,age),sc=.4+.6*(1-Math.pow(1-t,3));if(t<1)more=true;c.save();c.translate((x0+x+.5)*s,(y+.5)*s);c.scale(sc,sc);tile(c,-s/2,-s/2,s,s,cols[li],s,1);c.restore()}));x0+=g[0].length+1});
+      const t=Math.min(1,age),sc=.4+.6*(1-Math.pow(1-t,3));if(t<1)more=true;c.save();c.translate((x0+x+.5)*s,(y+.5)*s);c.scale(sc,sc);cubo(c,-s/2,-s/2,s,s,cols[li],s,1);c.restore()}));x0+=g[0].length+1});
     if(more)requestAnimationFrame(f)})(t0)}
 let heroRun=0;
 async function heroStart(){const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d'),px=HOME.col,ph=HOME.hh,d=Math.min(3,devicePixelRatio||1);cv.width=px*d;cv.height=ph*d;let order=SPRITES.map((_,i)=>i).sort(()=>Math.random()-.5),oi=0;
@@ -1177,7 +1204,7 @@ async function heroStart(){const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d
     const seq=puz.rects.map((r,i)=>i).sort(()=>Math.random()-.5),born=new Float64Array(seq.length).fill(1e18);
     const paint=(now,k)=>{c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,px,ph);
       for(const i of seq){const r=puz.rects[i],col=puz.colors[puz.cells[r.cy*W+r.cx]],x=ox+r.x*s,y=oy+r.y*s,w=r.w*s,h=r.h*s,age=now-born[i];
-        if(age>=0){const t=Math.min(1,age/240),sc=.8+.2*(1-Math.pow(1-t,3));c.save();c.translate(x+w/2,y+h/2);c.scale(sc,sc);tile(c,-w/2,-h/2,w,h,col,s,k);c.restore()}
+        if(age>=0){const t=Math.min(1,age/240),sc=.8+.2*(1-Math.pow(1-t,3));c.save();c.translate(x+w/2,y+h/2);c.scale(sc,sc);cubo(c,-w/2,-h/2,w,h,col,s,k);c.restore()}
         else{c.strokeStyle='rgba(255,255,255,.1)';c.lineWidth=1;c.strokeRect(x+.5,y+.5,w-1,h-1);if(r.w*r.h>1){c.fillStyle='rgba(255,255,255,.75)';c.font=`700 ${s*.55}px Figtree,system-ui,sans-serif`;c.textAlign='center';c.textBaseline='middle';c.fillText(r.w*r.h,ox+(r.cx+.5)*s,oy+(r.cy+.5)*s+1)}}}};
     if(reduce){born.fill(0);paint(1e6,0);return}
     const t0=performance.now();seq.forEach((i,n)=>born[i]=t0+500+n*95);const end=t0+500+seq.length*95+400;
@@ -1195,10 +1222,14 @@ $('#bHelp').onclick=()=>openSheet(`<div class="sh-head"><h2>So geht Pixaku</h2><
  <li><i>5</i><span>Ein farbiger Block passt zu seiner Zahl, kann aber trotzdem falsch liegen. Der Tipp-Knopf räumt zuerst falsch liegende Blöcke ab. Kein Block ist länger als 9 Felder, und dünne Streifen bleiben kurz.</span></li>
  <li><i>6</i><span>Zwei Finger verschieben und zoomen das Brett. Am Rechner hilft das Mausrad, zum Schieben hältst du die Leertaste oder ziehst außerhalb des Bretts.</span></li></ul>
  <p>Jedes Rätsel hat genau eine Lösung und lässt sich ohne Raten herleiten.</p>`);
-$('#file').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const url=URL.createObjectURL(f),im=new Image();
-  im.onload=()=>{const k=Math.min(1,480/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(im.width*k));cv.height=Math.max(1,Math.round(im.height*k));
-    const c=cv.getContext('2d',{willReadFrequently:true});c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);c.drawImage(im,0,0,cv.width,cv.height);URL.revokeObjectURL(url);uploadSrc=cv;cfg.motif='upload';if(cfg.size<5)cfg.size=7;openSetup()};
-  im.onerror=()=>{URL.revokeObjectURL(url);toast('Dieses Bildformat kann der Browser nicht lesen. Mit JPG oder PNG klappt es.',3500)};im.src=url};
+$('#file').onchange=async e=>{const inp=e.target,f=inp.files&&inp.files[0];if(!f)return;
+  try{let src=null;if(window.createImageBitmap){try{src=await createImageBitmap(f)}catch(_){}}
+    if(!src)src=await new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=rej;fr.onload=()=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=fr.result};fr.readAsDataURL(f)});
+    const k=Math.min(1,480/Math.max(src.width,src.height)),cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(src.width*k));cv.height=Math.max(1,Math.round(src.height*k));
+    const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);c.drawImage(src,0,0,cv.width,cv.height);const px=c.getImageData(0,0,cv.width,cv.height);if(src.close)src.close();
+    uploadSrc={width:cv.width,height:cv.height,data:new Uint8ClampedArray(px.data)};cfg.motif='upload';if(cfg.size<5)cfg.size=7;openSetup()}
+  catch(err){toast('Dieses Bild konnte der Browser nicht lesen. Mit JPG oder PNG klappt es.',3500)}
+  inp.value=''};
 
 drawLogo(true);let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if($('#home').classList.contains('on')){drawLogo(false);heroStart()}},200)});
 paintImg($('#icDaily'),compact(pixling(12,12,mulberry32(hashStr('daily-'+today())))));
