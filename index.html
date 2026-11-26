@@ -422,7 +422,7 @@ html.k3:not(.arc) .tagline{color:#bfe9f0}
 window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{const f=new File([data],filename,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
-window.PX_VER='26.11.2026 16:11 · 7040e';
+window.PX_VER='26.11.2026 22:51 · ce07a';
 (()=>{let fresh=false;try{fresh=!!sessionStorage.getItem('pxr');sessionStorage.removeItem('pxr')}catch(e){}
   const t0=performance.now(),hide=()=>{const s=document.getElementById('splash');if(!s)return;setTimeout(()=>{s.classList.add('off');setTimeout(()=>s.remove(),600)},Math.max(0,(fresh?350:900)-(performance.now()-t0)))};
   const reload=()=>{try{sessionStorage.setItem('pxr','1')}catch(e){}location.reload()};
@@ -906,7 +906,12 @@ let navDepth=0,navSkip=false,inPop=false,backArmed=0;
 const navPush=()=>{try{history.pushState({px:1},'');navDepth++}catch(e){}};
 addEventListener('popstate',()=>{if(navSkip){navSkip=false;return}navDepth=Math.max(0,navDepth-1);inPop=true;
   try{if(sheetOpen){if(!sheetLocked)closeSheet();navPush()}
-    else if($('#game').classList.contains('on')&&G&&!G.won){if(Date.now()-backArmed<2500){backArmed=0;$('#gBack').onclick()}else{backArmed=Date.now();toast('Noch einmal zurück, dann verlässt du das Spiel. Dein Stand bleibt gespeichert.',2400);navPush()}}
+    else if($('#game').classList.contains('on')&&G&&!G.won){navPush();const edge=Date.now()-lastDown.t<1200&&(lastDown.x<52||lastDown.x>cw-52);
+      if(edge){const q=edgeDrag;edgeDrag=null;if(q&&Date.now()-q.t<1200&&q.d.w*q.d.h>1&&evalRect(q.d.x,q.d.y,q.d.w,q.d.h).valid&&!blockedAt(q.d.x,q.d.y,q.d.w,q.d.h))commit(q.d.x,q.d.y,q.d.w,q.d.h);
+        if(Date.now()-backArmed>6000){backArmed=Date.now();toast('Wischgeste am Rand abgefangen, das Spiel läuft weiter.',1800)}}
+      else{const quick=A||G.meta.mode==='sprint'||G.meta.mode==='rule'||TUT;
+        const s=openSheet(`<div class="sh-head"><h2>Spiel verlassen?</h2></div><p>${quick?'Diese Runde wird nicht gespeichert und endet beim Verlassen.':'Dein Stand bleibt gespeichert, du kannst später weitermalen.'}</p><div class="btns"><button class="ghost" id="lvY">Verlassen</button><button class="primary" id="lvN">Weiterspielen</button></div>`);
+        s.querySelector('#lvN').onclick=closeSheet;s.querySelector('#lvY').onclick=()=>{closeSheet();$('#gBack').onclick()}}}
     else if(!$('#home').classList.contains('on'))show('home')}finally{inPop=false}});
 addEventListener('pagehide',()=>saveNow());
 function show(id){const was=document.querySelector('.screen.on');if(id!=='home'&&was&&was.id==='home')navPush();
@@ -998,7 +1003,7 @@ function openSetup(fresh){
     const pv=s.querySelector('#pv');paintImg(pv,img);pv.style.aspectRatio=img.W+'/'+img.H;pv.style.width=img.W>=img.H?'100%':(img.W/img.H*100)+'%';
     s.querySelector('#pvName').textContent=motifName();s.querySelector('#pvInfo').textContent=`${img.W} × ${img.H} Felder, ${img.colors.length} Farben`;
     const mx=Math.max(img.W,img.H);s.querySelector('#sizeOut').textContent=(fx?'fest ':'')+`${img.W} × ${img.H}, ${mx<=8?'Häppchen':mx<=16?'Klassiker':mx<=32?'Großformat':mx<=64?'Wandbild':'Monument'}`;
-    const pl=pals.scrollLeft;pals.innerHTML='';RAMPS.forEach(r=>{const cols=(r.ramp||base.colors.slice(0,6)),n=cols.length,b=document.createElement('button');wi=r.lock?WORLDS.findIndex(w=>w.id===r.lock):-1,lk=wi>=0&&!worldDone(wi);b.className='pal'+(r.id===cfg.pal?' sel':'')+(lk?' lk':'');
+    const pl=pals.scrollLeft;pals.innerHTML='';RAMPS.forEach(r=>{const cols=(r.ramp||base.colors.slice(0,6)),n=cols.length,b=document.createElement('button'),wi=r.lock?WORLDS.findIndex(w=>w.id===r.lock):-1,lk=wi>=0&&!worldDone(wi);b.className='pal'+(r.id===cfg.pal?' sel':'')+(lk?' lk':'');
       b.innerHTML=`<i style="background:linear-gradient(90deg,${cols.map((c,i)=>`${c} ${i/n*100}% ${(i+1)/n*100}%`).join(',')})"></i>${lk?'Welt '+(wi+1):r.name}`;b.onclick=()=>{if(lk){toast(`„${r.name}“ gibt es als Belohnung für Welt ${wi+1} der Kampagne.`,2800);return}cfg.pal=r.id;sync()};pals.append(b)});
     pals.scrollLeft=pl;strips.forEach(u=>u());store.set('cfg',cfg)};
   mo.onclick=e=>{const b=e.target.closest('[data-m]');if(b){cfg.motif=b.dataset.m;sync()}};
@@ -1226,7 +1231,7 @@ function setView(on,user){
 
 /* ---------- Spielzustand ---------- */
 let G=null,A=null,V={s:20,ox:0,oy:0},tool='draw',cw=0,ch=0,dpr=1,drag=null,pan=null,pinch=null,lastPtr=null,tween=null,spaceDown=false,rafOn=false;
-const bcv=$('#board'),bctx=bcv.getContext('2d'),ptrs=new Map(),INS={top:88,bot:104};let tap=null;
+const bcv=$('#board'),bctx=bcv.getContext('2d'),ptrs=new Map(),INS={top:88,bot:104};let tap=null,lastDown={x:200,t:0},edgeDrag=null;
 const blockedAt=(x,y,w,h)=>{for(let b=y;b<y+h;b++)for(let a=x;a<x+w;a++){const r=G.rects.get(G.cellR[b*G.W+a]);if(r&&(r.valid||r.lock))return true}return false};
 function newGame(puz,meta,saved){
   const{W,H}=puz,N=W*H,paint=document.createElement('canvas');paint.width=W;paint.height=H;
@@ -1242,7 +1247,7 @@ function newGame(puz,meta,saved){
   $('#gSub').textContent=A?`${A.score} Punkte`:`${W} × ${H}, ${G.diff.name}`;
   $('#gNum').classList.remove('warn');
   show('game');setView(R3.on);
-  const t=fitTarget();V=t.s<18?{s:30,ox:14,oy:INS.top+10}:t;
+  G.fixed=Math.max(W,H)<=10;const t=fitTarget();V=t.s<18?{s:30,ox:SIDE(),oy:INS.top+10}:t;
   toolbar();hud();draw();
   if(!A&&!TUT&&!saved&&!store.get('seen')){store.set('seen',1);toast('Ziehe ein Rechteck um jede Zahl. Die Zahl nennt die Fläche.',4200)}
   else if(t.s<18&&!A)toast('Zwei Finger verschieben und zoomen das Brett.',3200);
@@ -1273,14 +1278,15 @@ function saveNow(){if(!G||A||TUT||G.won||G.meta.mode==='sprint'||G.meta.mode==='
 function changed(){hud();requestDraw();clearTimeout(saveT);saveT=setTimeout(saveNow,1200);if(G.covered===G.N&&!G.won)win();else tutCheck()}
 
 /* ---------- Ansicht ---------- */
-function resize(){const sa=getComputedStyle($('#sa'));INS.top=88+(parseFloat(sa.paddingTop)||0);INS.bot=104+(parseFloat(sa.paddingBottom)||0)+(TUT&&!$('#coach').hidden?$('#coach').offsetHeight+12:0);dpr=Math.min(3,window.devicePixelRatio||1);if(!bcv.clientWidth)return;cw=bcv.clientWidth;ch=bcv.clientHeight;bcv.width=Math.round(cw*dpr);bcv.height=Math.round(ch*dpr);if(G){barFit();clampView();requestDraw()}}
+function resize(){const sa=getComputedStyle($('#sa'));INS.top=88+(parseFloat(sa.paddingTop)||0);INS.bot=104+(parseFloat(sa.paddingBottom)||0)+(TUT&&!$('#coach').hidden?$('#coach').offsetHeight+12:0);dpr=Math.min(3,window.devicePixelRatio||1);if(!bcv.clientWidth)return;cw=bcv.clientWidth;ch=bcv.clientHeight;bcv.width=Math.round(cw*dpr);bcv.height=Math.round(ch*dpr);if(G){barFit();if(G.fixed)V=fitTarget();else clampView();requestDraw()}}
 function barFit(){$('.bar').style.maxWidth=Math.round(Math.max(250,Math.min(cw-24,G.W*fitScale()+16)))+'px'}
 addEventListener('resize',resize);
-const fitScale=()=>Math.max(1,Math.min((cw-28)/G.W,(ch-INS.top-INS.bot-20)/G.H));
+const SIDE=()=>matchMedia('(pointer:coarse)').matches?36:14;
+const fitScale=()=>Math.max(1,Math.min((cw-2*SIDE())/G.W,(ch-INS.top-INS.bot-20)/G.H));
 function fitTarget(){const s=fitScale();return{s,ox:(cw-G.W*s)/2,oy:INS.top+(ch-INS.top-INS.bot-G.H*s)/2}}
 const limits=()=>{const f=fitScale();return[Math.max(1,f*.7),Math.max(64,f)]};
 function clampView(){const[a,b]=limits();V.s=Math.max(a,Math.min(b,V.s));V.ox=Math.min(cw-70,Math.max(70-G.W*V.s,V.ox));V.oy=Math.min(ch-INS.bot-70,Math.max(INS.top+70-G.H*V.s,V.oy))}
-function zoomAt(px,py,f){const[a,b]=limits(),ns=Math.max(a,Math.min(b,V.s*f)),wx=(px-V.ox)/V.s,wy=(py-V.oy)/V.s;V.s=ns;V.ox=px-wx*ns;V.oy=py-wy*ns;clampView();requestDraw()}
+function zoomAt(px,py,f){if(G.fixed)return;const[a,b]=limits(),ns=Math.max(a,Math.min(b,V.s*f)),wx=(px-V.ox)/V.s,wy=(py-V.oy)/V.s;V.s=ns;V.ox=px-wx*ns;V.oy=py-wy*ns;clampView();requestDraw()}
 function tweenTo(t,ms=450){tween={a:{...V},b:t,t0:performance.now(),ms};requestDraw()}
 const cellAt=(px,py)=>use3D()?R3.cell(px,py):({x:Math.floor((px-V.ox)/V.s),y:Math.floor((py-V.oy)/V.s)});
 function requestDraw(){if(rafOn)return;rafOn=true;requestAnimationFrame(now=>{rafOn=false;if(!G)return;let again=false;
@@ -1342,12 +1348,13 @@ function moveDrag(p){const c=cellAt(p.x,p.y);drag.bx=Math.max(0,Math.min(G.W-1,c
   let by=V.oy+d.y*V.s-42;if(by<INS.top+4)by=V.oy+(d.y+d.h)*V.s+10;b.style.left=Math.max(60,Math.min(cw-60,V.ox+(d.x+d.w/2)*V.s))+'px';b.style.top=by+'px'}
 bcv.addEventListener('pointerdown',e=>{if(!G||G.won)return;try{bcv.setPointerCapture(e.pointerId)}catch(_){}
   const p=pos(e);ptrs.set(e.pointerId,p);lastPtr=p;tween=null;
-  if(ptrs.size===2){drag=null;pan=null;tap=null;$('#bubble').classList.remove('on');const[a,b]=[...ptrs.values()],mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+  lastDown={x:p.x,t:Date.now()};
+  if(ptrs.size===2){drag=null;pan=null;tap=null;$('#bubble').classList.remove('on');if(G.fixed){requestDraw();return}const[a,b]=[...ptrs.values()],mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
     pinch={d:Math.hypot(a.x-b.x,a.y-b.y)||1,s:V.s,wx:(mx-V.ox)/V.s,wy:(my-V.oy)/V.s};requestDraw();return}
   if(ptrs.size>2)return;
   const c=cellAt(p.x,p.y),inside=c.x>=0&&c.y>=0&&c.x<G.W&&c.y<G.H;
   const hit=inside?G.rects.get(G.cellR[c.y*G.W+c.x]):null;tap=null;
-  if(tool==='pan'||e.button===1||e.button===2||spaceDown||!inside)pan=p;else if(hit&&(hit.valid||hit.lock)){pan=p;tap={x:c.x,y:c.y,px:p.x,py:p.y}}else{drag={ax:c.x,ay:c.y,bx:c.x,by:c.y};moveDrag(p)}
+  if(G.fixed&&!inside){}else if(!G.fixed&&(tool==='pan'||e.button===1||e.button===2||spaceDown||!inside))pan=p;else if(hit&&(hit.valid||hit.lock)){if(!G.fixed)pan=p;tap={x:c.x,y:c.y,px:p.x,py:p.y}}else{drag={ax:c.x,ay:c.y,bx:c.x,by:c.y};moveDrag(p)}
   requestDraw()});
 bcv.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId)||!G)return;const p=pos(e);ptrs.set(e.pointerId,p);lastPtr=p;
   if(pinch&&ptrs.size>=2){const[a,b]=[...ptrs.values()],mx=(a.x+b.x)/2,my=(a.y+b.y)/2,[lo,hi]=limits();V.s=Math.max(lo,Math.min(hi,pinch.s*Math.hypot(a.x-b.x,a.y-b.y)/pinch.d));V.ox=mx-pinch.wx*V.s;V.oy=my-pinch.wy*V.s;clampView()}
@@ -1356,7 +1363,7 @@ bcv.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId)||!G)return;cons
   requestDraw()});
 const up=e=>{if(!ptrs.has(e.pointerId))return;ptrs.delete(e.pointerId);
   if(pinch){if(ptrs.size<2){pinch=null;pan=ptrs.size?[...ptrs.values()][0]:null}return}
-  if(drag){const d=dragRect();drag=null;$('#bubble').classList.remove('on');if(e.type==='pointerup'&&G&&!G.won)commit(d.x,d.y,d.w,d.h)}
+  if(drag){const d=dragRect();drag=null;$('#bubble').classList.remove('on');if(e.type==='pointerup'&&G&&!G.won)commit(d.x,d.y,d.w,d.h);else if(e.type==='pointercancel')edgeDrag={d,t:Date.now()}}
   if(tap&&e.type==='pointerup'&&lastPtr&&Math.hypot(lastPtr.x-tap.px,lastPtr.y-tap.py)<9&&G&&!G.won)commit(tap.x,tap.y,1,1);tap=null;
   pan=null;requestDraw()};
 bcv.addEventListener('pointerup',up);bcv.addEventListener('pointercancel',up);
@@ -1399,8 +1406,8 @@ function hint(){if(!G||G.won)return;if(G.meta.rule==='nohelp'){toast('Heute ohne
  mini.addEventListener('pointerdown',e=>{e.preventDefault();try{mini.setPointerCapture(e.pointerId)}catch(_){}dn=true;go(e)});mini.addEventListener('pointermove',e=>{if(dn)go(e)});
  ['pointerup','pointercancel'].forEach(n=>mini.addEventListener(n,()=>{dn=false}))}
 $('#tUndo').onclick=undo;$('#tHint').onclick=hint;
-$('#tMode').onclick=()=>{tool=tool==='draw'?'pan':'draw';toolbar()};
-$('#tFit').onclick=()=>{if(G)tweenTo(Math.abs(V.s-fitScale())<.5&&fitScale()<18?{s:30,ox:V.ox,oy:V.oy}:fitTarget())};
+$('#tMode').onclick=()=>{if(G&&G.fixed){toast('Kleine Bretter stehen fest. Schieben und Zoomen gibt es ab 11 Feldern.',2400);return}tool=tool==='draw'?'pan':'draw';toolbar()};
+$('#tFit').onclick=()=>{if(G&&!G.fixed)tweenTo(Math.abs(V.s-fitScale())<.5&&fitScale()<18?{s:30,ox:V.ox,oy:V.oy}:fitTarget())};
 function clearBoard(){if(!G||G.won)return;for(const r of[...G.rects.values()])if(!(r.lock&&r.w*r.h===1))removeRect(r.id);G.undo.length=0;changed()}
 function openSettings(){
   const inGame=$('#game').classList.contains('on')&&G&&!G.won&&!A;
@@ -1482,13 +1489,13 @@ async function startLevel(id){const d=lvDef(id),w=WORLDS[d.wi],c=campGet(),sv=sa
   try{const puz=await build(lvImage(id),DIFFS.find(x=>x.id===d.diff).max,mulberry32(hashStr('pz'+id)));A=null;newGame(puz,{mode:'camp',name:d.name,diff:d.diff,id:'camp-'+id,lv:id,motif:d.motif})}
   catch(e){console.error(e);toast('Das Fenster ließ sich nicht aufbauen. Versuch es bitte noch einmal.')}
   loader(false)}
-function showCampWin(){const id=G.meta.lv,d=lvDef(id),w=WORLDS[d.wi],p=G.puz,blocks=p.rects.filter(r=>r.w*r.h>1).length,par=Math.max(40,blocks*5),t=Math.round(G.time),
-    s=!G.hints&&t<=par?3:!G.hints||(G.hints<=2&&t<=par)?2:1,c=campGet(),old=c.lv[id],before=worldDone(d.wi,c),openBefore=d.wi+1<WORLDS.length&&worldOpen(d.wi+1,c);
+function showCampWin(){const id=G.meta.lv,d=lvDef(id),w=WORLDS[d.wi],p=G.puz,blocks=p.rects.filter(r=>r.w*r.h>1).length,par=Math.round(8+blocks*({easy:1.7,normal:2.3,hard:3,master:3.8}[d.diff]||2.3)),t=Math.round(G.time),
+    s=!G.hints&&t<=par?3:G.hints<=1&&t<=par*2?2:1,c=campGet(),old=c.lv[id],before=worldDone(d.wi,c),openBefore=d.wi+1<WORLDS.length&&worldOpen(d.wi+1,c);
   if(!old||s>old.s||(s===old.s&&t<old.t))c.lv[id]={s,t,h:G.hints};store.set('camp',c);if(!old)campMove={wi:d.wi,from:d.j};
   const nowDone=worldDone(d.wi,c),ramp=RAMPS.find(r=>r.lock===w.id),nextId=d.j+1<w.lv.length?lvId(d.wi,d.j+1):(d.wi+1<WORLDS.length&&worldOpen(d.wi+1,c)?lvId(d.wi+1,0):null),opened=!openBefore&&d.wi+1<WORLDS.length&&worldOpen(d.wi+1,c);
   const sh=openSheet(`<div class="sh-head"><h2>${d.name}</h2></div><div class="stars">${starStr(s)}</div><canvas class="px art" id="winArt" style="max-height:26vh"></canvas>
   <div class="stats"><div><b>${fmt(t)}</b><span>Zeit, Ziel ${fmt(par)}</span></div><div><b>${blocks}</b><span>Blöcke</span></div><div><b>${G.hints}</b><span>Tipps</span></div></div>
-  ${s<3?`<p style="text-align:center">Drei Sterne gibt es ohne Tipp und innerhalb der Zielzeit.</p>`:''}
+  ${s<3?`<p style="text-align:center">Drei Sterne gibt es ohne Tipp in ${fmt(par)}, zwei mit höchstens einem Tipp in ${fmt(par*2)}.</p>`:''}
   ${nowDone&&!before?`<p class="story">${w.outro}</p><div class="reward"><i style="background:linear-gradient(90deg,${ramp.ramp.map((x,i)=>`${x} ${i/ramp.ramp.length*100}% ${(i+1)/ramp.ramp.length*100}%`).join(',')})"></i><span><b>Neue Palette: ${ramp.name}</b><small>Ab jetzt unter „Freies Bild“ wählbar.</small></span></div>`:''}
   ${opened?`<p style="text-align:center;color:var(--amber)">Neue Welt offen: ${WORLDS[d.wi+1].name}</p>`:''}
   <div class="btns"><button class="ghost" id="cMap">Zur Karte</button>${nextId?'<button class="primary" id="cNext">Nächstes Fenster</button>':''}</div>`,true);
