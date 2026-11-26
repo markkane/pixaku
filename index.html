@@ -107,11 +107,12 @@ canvas.px{image-rendering:pixelated;image-rendering:crisp-edges}
 .tag.done{background:var(--mint);color:#06221b}.tag.info{background:#12303c;border:1px solid var(--line)}
 #bCont{justify-content:flex-start;padding:6px 14px 6px 8px;text-align:left;min-width:0}
 #bCont>span{min-width:0;flex:1}#bCont b,#bCont small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.menu.has #bPlay{min-height:46px;font-size:clamp(15px,4.6vw,18px)}.menu.has{gap:12px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:10px}.duo .gbtn{min-height:56px;font-size:clamp(14px,4.5vw,19px);min-width:0}
+.menu.has .duo .gbtn{min-height:46px;font-size:clamp(13px,4.1vw,17px)}.menu.has{gap:12px}
 #bCont canvas{width:46px;height:46px;border-radius:10px;background:rgba(4,14,20,.35)}
 #bCont small{font:600 12.5px var(--body);text-transform:none;letter-spacing:0;opacity:.78}
 .mute{filter:blur(2.5px) saturate(.35);opacity:.75}
-@media(max-height:680px){.gbtn.go{min-height:52px}.gbtn.sq{min-height:74px}.menu{gap:11px}.menu.has #bPlay{min-height:42px}}
+@media(max-height:680px){.gbtn.go{min-height:52px}.gbtn.sq{min-height:74px}.menu{gap:11px}.menu.has .duo .gbtn{min-height:42px}.duo .gbtn{min-height:50px}}
 /* Tasten */
 .primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 22px;border-radius:16px;font:700 19px var(--display);letter-spacing:.05em;text-transform:uppercase;color:#2a1206;background:linear-gradient(180deg,#ffdc80,#ff8a5c);box-shadow:0 5px 0 #a3421d,0 12px 24px rgba(255,122,89,.35),inset 0 2px 0 rgba(255,255,255,.6);transition:transform .07s}
 .primary:active{transform:translateY(3px)!important}
@@ -226,6 +227,29 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:9px;bac
 .svo img{width:54px;height:54px;object-fit:contain;border-radius:8px;background:rgba(4,14,20,.6)}
 .svo b{display:block;font:700 16px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.svo small{font-size:12.5px;color:var(--muted)}
 .svd{min-height:0;padding:0 12px;font-size:12px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ws{font:700 15px var(--display);color:var(--amber);white-space:nowrap}
+.achl{display:flex;flex-direction:column;gap:12px}
+.wcard{padding:16px;display:flex;flex-direction:column;gap:12px}.wcard h2{font:700 21px var(--display)}.wcard .wh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.wcard p{color:var(--muted);font-size:14px}.wcard.locked{opacity:.6}
+.lvg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.lv{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 6px 7px;border-radius:14px;background:rgba(4,14,20,.42);border:1px solid var(--line);min-width:0}
+.lv canvas,.lv .ph{width:100%;aspect-ratio:1;border-radius:9px;background:rgba(4,14,20,.55);object-fit:contain}
+.lv .ph{display:grid;place-items:center;font:700 24px var(--display);color:var(--muted)}.lv .ph svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
+.lv b{font:700 12px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.lv small{font-size:11px;color:var(--muted)}
+.st{font-size:13px;letter-spacing:2px;color:var(--amber)}.st i,.stars i{font-style:normal;color:rgba(255,255,255,.22)}
+.lv.next{border-color:var(--amber);box-shadow:0 0 0 2px rgba(255,200,87,.25),0 0 18px rgba(255,200,87,.3)}.lv.next .ph{color:var(--amber)}.lv:disabled{opacity:.5}
+.stars{font-size:44px;line-height:1;letter-spacing:10px;text-align:center;color:var(--amber);text-shadow:0 0 18px rgba(255,200,87,.5)}
+.story{font-size:15.5px!important;color:var(--text)!important;line-height:1.5}
+.reward{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:rgba(255,200,87,.12);border:1px solid rgba(255,200,87,.5)}.reward i{flex:none;width:70px;height:30px;border-radius:8px}.reward b{font:700 15px var(--display)}.reward small{display:block;font-size:12.5px;color:var(--muted)}
+.ach{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;padding:12px 14px}
+.ach .ic{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:rgba(255,255,255,.08);color:var(--muted)}.ach.got .ic{background:linear-gradient(180deg,#ffdc80,#ff8a5c);color:#2a1206}
+.ach .ic svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ach b{font:700 16px var(--display);display:block}.ach span{font-size:13px;color:var(--muted)}.ach:not(.got) b{color:var(--muted)}
+.ach .pb{height:5px;border-radius:5px;background:rgba(255,255,255,.12);margin-top:6px;overflow:hidden}.ach .pb u{display:block;height:100%;background:linear-gradient(90deg,var(--mint),var(--amber))}
+.pal.lk i{filter:grayscale(1) brightness(.45)}.pal.lk{opacity:.8}
+#recs{grid-template-columns:repeat(3,1fr)}
+html.k3:not(.arc) #bCamp:not(.go){--ht:#e2d2ff;--bc:#a78bfa;--bd:#5b3fb0;--gl:rgba(167,139,250,.42)}
 /* Galerie */
 .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}
 .gi{padding:10px;display:flex;flex-direction:column;gap:8px;text-align:left}
@@ -327,12 +351,12 @@ html.k3:not(.arc) .tagline{color:#bfe9f0}
 <i id="sa" style="position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)"></i>
 
 <section id="home" class="screen on"><svg id="strip" aria-hidden="true"></svg><div class="hm">
-  <div class="zone z1"><div class="hm-top"><button class="ib" id="bSet" aria-label="Optionen"></button><button class="ib" id="bHelp" aria-label="Spielregeln">?</button></div>
+  <div class="zone z1"><div class="hm-top"><button class="ib" id="bAch" aria-label="Erfolge und Rekorde"></button><button class="ib" id="bSet" aria-label="Optionen"></button><button class="ib" id="bHelp" aria-label="Spielregeln">?</button></div>
   <h1 class="vh">Pixaku</h1><canvas id="logo" aria-hidden="true"></canvas><p class="tagline">Shikaku trifft Pixel-Art</p></div>
   <div class="zone z2 stage"><canvas id="hero" aria-hidden="true"></canvas></div>
   <div class="zone z3 menu">
     <button class="gbtn go" id="bCont" hidden><canvas class="px" id="contCv"></canvas><span><b>Weitermalen</b><small><span id="contName"></span>, <span id="contInfo"></span></small></span><i class="tag info" id="contN" hidden></i></button>
-    <button class="gbtn go" id="bPlay">Neues Bild</button>
+    <div class="duo"><button class="gbtn go" id="bCamp">Kampagne<i class="tag info" id="campTag" hidden></i></button><button class="gbtn" id="bPlay">Freies Bild</button></div>
     <div class="quad">
       <button class="gbtn sq" id="bDaily"><canvas class="px" id="icDaily"></canvas>Tagesbild<i class="tag" id="dailyTag">Heute</i></button>
       <button class="gbtn sq" id="bArcade"><canvas class="px" id="icArcade"></canvas>Arcade<i class="tag info" id="arcTxt" hidden></i></button>
@@ -363,6 +387,14 @@ html.k3:not(.arc) .tagline{color:#bfe9f0}
   <div class="gal" id="galGrid"></div>
 </div></div></section>
 
+<section id="camp" class="screen"><div class="scroll"><div class="wrap">
+  <header class="top"><div class="row"><button class="ib" id="campBack" aria-label="Zurück"></button><h1 style="font:700 28px var(--display)">Kampagne</h1></div><b class="ws" id="campStars"></b></header>
+  <div id="campList" class="achl"></div>
+</div></div></section>
+<section id="ach" class="screen"><div class="scroll"><div class="wrap">
+  <header class="top"><div class="row"><button class="ib" id="achBack" aria-label="Zurück"></button><h1 style="font:700 28px var(--display)">Erfolge</h1></div><b class="ws" id="achCount"></b></header>
+  <div class="stats" id="recs"></div><div id="achList" class="achl"></div>
+</div></div></section>
 <div id="scrim"></div>
 <div id="sheet" class="glass" role="dialog" aria-modal="true"></div>
 <div id="loader"><div class="glass"><s><u></u><u></u><u></u></s><span id="loadTxt">Rätsel wird gebaut</span></div></div>
@@ -374,7 +406,7 @@ html.k3:not(.arc) .tagline{color:#bfe9f0}
 window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{const f=new File([data],filename,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
-window.PX_VER='26.11.2026 13:16 · a473e';
+window.PX_VER='26.11.2026 13:24 · c4305';
 (()=>{let fresh=false;try{fresh=!!sessionStorage.getItem('pxr');sessionStorage.removeItem('pxr')}catch(e){}
   const t0=performance.now(),hide=()=>{const s=document.getElementById('splash');if(!s)return;setTimeout(()=>{s.classList.add('off');setTimeout(()=>s.remove(),600)},Math.max(0,(fresh?350:900)-(performance.now()-t0)))};
   const reload=()=>{try{sessionStorage.setItem('pxr','1')}catch(e){}location.reload()};
@@ -426,6 +458,12 @@ const RAMPS=[
   {id:'kuehl',name:'Kühl',ramp:['#0f1c2e','#1f3a5f','#4d7ea8','#8fb8d9','#cfe3ef','#f6fbff']},
   {id:'bluete',name:'Kirschblüte',ramp:['#3d0c2b','#7b2d5b','#c8558a','#f08db3','#f9c6d6','#fff0f3']},
   {id:'plakat',name:'Plakat',ramp:['#14213d','#e63946','#f1faee']},
+  {id:'cw1',name:'Werkstattglas',lock:'w1',ramp:['#1b1f3b','#3d5a80','#ee6c4d','#98c1d9','#ffd166','#fdf0d5']},
+  {id:'cw2',name:'Gartenlicht',lock:'w2',ramp:['#1b3a2b','#386641','#6a994e','#f28482','#f2e8cf','#fffcf2']},
+  {id:'cw3',name:'Hafenblau',lock:'w3',ramp:['#0b132b','#1c2541','#3a506b','#5bc0be','#f4d58d','#fdfcdc']},
+  {id:'cw4',name:'Glutstein',lock:'w4',ramp:['#1a0f0a','#5c1a1b','#9d0208','#e85d04','#faa307','#ffeda0']},
+  {id:'cw5',name:'Neonnacht',lock:'w5',ramp:['#0b0221','#240046','#ff006e','#7b2cbf','#3a86ff','#fffb00']},
+  {id:'cw6',name:'Sternenstaub',lock:'w6',ramp:['#03071e','#22223b','#4a4e69','#9a8c98','#c9ada7','#f2e9e4']},
 ];
 function applyPalette(img,ramp){
   if(!ramp)return compact(img);
@@ -811,7 +849,7 @@ const I={back:svg('<path d="M15 5l-7 7 7 7"/>'),undo:svg('<path d="M8 5L3 10l5 5
   draw:svg('<rect x="4" y="6" width="16" height="12" rx="2" stroke-dasharray="3 3"/>'),
   pan:svg('<path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/>'),
   fit:svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),restart:svg('<path d="M5 12a7 7 0 107-7H8"/><path d="M11 2L8 5l3 3"/>'),
-  son:svg('<path d="M4 10v4h4l5 4V6L8 10H4z"/><path d="M17 9a4 4 0 010 6"/>'),soff:svg('<path d="M4 10v4h4l5 4V6L8 10H4z"/><path d="M17 9l5 6M22 9l-5 6"/>'),x:svg('<path d="M6 6l12 12M18 6L6 18"/>'),grid:svg('<rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/>'),gear:svg('<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>')};
+  son:svg('<path d="M4 10v4h4l5 4V6L8 10H4z"/><path d="M17 9a4 4 0 010 6"/>'),soff:svg('<path d="M4 10v4h4l5 4V6L8 10H4z"/><path d="M17 9l5 6M22 9l-5 6"/>'),x:svg('<path d="M6 6l12 12M18 6L6 18"/>'),grid:svg('<rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/>'),trophy:svg('<path d="M8 4h8v5a4 4 0 01-8 0V4z"/><path d="M8 6H5a3 3 0 003 4M16 6h3a3 3 0 01-3 4M12 13v4M8.5 20h7"/>'),lock:svg('<rect x="6" y="11" width="12" height="9" rx="1"/><path d="M8.5 11V8a3.5 3.5 0 017 0v3"/>'),gear:svg('<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>')};
 const DIFFS=[
  {id:'easy',name:'Entspannt',max:6,color:true,check:true,desc:'Kleine Blöcke, farbige Zahlen, und falsch gesetzte Rechtecke werden rot markiert.'},
  {id:'normal',name:'Klassisch',max:12,color:true,check:false,desc:'Blöcke bis 12 Felder. Die farbigen Zahlen verraten, welche Farbe ein Block bekommt.'},
@@ -846,7 +884,7 @@ const sfx={ok:a=>tone(SCALE[Math.min(9,Math.floor(Math.log2(a)*2))],.2),bad:()=>
 
 /* ---------- Screens & Sheet ---------- */
 let sheetOpen=false,sheetLocked=false;
-const syncLock=()=>document.documentElement.classList.toggle('lock',sheetOpen||!$('#gallery').classList.contains('on'));
+const syncLock=()=>document.documentElement.classList.toggle('lock',sheetOpen||!['gallery','camp','ach'].some(i=>$('#'+i).classList.contains('on')));
 addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('[role=button]')){e.preventDefault();e.target.click()}});
 let navDepth=0,navSkip=false,inPop=false,backArmed=0;
 const navPush=()=>{try{history.pushState({px:1},'');navDepth++}catch(e){}};
@@ -857,7 +895,7 @@ addEventListener('popstate',()=>{if(navSkip){navSkip=false;return}navDepth=Math.
 addEventListener('pagehide',()=>saveNow());
 function show(id){const was=document.querySelector('.screen.on');if(id!=='home'&&was&&was.id==='home')navPush();
   if(id==='home'&&!inPop&&navDepth>0){navSkip=true;const n=navDepth;navDepth=0;try{history.go(-n)}catch(e){navSkip=false}}
-  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));syncLock();scrollTo(0,0);if(id==='home')refreshHome();if(id==='game')resize();if(id==='gallery')renderGallery()}
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));syncLock();scrollTo(0,0);if(id==='home')refreshHome();if(id==='game')resize();if(id==='gallery')renderGallery();if(id==='camp')renderCamp();if(id==='ach')renderAch()}
 function openSheet(html,locked){const s=$('#sheet');s.innerHTML=html;s.scrollTop=0;s.classList.add('on');$('#scrim').classList.add('on');sheetOpen=true;sheetLocked=!!locked;syncLock();
   const x=s.querySelector('[data-x]');if(x)x.onclick=closeSheet;return s}
 function closeSheet(){$('#sheet').classList.remove('on');$('#scrim').classList.remove('on');sheetOpen=false;syncLock()}
@@ -944,8 +982,8 @@ function openSetup(fresh){
     const pv=s.querySelector('#pv');paintImg(pv,img);pv.style.aspectRatio=img.W+'/'+img.H;pv.style.width=img.W>=img.H?'100%':(img.W/img.H*100)+'%';
     s.querySelector('#pvName').textContent=motifName();s.querySelector('#pvInfo').textContent=`${img.W} × ${img.H} Felder, ${img.colors.length} Farben`;
     const mx=Math.max(img.W,img.H);s.querySelector('#sizeOut').textContent=(fx?'fest ':'')+`${img.W} × ${img.H}, ${mx<=8?'Häppchen':mx<=16?'Klassiker':mx<=32?'Großformat':mx<=64?'Wandbild':'Monument'}`;
-    const pl=pals.scrollLeft;pals.innerHTML='';RAMPS.forEach(r=>{const cols=(r.ramp||base.colors.slice(0,6)),n=cols.length,b=document.createElement('button');b.className='pal'+(r.id===cfg.pal?' sel':'');
-      b.innerHTML=`<i style="background:linear-gradient(90deg,${cols.map((c,i)=>`${c} ${i/n*100}% ${(i+1)/n*100}%`).join(',')})"></i>${r.name}`;b.onclick=()=>{cfg.pal=r.id;sync()};pals.append(b)});
+    const pl=pals.scrollLeft;pals.innerHTML='';RAMPS.forEach(r=>{const cols=(r.ramp||base.colors.slice(0,6)),n=cols.length,b=document.createElement('button');wi=r.lock?WORLDS.findIndex(w=>w.id===r.lock):-1,lk=wi>=0&&!worldDone(wi);b.className='pal'+(r.id===cfg.pal?' sel':'')+(lk?' lk':'');
+      b.innerHTML=`<i style="background:linear-gradient(90deg,${cols.map((c,i)=>`${c} ${i/n*100}% ${(i+1)/n*100}%`).join(',')})"></i>${lk?'Welt '+(wi+1):r.name}`;b.onclick=()=>{if(lk){toast(`„${r.name}“ gibt es als Belohnung für Welt ${wi+1} der Kampagne.`,2800);return}cfg.pal=r.id;sync()};pals.append(b)});
     pals.scrollLeft=pl;strips.forEach(u=>u());store.set('cfg',cfg)};
   mo.onclick=e=>{const b=e.target.closest('[data-m]');if(b){cfg.motif=b.dataset.m;sync()}};
   s.querySelector('#diffs').onclick=e=>{const b=e.target.closest('[data-d]');if(b){cfg.diff=b.dataset.d;sync()}};
@@ -961,7 +999,7 @@ async function startArt(){
   if(slotsFull())return;
   loader(true,'Rätsel wird gebaut');await frame();
   try{const img=finalImage(),d=DIFFS.find(x=>x.id===cfg.diff),puz=await build(img,d.max,mulberry32((Math.random()*2**32)>>>0));
-    A=null;newGame(puz,{mode:'art',name:motifName(),diff:cfg.diff})}
+    A=null;newGame(puz,{mode:'art',name:motifName(),diff:cfg.diff,motif:cfg.motif,pal:cfg.pal})}
   catch(e){console.error(e);toast('Das Rätsel ließ sich nicht bauen. Versuch es bitte noch einmal.')}
   loader(false);
 }
@@ -1319,9 +1357,91 @@ function openSettings(){
   sync()}
 $('#tSet').onclick=openSettings;
 $('#gBack').innerHTML=I.back;$('#galBack').innerHTML=I.back;
-$('#gBack').onclick=()=>{if(TUT){tutEnd();G=null;show('home');return}if(A){endArcade(true);return}clearTimeout(saveT);saveNow();const kept=!!G.meta.sid;G=null;show('home');if(kept)toast('Stand gespeichert.',1500)};
+$('#gBack').onclick=()=>{if(TUT){tutEnd();G=null;show('home');return}if(A){endArcade(true);return}clearTimeout(saveT);saveNow();const kept=!!G.meta.sid,to=G.meta.lv?'camp':'home';G=null;show(to);if(kept)toast('Stand gespeichert.',1500)};
 $('#galBack').onclick=()=>show('home');
 
+/* ---------- Kampagne ---------- */
+const WORLDS=[
+ {id:'w1',name:'Die Werkstatt',intro:'Der Sturm hat in einer einzigen Nacht jedes Fenster von Lumen zerschlagen. Meisterin Ilva drückt dir einen Glasschneider in die Hand und zeigt auf die kleinen Scheiben über der Werkbank. Mit denen fängt hier jeder an.',
+  outro:'Die Werkstatt leuchtet wieder. Ilva nickt nur kurz, aber sie schließt dir das Tor zum Wintergarten auf.',lv:[['herz','easy'],['stern','easy'],['pilz','easy'],['kirschen','easy'],['krone','easy'],['diamant','easy']]},
+ {id:'w2',name:'Der Wintergarten',intro:'Im Wintergarten liegen die Scherben zwischen den Beeten. Die Gärtnerin hat jede einzelne aufgehoben und nach Farben sortiert. Sie will ihre Blumenfenster zurück, bevor der Frost kommt.',
+  outro:'Durch die neuen Scheiben fällt grünes Licht auf die Beete. Zum Dank verrät dir die Gärtnerin ihre Farbmischung.',lv:[['tulpe','easy'],['baum','easy'],['kaktus','normal'],['melone','normal'],['ente','normal'],['bogen','normal',12]]},
+ {id:'w3',name:'Der Hafen',intro:'Am Hafen fehlen die Fenster des Leuchtturms, und die Fischer finden nachts kaum noch heim. Die Scheiben hier sind größer, als du es gewohnt bist. Ilva meint, das Meer verzeihe keine Eile.',
+  outro:'Der Leuchtturm strahlt wieder über die Bucht. Die Fischer rufen dich jetzt beim Namen.',lv:[['fisch','normal'],['turm','normal',14],['palme','normal',16],['wellen','normal',16],['riff','normal',18],['sunset','normal',20]]},
+ {id:'w4',name:'Das Hochland',intro:'Hinter dem Hafen steigt der Weg ins Hochland. In der Berghütte, am Rand der Wüste und unter dem Vulkan warten Fenster, die seit Jahren niemand angefasst hat. Hier oben arbeitest du zum ersten Mal ohne Ilva.',
+  outro:'Vom Gipfel aus siehst du alle Lichter, die du schon zurückgebracht hast. Dunkel sind nur noch die Stadt und der Himmel darüber.',lv:[['gipfel','normal',20],['wueste','normal',20],['ballons','normal',22],['vulkan','hard',24],['polar','hard',24],['kacheln','hard',24]]},
+ {id:'w5',name:'Die Neonstadt',intro:'In der Neonstadt hat der Sturm die Leuchtreklamen und die Scheiben der Hochhäuser erwischt. Die Leute hier mögen es grell. Ihre Fenster verraten ihre Farben erst, wenn ein Stück sitzt.',
+  outro:'Die Straßen leuchten wieder in Pink und Blau. Auf dem höchsten Dach steht die Sternwarte, und ihre Kuppel ist noch dunkel.',lv:[['roboter','hard'],['ufo','hard'],['skyline','hard',24],['synth','hard',28],['skyline','hard',32,'synth'],['synth','hard',36,'neon80']]},
+ {id:'w6',name:'Die Sternwarte',intro:'Die Kuppel der Sternwarte bestand aus den größten Scheiben der Stadt. Ilva sagt, an diese Fenster habe sie sich selbst nie getraut. Dann reicht sie dir ihr eigenes Werkzeug.',
+  outro:'Die Kuppel ist geschlossen, und über Lumen stehen wieder alle Farben. Ilva hängt ein neues Schild an die Werkstatttür. Darauf steht jetzt auch dein Name.',lv:[['rakete','hard'],['planet','hard',28],['mandala','hard',32],['planet','master',40],['polar','master',40,'vapor'],['mandala','master',48,null,'Die große Kuppel']]}];
+const campGet=()=>Object.assign({lv:{},seen:[]},store.get('camp',{}));
+const lvId=(wi,j)=>WORLDS[wi].id+'-'+j,lvDef=id=>{const[w,j]=id.split('-'),wi=WORLDS.findIndex(x=>x.id===w),d=WORLDS[wi].lv[+j];return{wi,j:+j,motif:d[0],diff:d[1],size:d[2],pal:d[3],name:d[4]||nameOf(d[0])}};
+const worldCount=(wi,c=campGet())=>WORLDS[wi].lv.filter((_,j)=>c.lv[lvId(wi,j)]).length;
+const worldDone=(wi,c)=>wi>=0&&worldCount(wi,c)===WORLDS[wi].lv.length;
+const worldOpen=(wi,c)=>wi===0||worldCount(wi-1,c)>=5;
+const campStars=(c=campGet())=>Object.values(c.lv).reduce((a,v)=>a+v.s,0);
+const starStr=n=>'★'.repeat(n)+'<i>'+'★'.repeat(3-n)+'</i>';
+function lvImage(id){const d=lvDef(id),sp=SPRITES.find(s=>s.id===d.motif),base=sp?spriteImage(sp):compact(SCENES.find(s=>s.id===d.motif).gen(d.size,mulberry32(hashStr('lv'+id))));
+  return applyPalette(base,d.pal?RAMPS.find(r=>r.id===d.pal).ramp:null)}
+function renderCamp(){const c=campGet(),host=$('#campList');host.innerHTML='';$('#campStars').innerHTML=`★ ${campStars(c)} / ${WORLDS.length*18}`;
+  WORLDS.forEach((w,wi)=>{const open=worldOpen(wi,c),card=document.createElement('div'),n=worldCount(wi,c),st=w.lv.reduce((a,_,j)=>a+((c.lv[lvId(wi,j)]||{}).s||0),0),ramp=RAMPS.find(r=>r.lock===w.id);
+    card.className='glass wcard'+(open?'':' locked');
+    card.innerHTML=`<div class="wh"><h2>${wi+1}. ${w.name}</h2><b class="ws">${open?`★ ${st} / 18`:''}</b></div><p>${open?(n===w.lv.length?w.outro:w.intro):`Verschlossen. Stelle in „${WORLDS[wi-1].name}“ fünf Fenster fertig.`}</p>
+      ${open?`<div class="lvg"></div><p>Belohnung für alle sechs Fenster: die Palette „${ramp.name}“${n===w.lv.length?', freigeschaltet':''}.</p>`:''}`;
+    if(open){const g=card.querySelector('.lvg');w.lv.forEach((_,j)=>{const id=lvId(wi,j),d=lvDef(id),res=c.lv[id],can=j===0||c.lv[lvId(wi,j-1)],b=document.createElement('button'),inwork=saves().some(s=>s.id==='camp-'+id);
+      b.className='lv'+(can&&!res?' next':'');b.disabled=!can;
+      if(res){const cv=document.createElement('canvas');cv.className='px';paintImg(cv,lvImage(id));b.append(cv)}else b.insertAdjacentHTML('beforeend',`<span class="ph">${can?j+1:I.lock}</span>`);
+      b.insertAdjacentHTML('beforeend',`<b>${res?d.name:can?(inwork?'Weiter':'Fenster '+(j+1)):'Fenster '+(j+1)}</b>${res?`<span class="st">${starStr(res.s)}</span>`:`<small>${d.size?d.size+' × '+d.size:'klein'}, ${DIFFS.find(x=>x.id===d.diff).name}</small>`}`);
+      b.onclick=()=>startLevel(id);g.append(b)})}
+    host.append(card)})}
+async function startLevel(id){const d=lvDef(id),w=WORLDS[d.wi],c=campGet(),sv=saves().find(s=>s.id==='camp-'+id);
+  if(sv){resume(sv.sid);return}
+  if(!c.seen.includes(w.id)){c.seen.push(w.id);store.set('camp',c);
+    openSheet(`<div class="sh-head"><h2>${d.wi+1}. ${w.name}</h2></div><p class="story">${w.intro}</p><button class="primary" id="stGo">An die Arbeit</button>`,true).querySelector('#stGo').onclick=()=>{closeSheet();startLevel(id)};return}
+  if(slotsFull())return;
+  loader(true,'Fenster wird vorbereitet');await frame();
+  try{const puz=await build(lvImage(id),DIFFS.find(x=>x.id===d.diff).max,mulberry32(hashStr('pz'+id)));A=null;newGame(puz,{mode:'camp',name:d.name,diff:d.diff,id:'camp-'+id,lv:id,motif:d.motif})}
+  catch(e){console.error(e);toast('Das Fenster ließ sich nicht aufbauen. Versuch es bitte noch einmal.')}
+  loader(false)}
+function showCampWin(){const id=G.meta.lv,d=lvDef(id),w=WORLDS[d.wi],p=G.puz,blocks=p.rects.filter(r=>r.w*r.h>1).length,par=Math.max(40,blocks*5),t=Math.round(G.time),
+    s=!G.hints&&t<=par?3:!G.hints||(G.hints<=2&&t<=par)?2:1,c=campGet(),old=c.lv[id],before=worldDone(d.wi,c),openBefore=d.wi+1<WORLDS.length&&worldOpen(d.wi+1,c);
+  if(!old||s>old.s||(s===old.s&&t<old.t))c.lv[id]={s,t,h:G.hints};store.set('camp',c);
+  const nowDone=worldDone(d.wi,c),ramp=RAMPS.find(r=>r.lock===w.id),nextId=d.j+1<w.lv.length?lvId(d.wi,d.j+1):(d.wi+1<WORLDS.length&&worldOpen(d.wi+1,c)?lvId(d.wi+1,0):null),opened=!openBefore&&d.wi+1<WORLDS.length&&worldOpen(d.wi+1,c);
+  const sh=openSheet(`<div class="sh-head"><h2>${d.name}</h2></div><div class="stars">${starStr(s)}</div><canvas class="px art" id="winArt" style="max-height:26vh"></canvas>
+  <div class="stats"><div><b>${fmt(t)}</b><span>Zeit, Ziel ${fmt(par)}</span></div><div><b>${blocks}</b><span>Blöcke</span></div><div><b>${G.hints}</b><span>Tipps</span></div></div>
+  ${s<3?`<p style="text-align:center">Drei Sterne gibt es ohne Tipp und innerhalb der Zielzeit.</p>`:''}
+  ${nowDone&&!before?`<p class="story">${w.outro}</p><div class="reward"><i style="background:linear-gradient(90deg,${ramp.ramp.map((x,i)=>`${x} ${i/ramp.ramp.length*100}% ${(i+1)/ramp.ramp.length*100}%`).join(',')})"></i><span><b>Neue Palette: ${ramp.name}</b><small>Ab jetzt unter „Freies Bild“ wählbar.</small></span></div>`:''}
+  ${opened?`<p style="text-align:center;color:var(--amber)">Neue Welt offen: ${WORLDS[d.wi+1].name}</p>`:''}
+  <div class="btns"><button class="ghost" id="cMap">Zur Karte</button>${nextId?'<button class="primary" id="cNext">Nächstes Fenster</button>':''}</div>`,true);
+  paintImg(sh.querySelector('#winArt'),p).style.aspectRatio=p.W+'/'+p.H;
+  sh.querySelector('#cMap').onclick=()=>{closeSheet();G=null;show('camp')};const nx=sh.querySelector('#cNext');if(nx)nx.onclick=()=>{closeSheet();G=null;show('camp');startLevel(nextId)};
+  setTimeout(checkAch,600)}
+/* ---------- Rekorde und Erfolge ---------- */
+function ST(){let st=store.get('stats',null);if(!st){const g=store.get('gal',[]);st={done:g.length,maxSize:g.reduce((a,x)=>Math.max(a,x.W,x.H),0)}}
+  return Object.assign({done:0,blocks:0,maxSize:0,noHint:0,master:0,photo:0,pals:[],motifs:[],streak:0,streakBest:0,lastDaily:'',arcBoards:0},st)}
+function recordWin(){const st=ST(),p=G.puz,m=G.meta,sz=Math.max(p.W,p.H);st.done++;st.blocks+=p.rects.filter(r=>r.w*r.h>1).length;st.maxSize=Math.max(st.maxSize,sz);
+  if(!G.hints&&sz>=16)st.noHint++;if(m.diff==='master')st.master++;if(m.motif==='upload')st.photo++;if(m.pal&&!st.pals.includes(m.pal))st.pals.push(m.pal);
+  if(m.motif&&m.motif!=='upload'&&!st.motifs.includes(m.motif))st.motifs.push(m.motif);
+  if(m.id&&m.id.startsWith('daily-')){const d=today(),y=new Date(Date.now()-864e5).toLocaleDateString('sv');if(st.lastDaily!==d){st.streak=st.lastDaily===y?st.streak+1:1;st.lastDaily=d;st.streakBest=Math.max(st.streakBest,st.streak)}}
+  store.set('stats',st);if(!m.lv)setTimeout(checkAch,G.winDur+900)}
+const ACH=[
+ ['first','Erstes Licht','Ein Bild fertig malen',s=>[s.done,1]],['ten','Stammkundschaft','10 Bilder fertig malen',s=>[s.done,10]],['fifty','Volles Atelier','50 Bilder fertig malen',s=>[s.done,50]],
+ ['b500','Blockleger','500 Blöcke in fertigen Bildern',s=>[s.blocks,500]],['b5k','Baumeister','5000 Blöcke in fertigen Bildern',s=>[s.blocks,5000]],
+ ['free','Freihand','Ein Bild ab 16 × 16 ohne Tipp',s=>[s.noHint,1]],['s32','Großformat','Ein Bild ab 32 × 32',s=>[s.maxSize,32]],['s64','Wandbild','Ein Bild ab 64 × 64',s=>[s.maxSize,64]],['s100','Monument','Ein Bild ab 100 × 100',s=>[s.maxSize,100]],
+ ['mast','Meisterstück','Ein Bild auf Meister',s=>[s.master,1]],['foto','Eigene Handschrift','Ein eigenes Foto fertig malen',s=>[s.photo,1]],
+ ['pal','Farbenlehre','8 verschiedene Paletten benutzen',s=>[s.pals.length,8]],['mot','Sammlung','20 verschiedene Motive malen',s=>[s.motifs.length,20]],
+ ['a2','Flinke Finger','2000 Punkte im Arcade',s=>[s.best,2000]],['a6','Hochbetrieb','6000 Punkte im Arcade',s=>[s.best,6000]],['a12','Rekordjagd','12000 Punkte im Arcade',s=>[s.best,12000]],['ab','Fließband','10 Bretter in einem Arcade-Lauf',s=>[s.arcBoards,10]],
+ ['d3','Drei am Stück','Tagesbild an 3 Tagen in Folge',s=>[s.streakBest,3]],['d7','Wochenwerk','Tagesbild an 7 Tagen in Folge',s=>[s.streakBest,7]],['d30','Monatswerk','Tagesbild an 30 Tagen in Folge',s=>[s.streakBest,30]],
+ ['w1','Lehrzeit','Die Werkstatt abschließen',s=>[s.w1?1:0,1]],['w3','Gesellenstück','Den Hafen abschließen',s=>[s.w3?1:0,1]],['w6','Meisterbrief','Die Sternwarte abschließen',s=>[s.w6?1:0,1]],
+ ['st50','Sternenfänger','50 Sterne in der Kampagne',s=>[s.stars,50]],['st108','Alle Lichter','Alle 108 Sterne der Kampagne',s=>[s.stars,108]],['perf','Makellos','Eine Welt mit 18 Sternen',s=>[s.perfect,1]]];
+function achState(){const s=ST(),c=campGet();s.best=store.get('best',0);s.stars=campStars(c);s.worlds=WORLDS.filter((_,i)=>worldDone(i,c)).length;s.w1=worldDone(0,c);s.w3=worldDone(2,c);s.w6=worldDone(5,c);
+  s.perfect=WORLDS.some((w,wi)=>w.lv.every((_,j)=>(c.lv[lvId(wi,j)]||{}).s===3))?1:0;return s}
+function checkAch(){const s=achState(),got=store.get('ach',{}),fresh=[];for(const[id,name,,fn]of ACH){if(got[id])continue;const[a,b]=fn(s);if(a>=b){got[id]=today();fresh.push(name)}}
+  if(!fresh.length)return;store.set('ach',got);fresh.forEach((n,i)=>setTimeout(()=>{toast('Erfolg freigeschaltet: '+n,2600);tone(784,.18,'triangle',.06);tone(1047,.3,'triangle',.06,.12)},i*2800))}
+function renderAch(){const s=achState(),got=store.get('ach',{}),host=$('#achList');host.innerHTML='';$('#achCount').textContent=`${Object.keys(got).length} / ${ACH.length}`;
+  $('#recs').innerHTML=[[s.done,'Bilder gemalt'],[s.blocks,'Blöcke gesetzt'],[s.maxSize?s.maxSize+'er':'0','Größtes Bild'],[s.best,'Arcade-Bestwert'],[s.streak+' / '+s.streakBest,'Serie, aktuell und beste'],['★ '+s.stars,'Kampagne']].map(([v,l])=>`<div><b>${v}</b><span>${l}</span></div>`).join('');
+  [...ACH].sort((a,b)=>(got[b[0]]?1:0)-(got[a[0]]?1:0)).forEach(([id,name,desc,fn])=>{const[a,b]=fn(s),ok=!!got[id],d=document.createElement('div');d.className='glass ach'+(ok?' got':'');
+    d.innerHTML=`<i class="ic">${I.trophy}</i><div><b>${name}</b><span>${desc}${ok?', erreicht am '+got[id].split('-').reverse().join('.'):b>1?` (${Math.min(a,b)} von ${b})`:''}</span>${ok||b<=1?'':`<div class="pb"><u style="width:${Math.min(100,a/b*100)}%"></u></div>`}</div>`;host.append(d)})}
 /* ---------- Tutorial ---------- */
 let TUT=null;
 const TUT_COL=['#ffc857','#ff7a59','#4fe3c1','#5cc8ff','#ff5d8f'],
@@ -1369,14 +1489,14 @@ function win(){G.won=true;G.winAt=performance.now();G.wSpan=A?420:Math.min(1500,
   if(G.W*V.s>cw||G.H*V.s>ch-INS.top-INS.bot)tweenTo(fitTarget(),700);requestDraw();
   if(A){const z=G.W,bonus=6+z;A.score+=G.N*10+Math.round(A.time);A.time=Math.min(99,A.time+bonus);A.coll.push({W:G.W,H:G.H,colors:G.puz.colors,cells:G.puz.cells});
     toast(`+${bonus} Sekunden`,1100);hud();celebrate(G.puz.colors,2,fx-150);setTimeout(()=>{if(A)arcadeNext()},reduce?500:G.winDur+350);return}
-  dropSave(G.meta.sid);clearTimeout(saveT);addGallery();celebrate(G.puz.colors,3,fx);setTimeout(showWin,reduce?200:G.winDur+550)}
+  dropSave(G.meta.sid);clearTimeout(saveT);recordWin();addGallery();celebrate(G.puz.colors,3,fx);setTimeout(showWin,reduce?200:G.winDur+550)}
 function addGallery(){const p=G.puz,g=store.get('gal',[]),it={id:G.meta.id||('w'+Date.now()),name:G.meta.name,W:p.W,H:p.H,colors:p.colors,data:enc(p.cells),time:Math.round(G.time),hints:G.hints,diff:G.meta.diff,date:today()};
   const i=g.findIndex(x=>x.id===it.id);if(i>=0)g.splice(i,1);g.unshift(it);while(g.length>60)g.pop();while(!store.set('gal',g)&&g.length>1)g.pop()}
 function exportBtn(img,name){if(!downloads)return'';setTimeout(()=>{const b=$('#bSave');if(b)b.onclick=async()=>{const k=Math.max(1,Math.floor(1200/Math.max(img.W,img.H))),cv=document.createElement('canvas');cv.width=img.W*k;cv.height=img.H*k;
     const c=cv.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(paintImg(document.createElement('canvas'),img),0,0,cv.width,cv.height);
     cv.toBlob(async bl=>{try{await downloads.save({filename:`pixaku-${name.toLowerCase().replace(/[^a-z0-9]+/g,'-')}.png`,data:bl});toast('Bild gesichert.')}catch(e){if(e&&e.code!=='declined')toast('Das Sichern hat hier nicht geklappt.')}},'image/png')}},0);
   return'<button class="ghost" id="bSave">Bild sichern</button>'}
-function showWin(){if(!G||!G.won)return;const p=G.puz,blocks=p.rects.filter(r=>r.w*r.h>1).length;
+function showWin(){if(!G||!G.won)return;if(G.meta.lv){showCampWin();return}const p=G.puz,blocks=p.rects.filter(r=>r.w*r.h>1).length;
   const s=openSheet(`<div class="sh-head"><h2>${G.meta.name} ist fertig</h2></div><canvas class="px art" id="winArt"></canvas>
   <div class="stats"><div><b>${fmt(G.time)}</b><span>Zeit</span></div><div><b>${blocks}</b><span>Blöcke</span></div><div><b>${G.hints}</b><span>Tipps</span></div></div>
   <p style="text-align:center">Das Bild hängt jetzt in deiner Galerie.</p>
@@ -1404,7 +1524,7 @@ function fireworks(cols,n){
 async function arcadeStart(){A={time:75,score:0,level:0,coll:[]};await arcadeNext()}
 async function arcadeNext(){A.level++;const z=Math.min(10,6+((A.level-1)>>1)),rng=mulberry32((Math.random()*2**32)>>>0),img=A.level%4===0?mosaic(z,z,rng):pixling(z,z,rng);
   const puz=await buildPuzzle(compact(img),8,rng);if(A)newGame(puz,{mode:'arcade',name:'Arcade',diff:'normal'})}
-function endArcade(quit){const a=A;if(!a)return;A=null;if(G)G.won=true;const best=store.get('best',0),rec=a.score>best;if(rec)store.set('best',a.score);
+function endArcade(quit){const a=A;if(!a)return;A=null;{const st=ST();if(a.coll.length>st.arcBoards){st.arcBoards=a.coll.length;store.set('stats',st)}setTimeout(checkAch,900)}if(G)G.won=true;const best=store.get('best',0),rec=a.score>best;if(rec)store.set('best',a.score);
   if(quit&&!a.score){G=null;show('home');return}
   const s=openSheet(`<div class="sh-head"><h2>${quit?'Runde beendet':'Zeit abgelaufen'}</h2></div><div class="big">${a.score}</div>
   <p style="text-align:center">${rec?'Neuer Bestwert.':'Bestwert '+best+' Punkte.'} ${a.coll.length} ${a.coll.length===1?'Brett':'Bretter'} gelöst.</p>
@@ -1433,7 +1553,7 @@ function openWork(it){const img=galImg(it),d=DIFFS.find(x=>x.id===it.diff);
 /* ---------- Home ---------- */
 function refreshHome(){
   const ix=saves(),sv=ix[0],gal=store.get('gal',[]),best=store.get('best',0);$('#contN').hidden=ix.length<2;$('#contN').textContent=ix.length;
-  $('#bCont').hidden=!sv;$('#bPlay').classList.toggle('go',!sv);$('.menu').classList.toggle('has',!!sv);
+  $('#bCont').hidden=!sv;$('#bCamp').classList.toggle('go',!sv);$('.menu').classList.toggle('has',!!sv);$('#bAch').innerHTML=I.trophy;{const n=campStars();$('#campTag').hidden=!n;$('#campTag').textContent='★ '+n}
   if(sv){$('#contName').textContent=sv.name;$('#contInfo').textContent=`${sv.W} × ${sv.H}, ${sv.pct} %`;const cv=$('#contCv');cv.width=sv.W;cv.height=sv.H;const im=new Image();im.onload=()=>cv.getContext('2d').drawImage(im,0,0);im.src=sv.thumb}
   const done=gal.some(g=>g.id==='daily-'+today());$('#dailyTag').textContent=done?'Gelöst':'Heute';$('#dailyTag').classList.toggle('done',done);
   $('#icDaily').classList.toggle('mute',!done);
@@ -1484,7 +1604,8 @@ async function heroStart(){const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d
     await new Promise(res=>{(function f(now){if(run!==heroRun)return res();const k=now<end?1:Math.max(0,1-(now-end)/600);paint(now,k);if(now<end+2600)requestAnimationFrame(f);else res()})(t0)});
   }}
 $('#bPlay').onclick=()=>{if(needTut()){startTutorial();return}seed=(Math.random()*2**32)>>>0;openSetup(true)};
-$('#bCont').onclick=()=>saves().length>1?openSaves():resume();$('#bDaily').onclick=()=>needTut()?startTutorial():startDaily();$('#bArcade').onclick=()=>needTut()?startTutorial():arcadeStart();$('#bGal').onclick=()=>show('gallery');
+$('#bCont').onclick=()=>saves().length>1?openSaves():resume();$('#bCamp').onclick=()=>needTut()?startTutorial():show('camp');$('#bAch').onclick=()=>show('ach');
+$('#campBack').innerHTML=I.back;$('#achBack').innerHTML=I.back;$('#campBack').onclick=$('#achBack').onclick=()=>show('home');$('#bDaily').onclick=()=>needTut()?startTutorial():startDaily();$('#bArcade').onclick=()=>needTut()?startTutorial():arcadeStart();$('#bGal').onclick=()=>show('gallery');
 $('#bSet').onclick=openSettings;
 $('#bUpload').onclick=()=>$('#file').click();
 $('#bHelp').onclick=()=>openSheet(`<div class="sh-head"><h2>So geht Pixaku</h2><button class="ib" data-x aria-label="Schließen">${I.x}</button></div>
