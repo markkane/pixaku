@@ -250,6 +250,22 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:9px;bac
 .pal.lk i{filter:grayscale(1) brightness(.45)}.pal.lk{opacity:.8}
 #recs{grid-template-columns:repeat(3,1fr)}
 html.k3:not(.arc) #bCamp:not(.go){--ht:#e2d2ff;--bc:#a78bfa;--bd:#5b3fb0;--gl:rgba(167,139,250,.42)}
+.wmap{position:relative;border:1px solid var(--line);border-radius:14px}
+.wmap>canvas{display:block;width:100%;aspect-ratio:64/40;border-radius:13px}
+.nd{position:absolute;transform:translate(-50%,-50%);width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:rgba(6,19,27,.88);border:2px solid rgba(255,255,255,.6);font:700 17px var(--display);color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.45)}
+.nd canvas{width:100%;height:100%;border-radius:9px;object-fit:cover;display:block}.nd svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
+.nd.next{border-color:var(--amber);color:var(--amber);box-shadow:0 0 0 3px rgba(255,200,87,.3),0 0 18px rgba(255,200,87,.65);animation:ndp 1.4s ease-in-out infinite}
+.nd:disabled{color:var(--muted);border-color:rgba(255,255,255,.3)}
+.nd .st{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:3px;font-size:9.5px;letter-spacing:1px;white-space:nowrap;text-shadow:0 1px 3px #000,0 0 4px #000}
+@keyframes ndp{50%{transform:translate(-50%,-50%) scale(1.1)}}
+.mk{position:absolute;width:14px;height:14px;margin:-36px 0 0 -7px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px var(--amber),0 0 16px 5px rgba(255,200,87,.9);transition:left 1s ease-in-out,top 1s ease-in-out;animation:mkb 1s ease-in-out infinite;pointer-events:none;z-index:2}
+@keyframes mkb{50%{margin-top:-43px}}
+.tk{grid-template-columns:auto 1fr auto!important;width:100%}.tk em{font:700 13px var(--display);font-style:normal;color:var(--amber);white-space:nowrap}
+.ck{width:30px;height:30px;border:2px solid var(--line);border-radius:9px;display:grid;place-items:center;font:800 17px var(--body);font-style:normal;color:transparent}.ck.on{background:var(--mint);border-color:transparent;color:#06221b}
+.wkrow{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}.wkrow canvas{height:150px;aspect-ratio:30/42;border-radius:8px;border:1px solid var(--line);background:rgba(4,14,20,.6)}
+.wkd{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.wkd button{min-height:40px;border-radius:10px;border:1px solid var(--line);background:rgba(4,14,20,.4);font:700 13px var(--display)}
+.wkd button.on{background:var(--mint);color:#06221b;border-color:transparent}.wkd button.av{border-color:var(--amber);color:var(--amber)}.wkd button:disabled{opacity:.4}
+@media(prefers-reduced-motion:reduce){.nd.next,.mk{animation:none}.mk{transition:none}}
 /* Galerie */
 .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}
 .gi{padding:10px;display:flex;flex-direction:column;gap:8px;text-align:left}
@@ -358,7 +374,7 @@ html.k3:not(.arc) .tagline{color:#bfe9f0}
     <button class="gbtn go" id="bCont" hidden><canvas class="px" id="contCv"></canvas><span><b>Weitermalen</b><small><span id="contName"></span>, <span id="contInfo"></span></small></span><i class="tag info" id="contN" hidden></i></button>
     <div class="duo"><button class="gbtn go" id="bCamp">Kampagne<i class="tag info" id="campTag" hidden></i></button><button class="gbtn" id="bPlay">Freies Bild</button></div>
     <div class="quad">
-      <button class="gbtn sq" id="bDaily"><canvas class="px" id="icDaily"></canvas>Tagesbild<i class="tag" id="dailyTag">Heute</i></button>
+      <button class="gbtn sq" id="bDaily"><canvas class="px" id="icDaily"></canvas>Heute<i class="tag" id="dailyTag">0/3</i></button>
       <button class="gbtn sq" id="bArcade"><canvas class="px" id="icArcade"></canvas>Arcade<i class="tag info" id="arcTxt" hidden></i></button>
       <button class="gbtn sq" id="bUpload"><canvas class="px" id="icUpload"></canvas>Foto</button>
       <button class="gbtn sq" id="bGal"><canvas class="px" id="icGal"></canvas>Galerie<i class="tag info" id="galTxt" hidden></i></button>
@@ -406,7 +422,7 @@ html.k3:not(.arc) .tagline{color:#bfe9f0}
 window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{const f=new File([data],filename,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
-window.PX_VER='26.11.2026 13:24 · c4305';
+window.PX_VER='26.11.2026 16:11 · 7040e';
 (()=>{let fresh=false;try{fresh=!!sessionStorage.getItem('pxr');sessionStorage.removeItem('pxr')}catch(e){}
   const t0=performance.now(),hide=()=>{const s=document.getElementById('splash');if(!s)return;setTimeout(()=>{s.classList.add('off');setTimeout(()=>s.remove(),600)},Math.max(0,(fresh?350:900)-(performance.now()-t0)))};
   const reload=()=>{try{sessionStorage.setItem('pxr','1')}catch(e){}location.reload()};
@@ -1003,13 +1019,60 @@ async function startArt(){
   catch(e){console.error(e);toast('Das Rätsel ließ sich nicht bauen. Versuch es bitte noch einmal.')}
   loader(false);
 }
+const RULES=[{id:'blind',name:'Farblos',desc:'Die Zahlen verraten keine Farbe.',diff:'hard',size:12},
+ {id:'strikes',name:'Drei Fehler',desc:'Beim dritten falschen Rechteck wird das Brett geleert.',diff:'normal',size:12},
+ {id:'nohelp',name:'Ohne Netz',desc:'Kein Tipp und kein Zurück.',diff:'normal',size:12},
+ {id:'zeit',name:'Sanduhr',desc:'Die Zeit ist knapp. Läuft sie ab, beginnt das Brett von vorn.',diff:'normal',size:10},
+ {id:'brocken',name:'Große Brocken',desc:'Blöcke bis 32 Felder und farblose Zahlen.',diff:'master',size:14}];
+const dayNo=()=>Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5),ruleOf=()=>RULES[dayNo()%RULES.length],dayOf=()=>(store.get('daily',{})[today()])||{};
+const dayIdx=()=>(new Date().getDay()+6)%7;
+function weekId(){const d=new Date(),t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));t.setUTCDate(t.getUTCDate()-((t.getUTCDay()+6)%7)+3);const y=t.getUTCFullYear(),j4=new Date(Date.UTC(y,0,4));
+  return y+'-W'+String(1+Math.round(((t-j4)/864e5-3+((j4.getUTCDay()+6)%7))/7)).padStart(2,'0')}
+function weekState(){const w=store.get('week',null),id=weekId();return w&&w.id===id?w:{id,done:[0,0,0,0,0,0,0]}}
+function weekImage(){const id=weekId(),L=['sunset','synth','palme','gipfel','turm','polar','vulkan','ballons','wellen','wueste','planet','riff'],sc=L[hashStr('wk'+id)%L.length],f=SCENES.find(s=>s.id===sc).gen(42,mulberry32(hashStr('wi'+id))),im={W:30,H:42,colors:f.colors,cells:new Uint8Array(30*42)};
+  for(let y=0;y<42;y++)for(let x=0;x<30;x++)im.cells[y*30+x]=f.cells[y*42+x+6];return{im,name:nameOf(sc)}}
+function weekShown(w){const{im}=weekImage(),o={W:30,H:42,colors:im.colors.concat('#0b1b25'),cells:im.cells.slice()};for(let k=0;k<7;k++)if(!w.done[k])o.cells.fill(im.colors.length,k*180,k*180+180);return o}
 async function startDaily(){
-  const id='daily-'+today();if(store.get('gal',[]).some(g=>g.id===id)){toast('Das heutige Tagesbild hängt schon in deiner Galerie.');return}
+  const id='daily-'+today();if(dayOf().b||store.get('gal',[]).some(g=>g.id===id)){toast('Das heutige Tagesbild hängt schon in deiner Galerie.');return}
   const dv=saves().find(s=>s.id===id);if(dv){resume(dv.sid);return}
   if(slotsFull())return;
   loader(true,'Tagesbild wird gebaut');await frame();const rng=mulberry32(hashStr(id)),puz=await build(compact(pixling(12,12,rng)),12,rng);
   A=null;newGame(puz,{mode:'art',name:'Tagesbild',diff:'normal',id});loader(false);
 }
+async function startSprint(){const id='sprint-'+today(),rng=mulberry32(hashStr(id));loader(true,'Sprint wird gebaut');await frame();
+  const puz=await build(compact(dayNo()%2?mosaic(10,10,rng):pixling(10,10,rng)),12,rng);A=null;newGame(puz,{mode:'sprint',name:'Tages-Sprint',diff:'normal',id});loader(false);toast('Die Uhr läuft. Das Brett ist heute für alle gleich.',2600)}
+async function startRule(){const r=ruleOf(),id='rule-'+today();if(dayOf().r){toast('Die Sonderregel von heute hast du schon geschafft.');return}
+  const rng=mulberry32(hashStr(id)),L=SCENES.filter(s=>s.id!=='pixling'&&s.id!=='mosaik'),sc=L[hashStr(id)%L.length];loader(true,'Brett wird gebaut');await frame();
+  const puz=await build(compact(sc.gen(r.size,rng)),DIFFS.find(d=>d.id===r.diff).max,rng);A=null;newGame(puz,{mode:'rule',rule:r.id,name:sc.name,diff:r.diff,id,motif:sc.id});
+  if(r.id==='zeit')G.limit=Math.max(60,puz.rects.filter(q=>q.w*q.h>1).length*7);$('#gSub').textContent='Sonderregel: '+r.name;hud();loader(false);toast(r.desc,3200)}
+async function startWeek(k){const w=weekState(),id=`week-${w.id}-${k}`;if(w.done[k]){toast('Dieser Streifen ist schon fertig.');return}if(k>dayIdx()){toast('Dieser Streifen kommt erst an seinem Wochentag dazu.');return}
+  const sv=saves().find(s=>s.id===id);if(sv){resume(sv.sid);return}if(slotsFull())return;
+  loader(true,'Streifen wird gebaut');await frame();const{im}=weekImage(),band=compact({W:30,H:6,colors:im.colors,cells:im.cells.slice(k*180,k*180+180)});
+  const puz=await build(band,12,mulberry32(hashStr(id)));A=null;newGame(puz,{mode:'week',name:`Wochenbild, Teil ${k+1}`,diff:'normal',id,wk:k,wid:w.id});loader(false)}
+function dailyWin(){const m=G.meta,d=today(),D=store.get('daily',{}),e=D[d]||(D[d]={}),was=e.b&&e.s&&e.r,st=ST();
+  if(m.id==='daily-'+d)e.b=1;else if(m.mode==='sprint'){const t=Math.max(1,Math.round(G.time));e.s=e.s?Math.min(e.s,t):t;st.sprintBest=st.sprintBest?Math.min(st.sprintBest,t):t}else if(m.mode==='rule')e.r=1;
+  else if(m.mode==='week'){const w=weekState();if(w.id===m.wid){w.done[m.wk]=1;store.set('week',w);if(w.done.every(Boolean)){st.weeks=(st.weeks||0)+1;const{im,name}=weekImage(),g=store.get('gal',[]);
+      g.unshift({id:'week-'+w.id,name:'Wochenbild '+name,W:30,H:42,colors:im.colors,data:enc(im.cells),time:0,hints:0,diff:'normal',date:d});while(g.length>60)g.pop();while(!store.set('gal',g)&&g.length>1)g.pop()}}}
+  if(!was&&e.b&&e.s&&e.r)st.allDaily=(st.allDaily||0)+1;
+  const ks=Object.keys(D).sort();while(ks.length>40)delete D[ks.shift()];store.set('daily',D);store.set('stats',st)}
+function openToday(){const e=dayOf(),r=ruleOf(),w=weekState(),ti=dayIdx(),bd=e.b||store.get('gal',[]).some(g=>g.id==='daily-'+today()),n=(bd?1:0)+(e.s?1:0)+(e.r?1:0),{name}=weekImage();
+  const s=openSheet(`<div class="sh-head"><h2>Heute</h2><button class="ib" data-x aria-label="Schließen">${I.x}</button></div>
+  <p>${n===3?'Alle drei Tagesaufgaben sind geschafft.':`${n} von 3 Tagesaufgaben geschafft. Um Mitternacht gibt es neue.`}</p>
+  <div class="svl"><button class="svo tk" id="tB"><i class="ck${bd?' on':''}">✓</i><span><b>Tagesbild</b><small>Ein Pixling in 12 × 12</small></span><em>${bd?'gelöst':'Start'}</em></button>
+  <button class="svo tk" id="tS"><i class="ck${e.s?' on':''}">✓</i><span><b>Tages-Sprint</b><small>Ein Brett auf Zeit, heute für alle gleich</small></span><em>${e.s?fmt(e.s):'Start'}</em></button>
+  <button class="svo tk" id="tR"><i class="ck${e.r?' on':''}">✓</i><span><b>Sonderregel: ${r.name}</b><small>${r.desc}</small></span><em>${e.r?'gelöst':'Start'}</em></button></div>
+  <h3>Wochenbild<output>${w.done.filter(Boolean).length} von 7 Streifen</output></h3>
+  <div class="wkrow"><canvas class="px" id="wkCv"></canvas><div><div class="wkd">${['Mo','Di','Mi','Do','Fr','Sa','So'].map((dn,k)=>`<button data-k="${k}" class="${w.done[k]?'on':k<=ti?'av':''}"${k>ti?' disabled':''}>${dn}</button>`).join('')}</div>
+  <p style="margin-top:10px">Jeden Tag kommt ein Streifen dazu, von oben nach unten. Verpasste Tage holst du bis Sonntag nach.</p></div></div>`);
+  paintImg(s.querySelector('#wkCv'),weekShown(w));
+  s.querySelector('#tB').onclick=()=>{closeSheet();startDaily()};s.querySelector('#tS').onclick=()=>{closeSheet();startSprint()};s.querySelector('#tR').onclick=()=>{closeSheet();startRule()};
+  s.querySelector('.wkd').onclick=ev=>{const b=ev.target.closest('[data-k]');if(b&&!b.disabled){if(!w.done[+b.dataset.k])closeSheet();startWeek(+b.dataset.k)}}}
+function showDayWin(){if(!G||!G.won)return;const m=G.meta,p=G.puz,e=dayOf(),w=weekState(),sp=m.mode==='sprint',st=ST(),t=Math.round(G.time);
+  const s=openSheet(`<div class="sh-head"><h2>${sp?'Sprint geschafft':m.name+' ist fertig'}</h2></div>${sp?`<div class="big">${fmt(t)}</div><p style="text-align:center">Deine beste Zeit heute: ${fmt(e.s||t)}. Deine beste Sprint-Zeit überhaupt: ${fmt(st.sprintBest||t)}.</p>`:
+    `<canvas class="px art" id="winArt" style="max-height:36vh"></canvas><p style="text-align:center">${w.done.every(Boolean)?'Das Wochenbild ist vollständig und hängt jetzt in deiner Galerie.':`${w.done.filter(Boolean).length} von 7 Streifen sind gesetzt.`}</p>`}
+  <div class="btns"><button class="ghost" id="dHome">Zur Übersicht</button><button class="primary" id="dMore">${sp?'Noch einmal':'Zu den Tagesaufgaben'}</button></div>`,true);
+  if(!sp)paintImg(s.querySelector('#winArt'),weekShown(w)).style.aspectRatio='30/42';
+  s.querySelector('#dHome').onclick=()=>{closeSheet();G=null;show('home')};s.querySelector('#dMore').onclick=()=>{closeSheet();G=null;show('home');sp?startSprint():openToday()}}
 const MAXS=10,saves=()=>store.get('saves',[]);
 {const old=store.get('save');if(old&&old.meta){const sid='s'+Date.now().toString(36);old.meta.sid=sid;if(store.set('sv.'+sid,old)){const ix=saves();ix.unshift({sid,name:old.meta.name,id:old.meta.id||null,W:old.W,H:old.H,pct:old.pct,time:old.time,at:Date.now(),thumb:old.thumb});store.set('saves',ix);store.del('save')}}}
 function dropSave(sid){if(!sid)return;store.del('sv.'+sid);store.set('saves',saves().filter(s=>s.sid!==sid))}
@@ -1169,6 +1232,7 @@ function newGame(puz,meta,saved){
   const{W,H}=puz,N=W*H,paint=document.createElement('canvas');paint.width=W;paint.height=H;
   G={puz,meta,W,H,N,rects:new Map(),cellR:new Int32Array(N).fill(-1),clueAt:new Int32Array(N).fill(-1),nid:1,covered:0,undo:[],time:saved?saved.time:0,hints:saved?saved.hints:0,won:false,winT:0,winAt:0,animUntil:0,
     paint,pctx:paint.getContext('2d'),diff:meta.mode==='arcade'?{max:8,color:true,check:true}:DIFFS.find(d=>d.id===meta.diff)||DIFFS[1]};
+  if(meta.rule==='strikes')G.diff=Object.assign({},G.diff,{check:true});
   puz.rects.forEach((r,i)=>{G.clueAt[r.cy*W+r.cx]=i});
   puz.rects.forEach(r=>{if(r.w*r.h===1)addRect(r.x,r.y,1,1,1,true)});
   G.given=G.covered;
@@ -1197,11 +1261,11 @@ function removeRect(id){const r=G.rects.get(id);if(!r)return;G.rects.delete(id);
 const pct=()=>Math.floor((G.covered-G.given)/Math.max(1,G.N-G.given)*100);
 function hud(){if(!G)return;
   if(A){$('#gTime').textContent=Math.ceil(A.time)+' s';$('#gPct').textContent='Zeit';$('#gProg').style.width=Math.min(100,A.time/75*100)+'%';$('#gNum').classList.toggle('warn',A.time<15);$('#gSub').textContent=`${A.score} Punkte`}
-  else{$('#gTime').textContent=fmt(G.time);$('#gPct').textContent=pct()+' %';$('#gProg').style.width=pct()+'%'}}
+  else{$('#gTime').textContent=G.limit?fmt(Math.max(0,G.limit-G.time)):fmt(G.time);$('#gNum').classList.toggle('warn',!!G.limit&&G.limit-G.time<20);$('#gPct').textContent=pct()+' %';$('#gProg').style.width=pct()+'%'}}
 function toolbar(){const b=(id,ic,l)=>{$(id).innerHTML=ic+`<span>${l}</span>`};b('#tUndo',I.undo,'Zurück');b('#tHint',I.hint,A?'Tipp −8 s':'Tipp');
   b('#tMode',tool==='draw'?I.draw:I.pan,tool==='draw'?'Zeichnen':'Schieben');$('#tMode').classList.toggle('act',tool==='pan');b('#tFit',I.fit,'Ganz');b('#tSet',I.gear,'Optionen')}
 let saveT=0;
-function saveNow(){if(!G||A||TUT||G.won)return;const p=G.puz,pl=[...G.rects.values()].filter(r=>!(r.lock&&r.w*r.h===1)).map(r=>[r.x,r.y,r.w,r.h,r.lock]);
+function saveNow(){if(!G||A||TUT||G.won||G.meta.mode==='sprint'||G.meta.mode==='rule')return;const p=G.puz,pl=[...G.rects.values()].filter(r=>!(r.lock&&r.w*r.h===1)).map(r=>[r.x,r.y,r.w,r.h,r.lock]);
   if(!pl.length&&!G.meta.sid)return;const sid=G.meta.sid||(G.meta.sid='s'+Date.now().toString(36)+Math.floor(Math.random()*1e3)),thumb=G.paint.toDataURL();
   if(!store.set('sv.'+sid,{meta:G.meta,W:p.W,H:p.H,colors:p.colors,data:enc(p.cells),sol:p.rects.flatMap(r=>[r.x,r.y,r.w,r.h,r.cx,r.cy]),pl,time:Math.round(G.time),hints:G.hints,pct:pct(),thumb})){
     if(!saveNow.warned){saveNow.warned=1;toast('Der Speicher des Geräts ist voll, dieses Bild wird gerade nicht gesichert. Lösche ein angefangenes Bild, um Platz zu schaffen.',6000)}return}
@@ -1311,13 +1375,14 @@ function commit(x,y,w,h){
   const del=[...ids].map(id=>{const r=G.rects.get(id);removeRect(id);return[r.x,r.y,r.w,r.h]}),r=addRect(x,y,w,h,0);
   G.undo.push({add:[[x,y,w,h]],del});if(G.undo.length>300)G.undo.shift();
   if(r.valid){sfx.ok(w*h);buzz(8);R3.burst(r)}else if(r.wrong){sfx.bad();buzz(24)}else sfx.tick();
+  if(!r.valid&&G.meta.rule==='strikes'){G.strikes=(G.strikes||0)+1;if(G.strikes>=3){G.strikes=0;clearBoard();toast('Dritter Fehler. Das Brett ist geleert.',2800);return}toast(`Fehler ${G.strikes} von 3`,1500)}
   changed();
 }
-function undo(){if(!G||G.won)return;if(TUT&&TUT.step<4){toast('Gleich. Erst die markierte Stelle.',1500);return}const u=G.undo.pop();if(!u){toast('Nichts zum Zurücknehmen.',1200);return}
+function undo(){if(!G||G.won)return;if(G.meta.rule==='nohelp'){toast('Heute ohne Tipp und ohne Zurück.',1800);return}if(TUT&&TUT.step<4){toast('Gleich. Erst die markierte Stelle.',1500);return}const u=G.undo.pop();if(!u){toast('Nichts zum Zurücknehmen.',1200);return}
   for(const[x,y,w,h]of u.add){const r=G.rects.get(G.cellR[y*G.W+x]);if(r&&!r.lock&&r.x===x&&r.y===y&&r.w===w&&r.h===h)removeRect(r.id)}
   for(const[x,y,w,h]of u.del)if(free(x,y,w,h))addRect(x,y,w,h,0,true);
   sfx.pop();changed()}
-function hint(){if(!G||G.won)return;if(TUT&&TUT.step<4){toast('Gleich. Erst die markierte Stelle.',1500);return}if(!A&&G.meta.diff==='master'){toast('Im Meister-Modus gibt es keine Tipps.');return}
+function hint(){if(!G||G.won)return;if(G.meta.rule==='nohelp'){toast('Heute ohne Tipp und ohne Zurück.',1800);return}if(TUT&&TUT.step<4){toast('Gleich. Erst die markierte Stelle.',1500);return}if(!A&&G.meta.diff==='master'){toast('Im Meister-Modus gibt es keine Tipps.');return}
   const off=[...G.rects.values()].filter(r=>!r.lock&&(r.wrong||(r.valid&&!r.exact)));
   if(off.length){off.forEach(r=>removeRect(r.id));G.hints++;G.undo.length=0;if(A)A.time=Math.max(1,A.time-8);sfx.pop();toast(off.length===1?'Ein Block lag falsch und ist wieder frei.':`${off.length} Blöcke lagen falsch und sind wieder frei.`,2600);changed();return}
   const mx=(cw/2-V.ox)/V.s,my=((INS.top+ch-INS.bot)/2-V.oy)/V.s;let best=null,bd=1e18;
@@ -1383,17 +1448,31 @@ const campStars=(c=campGet())=>Object.values(c.lv).reduce((a,v)=>a+v.s,0);
 const starStr=n=>'★'.repeat(n)+'<i>'+'★'.repeat(3-n)+'</i>';
 function lvImage(id){const d=lvDef(id),sp=SPRITES.find(s=>s.id===d.motif),base=sp?spriteImage(sp):compact(SCENES.find(s=>s.id===d.motif).gen(d.size,mulberry32(hashStr('lv'+id))));
   return applyPalette(base,d.pal?RAMPS.find(r=>r.id===d.pal).ramp:null)}
-function renderCamp(){const c=campGet(),host=$('#campList');host.innerHTML='';$('#campStars').innerHTML=`★ ${campStars(c)} / ${WORLDS.length*18}`;
+const MAPSC=[['kacheln',12],['bogen',22],['wellen',14],['gipfel',8],['skyline',22],['planet',14]],
+  MAPPOS=[[[9,74],[27,36],[45,70],[62,30],[79,64],[92,28]],[[8,30],[26,68],[44,30],[61,70],[78,34],[92,66]]];
+let campMove=null;
+function drawMap(cv,wi,c){const[sc,r0]=MAPSC[wi],im=compact(SCENES.find(s=>s.id===sc).gen(64,mulberry32(hashStr('map'+wi)))),W=384,H=240,k=6,x=cv.getContext('2d'),tmp=document.createElement('canvas');
+  cv.width=W;cv.height=H;paintImg(tmp,im);x.imageSmoothingEnabled=false;x.drawImage(tmp,0,r0,64,40,0,0,W,H);x.fillStyle='rgba(6,19,27,.42)';x.fillRect(0,0,W,H);
+  const P=MAPPOS[wi%2].map(p=>[p[0]/100*W,p[1]/100*H]);
+  for(let a=0;a<5;a++){const done=c.lv[lvId(wi,a)],[x0,y0]=P[a],[x1,y1]=P[a+1],n=Math.round(Math.hypot(x1-x0,y1-y0)/(k*2));
+    for(let q=0;q<=n;q++){const px=Math.round((x0+(x1-x0)*q/n)/k)*k,py=Math.round((y0+(y1-y0)*q/n)/k)*k;x.fillStyle='rgba(6,19,27,.7)';x.fillRect(px-k/2-1,py-k/2-1,k+2,k+2);x.fillStyle=done?'#ffc857':'rgba(255,255,255,.75)';x.fillRect(px-k/2,py-k/2,k,k)}}}
+function renderCamp(){const c=campGet(),host=$('#campList');host.innerHTML='';$('#campStars').innerHTML=`★ ${campStars(c)} / ${WORLDS.length*18}`;let focus=null;
   WORLDS.forEach((w,wi)=>{const open=worldOpen(wi,c),card=document.createElement('div'),n=worldCount(wi,c),st=w.lv.reduce((a,_,j)=>a+((c.lv[lvId(wi,j)]||{}).s||0),0),ramp=RAMPS.find(r=>r.lock===w.id);
+    let cur=w.lv.findIndex((_,j)=>!c.lv[lvId(wi,j)]);const all=cur<0;if(all)cur=w.lv.length-1;const cd=lvDef(lvId(wi,cur));
     card.className='glass wcard'+(open?'':' locked');
-    card.innerHTML=`<div class="wh"><h2>${wi+1}. ${w.name}</h2><b class="ws">${open?`★ ${st} / 18`:''}</b></div><p>${open?(n===w.lv.length?w.outro:w.intro):`Verschlossen. Stelle in „${WORLDS[wi-1].name}“ fünf Fenster fertig.`}</p>
-      ${open?`<div class="lvg"></div><p>Belohnung für alle sechs Fenster: die Palette „${ramp.name}“${n===w.lv.length?', freigeschaltet':''}.</p>`:''}`;
-    if(open){const g=card.querySelector('.lvg');w.lv.forEach((_,j)=>{const id=lvId(wi,j),d=lvDef(id),res=c.lv[id],can=j===0||c.lv[lvId(wi,j-1)],b=document.createElement('button'),inwork=saves().some(s=>s.id==='camp-'+id);
-      b.className='lv'+(can&&!res?' next':'');b.disabled=!can;
-      if(res){const cv=document.createElement('canvas');cv.className='px';paintImg(cv,lvImage(id));b.append(cv)}else b.insertAdjacentHTML('beforeend',`<span class="ph">${can?j+1:I.lock}</span>`);
-      b.insertAdjacentHTML('beforeend',`<b>${res?d.name:can?(inwork?'Weiter':'Fenster '+(j+1)):'Fenster '+(j+1)}</b>${res?`<span class="st">${starStr(res.s)}</span>`:`<small>${d.size?d.size+' × '+d.size:'klein'}, ${DIFFS.find(x=>x.id===d.diff).name}</small>`}`);
-      b.onclick=()=>startLevel(id);g.append(b)})}
-    host.append(card)})}
+    card.innerHTML=`<div class="wh"><h2>${wi+1}. ${w.name}</h2><b class="ws">${open?`★ ${st} / 18`:''}</b></div><p>${open?(all?w.outro:w.intro):`Verschlossen. Stelle in „${WORLDS[wi-1].name}“ fünf Fenster fertig.`}</p>
+      ${open?`<div class="wmap"><canvas class="px"></canvas><i class="mk"></i></div><p>${all?`Alle sechs Fenster leuchten. Die Palette „${ramp.name}“ ist freigeschaltet.`:`Als Nächstes: Fenster ${cur+1}, ${cd.size?cd.size+' × '+cd.size:'kleines Motiv'}, ${DIFFS.find(x=>x.id===cd.diff).name}. Für alle sechs gibt es die Palette „${ramp.name}“.`}</p>`:''}`;
+    if(open){const map=card.querySelector('.wmap'),P=MAPPOS[wi%2],mk=map.querySelector('.mk');drawMap(map.querySelector('canvas'),wi,c);
+      w.lv.forEach((_,j)=>{const id=lvId(wi,j),d=lvDef(id),res=c.lv[id],can=j===0||c.lv[lvId(wi,j-1)],b=document.createElement('button');
+        b.className='nd'+(can&&!res?' next':'');b.disabled=!can;b.style.left=P[j][0]+'%';b.style.top=P[j][1]+'%';b.setAttribute('aria-label',`Fenster ${j+1}${res?', '+d.name+', '+res.s+' Sterne':can?'':', verschlossen'}`);
+        if(res){const cv=document.createElement('canvas');cv.className='px';paintImg(cv,lvImage(id));b.append(cv);b.insertAdjacentHTML('beforeend',`<span class="st">${starStr(res.s)}</span>`)}else b.innerHTML=can?String(j+1):I.lock;
+        b.onclick=()=>startLevel(id);map.append(b)});
+      const place=j=>{mk.style.left=P[j][0]+'%';mk.style.top=P[j][1]+'%'};
+      if(campMove&&campMove.wi===wi&&campMove.from!==cur&&!reduce){place(campMove.from);requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>place(cur),350)))}else place(cur);
+      if(!all&&!focus)focus=card}
+    host.append(card)});
+  if(campMove&&campMove.from===5&&host.children[campMove.wi+1])focus=host.children[campMove.wi+1];campMove=null;
+  if(focus)setTimeout(()=>focus.scrollIntoView({block:'center',behavior:reduce?'auto':'smooth'}),80)}
 async function startLevel(id){const d=lvDef(id),w=WORLDS[d.wi],c=campGet(),sv=saves().find(s=>s.id==='camp-'+id);
   if(sv){resume(sv.sid);return}
   if(!c.seen.includes(w.id)){c.seen.push(w.id);store.set('camp',c);
@@ -1405,7 +1484,7 @@ async function startLevel(id){const d=lvDef(id),w=WORLDS[d.wi],c=campGet(),sv=sa
   loader(false)}
 function showCampWin(){const id=G.meta.lv,d=lvDef(id),w=WORLDS[d.wi],p=G.puz,blocks=p.rects.filter(r=>r.w*r.h>1).length,par=Math.max(40,blocks*5),t=Math.round(G.time),
     s=!G.hints&&t<=par?3:!G.hints||(G.hints<=2&&t<=par)?2:1,c=campGet(),old=c.lv[id],before=worldDone(d.wi,c),openBefore=d.wi+1<WORLDS.length&&worldOpen(d.wi+1,c);
-  if(!old||s>old.s||(s===old.s&&t<old.t))c.lv[id]={s,t,h:G.hints};store.set('camp',c);
+  if(!old||s>old.s||(s===old.s&&t<old.t))c.lv[id]={s,t,h:G.hints};store.set('camp',c);if(!old)campMove={wi:d.wi,from:d.j};
   const nowDone=worldDone(d.wi,c),ramp=RAMPS.find(r=>r.lock===w.id),nextId=d.j+1<w.lv.length?lvId(d.wi,d.j+1):(d.wi+1<WORLDS.length&&worldOpen(d.wi+1,c)?lvId(d.wi+1,0):null),opened=!openBefore&&d.wi+1<WORLDS.length&&worldOpen(d.wi+1,c);
   const sh=openSheet(`<div class="sh-head"><h2>${d.name}</h2></div><div class="stars">${starStr(s)}</div><canvas class="px art" id="winArt" style="max-height:26vh"></canvas>
   <div class="stats"><div><b>${fmt(t)}</b><span>Zeit, Ziel ${fmt(par)}</span></div><div><b>${blocks}</b><span>Blöcke</span></div><div><b>${G.hints}</b><span>Tipps</span></div></div>
@@ -1420,7 +1499,7 @@ function showCampWin(){const id=G.meta.lv,d=lvDef(id),w=WORLDS[d.wi],p=G.puz,blo
 function ST(){let st=store.get('stats',null);if(!st){const g=store.get('gal',[]);st={done:g.length,maxSize:g.reduce((a,x)=>Math.max(a,x.W,x.H),0)}}
   return Object.assign({done:0,blocks:0,maxSize:0,noHint:0,master:0,photo:0,pals:[],motifs:[],streak:0,streakBest:0,lastDaily:'',arcBoards:0},st)}
 function recordWin(){const st=ST(),p=G.puz,m=G.meta,sz=Math.max(p.W,p.H);st.done++;st.blocks+=p.rects.filter(r=>r.w*r.h>1).length;st.maxSize=Math.max(st.maxSize,sz);
-  if(!G.hints&&sz>=16)st.noHint++;if(m.diff==='master')st.master++;if(m.motif==='upload')st.photo++;if(m.pal&&!st.pals.includes(m.pal))st.pals.push(m.pal);
+  if(!G.hints&&Math.min(p.W,p.H)>=16)st.noHint++;if(m.diff==='master')st.master++;if(m.motif==='upload')st.photo++;if(m.pal&&!st.pals.includes(m.pal))st.pals.push(m.pal);
   if(m.motif&&m.motif!=='upload'&&!st.motifs.includes(m.motif))st.motifs.push(m.motif);
   if(m.id&&m.id.startsWith('daily-')){const d=today(),y=new Date(Date.now()-864e5).toLocaleDateString('sv');if(st.lastDaily!==d){st.streak=st.lastDaily===y?st.streak+1:1;st.lastDaily=d;st.streakBest=Math.max(st.streakBest,st.streak)}}
   store.set('stats',st);if(!m.lv)setTimeout(checkAch,G.winDur+900)}
@@ -1433,6 +1512,7 @@ const ACH=[
  ['a2','Flinke Finger','2000 Punkte im Arcade',s=>[s.best,2000]],['a6','Hochbetrieb','6000 Punkte im Arcade',s=>[s.best,6000]],['a12','Rekordjagd','12000 Punkte im Arcade',s=>[s.best,12000]],['ab','Fließband','10 Bretter in einem Arcade-Lauf',s=>[s.arcBoards,10]],
  ['d3','Drei am Stück','Tagesbild an 3 Tagen in Folge',s=>[s.streakBest,3]],['d7','Wochenwerk','Tagesbild an 7 Tagen in Folge',s=>[s.streakBest,7]],['d30','Monatswerk','Tagesbild an 30 Tagen in Folge',s=>[s.streakBest,30]],
  ['w1','Lehrzeit','Die Werkstatt abschließen',s=>[s.w1?1:0,1]],['w3','Gesellenstück','Den Hafen abschließen',s=>[s.w3?1:0,1]],['w6','Meisterbrief','Die Sternwarte abschließen',s=>[s.w6?1:0,1]],
+ ['day3','Tagewerk','Alle drei Tagesaufgaben an einem Tag',s=>[s.allDaily||0,1]],['spr','Sprinter','Den Tages-Sprint in höchstens 60 Sekunden',s=>[s.sprintBest&&s.sprintBest<=60?1:0,1]],['wk','Sieben Scheiben','Ein Wochenbild vollenden',s=>[s.weeks||0,1]],
  ['st50','Sternenfänger','50 Sterne in der Kampagne',s=>[s.stars,50]],['st108','Alle Lichter','Alle 108 Sterne der Kampagne',s=>[s.stars,108]],['perf','Makellos','Eine Welt mit 18 Sternen',s=>[s.perfect,1]]];
 function achState(){const s=ST(),c=campGet();s.best=store.get('best',0);s.stars=campStars(c);s.worlds=WORLDS.filter((_,i)=>worldDone(i,c)).length;s.w1=worldDone(0,c);s.w3=worldDone(2,c);s.w6=worldDone(5,c);
   s.perfect=WORLDS.some((w,wi)=>w.lv.every((_,j)=>(c.lv[lvId(wi,j)]||{}).s===3))?1:0;return s}
@@ -1489,14 +1569,14 @@ function win(){G.won=true;G.winAt=performance.now();G.wSpan=A?420:Math.min(1500,
   if(G.W*V.s>cw||G.H*V.s>ch-INS.top-INS.bot)tweenTo(fitTarget(),700);requestDraw();
   if(A){const z=G.W,bonus=6+z;A.score+=G.N*10+Math.round(A.time);A.time=Math.min(99,A.time+bonus);A.coll.push({W:G.W,H:G.H,colors:G.puz.colors,cells:G.puz.cells});
     toast(`+${bonus} Sekunden`,1100);hud();celebrate(G.puz.colors,2,fx-150);setTimeout(()=>{if(A)arcadeNext()},reduce?500:G.winDur+350);return}
-  dropSave(G.meta.sid);clearTimeout(saveT);recordWin();addGallery();celebrate(G.puz.colors,3,fx);setTimeout(showWin,reduce?200:G.winDur+550)}
+  dropSave(G.meta.sid);clearTimeout(saveT);recordWin();dailyWin();if(G.meta.mode!=='week'&&G.meta.mode!=='sprint')addGallery();celebrate(G.puz.colors,3,fx);setTimeout(showWin,reduce?200:G.winDur+550)}
 function addGallery(){const p=G.puz,g=store.get('gal',[]),it={id:G.meta.id||('w'+Date.now()),name:G.meta.name,W:p.W,H:p.H,colors:p.colors,data:enc(p.cells),time:Math.round(G.time),hints:G.hints,diff:G.meta.diff,date:today()};
   const i=g.findIndex(x=>x.id===it.id);if(i>=0)g.splice(i,1);g.unshift(it);while(g.length>60)g.pop();while(!store.set('gal',g)&&g.length>1)g.pop()}
 function exportBtn(img,name){if(!downloads)return'';setTimeout(()=>{const b=$('#bSave');if(b)b.onclick=async()=>{const k=Math.max(1,Math.floor(1200/Math.max(img.W,img.H))),cv=document.createElement('canvas');cv.width=img.W*k;cv.height=img.H*k;
     const c=cv.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(paintImg(document.createElement('canvas'),img),0,0,cv.width,cv.height);
     cv.toBlob(async bl=>{try{await downloads.save({filename:`pixaku-${name.toLowerCase().replace(/[^a-z0-9]+/g,'-')}.png`,data:bl});toast('Bild gesichert.')}catch(e){if(e&&e.code!=='declined')toast('Das Sichern hat hier nicht geklappt.')}},'image/png')}},0);
   return'<button class="ghost" id="bSave">Bild sichern</button>'}
-function showWin(){if(!G||!G.won)return;if(G.meta.lv){showCampWin();return}const p=G.puz,blocks=p.rects.filter(r=>r.w*r.h>1).length;
+function showWin(){if(!G||!G.won)return;if(G.meta.lv){showCampWin();return}if(G.meta.mode==='week'||G.meta.mode==='sprint'){showDayWin();return}const p=G.puz,blocks=p.rects.filter(r=>r.w*r.h>1).length;
   const s=openSheet(`<div class="sh-head"><h2>${G.meta.name} ist fertig</h2></div><canvas class="px art" id="winArt"></canvas>
   <div class="stats"><div><b>${fmt(G.time)}</b><span>Zeit</span></div><div><b>${blocks}</b><span>Blöcke</span></div><div><b>${G.hints}</b><span>Tipps</span></div></div>
   <p style="text-align:center">Das Bild hängt jetzt in deiner Galerie.</p>
@@ -1534,7 +1614,7 @@ function endArcade(quit){const a=A;if(!a)return;A=null;{const st=ST();if(a.coll.
 let lastTick=performance.now();
 setInterval(()=>{const now=performance.now(),dt=Math.min(1,(now-lastTick)/1000);lastTick=now;
   if(!G||G.won||document.hidden||sheetOpen||!$('#game').classList.contains('on'))return;
-  if(A){A.time-=dt;if(A.time<=0){A.time=0;hud();endArcade(false);return}}else G.time+=dt;hud()},200);
+  if(A){A.time-=dt;if(A.time<=0){A.time=0;hud();endArcade(false);return}}else{G.time+=dt;if(G.limit&&G.time>=G.limit){G.time=0;clearBoard();toast('Die Zeit ist abgelaufen. Das Brett ist geleert, die Uhr läuft neu.',3200)}}hud()},200);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)saveNow()});
 
 /* ---------- Galerie ---------- */
@@ -1555,8 +1635,7 @@ function refreshHome(){
   const ix=saves(),sv=ix[0],gal=store.get('gal',[]),best=store.get('best',0);$('#contN').hidden=ix.length<2;$('#contN').textContent=ix.length;
   $('#bCont').hidden=!sv;$('#bCamp').classList.toggle('go',!sv);$('.menu').classList.toggle('has',!!sv);$('#bAch').innerHTML=I.trophy;{const n=campStars();$('#campTag').hidden=!n;$('#campTag').textContent='★ '+n}
   if(sv){$('#contName').textContent=sv.name;$('#contInfo').textContent=`${sv.W} × ${sv.H}, ${sv.pct} %`;const cv=$('#contCv');cv.width=sv.W;cv.height=sv.H;const im=new Image();im.onload=()=>cv.getContext('2d').drawImage(im,0,0);im.src=sv.thumb}
-  const done=gal.some(g=>g.id==='daily-'+today());$('#dailyTag').textContent=done?'Gelöst':'Heute';$('#dailyTag').classList.toggle('done',done);
-  $('#icDaily').classList.toggle('mute',!done);
+  {const e=dayOf(),n=((e.b||gal.some(g=>g.id==='daily-'+today()))?1:0)+(e.s?1:0)+(e.r?1:0);$('#dailyTag').textContent=n===3?'Fertig':n+'/3';$('#dailyTag').classList.toggle('done',n===3);$('#icDaily').classList.toggle('mute',!n)}
   $('#galTxt').hidden=!gal.length;$('#galTxt').textContent=gal.length;$('#arcTxt').hidden=!best;$('#arcTxt').textContent=best;
   $('#bSet').innerHTML=I.gear;layoutHome();heroStart();
 }
@@ -1605,7 +1684,7 @@ async function heroStart(){const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d
   }}
 $('#bPlay').onclick=()=>{if(needTut()){startTutorial();return}seed=(Math.random()*2**32)>>>0;openSetup(true)};
 $('#bCont').onclick=()=>saves().length>1?openSaves():resume();$('#bCamp').onclick=()=>needTut()?startTutorial():show('camp');$('#bAch').onclick=()=>show('ach');
-$('#campBack').innerHTML=I.back;$('#achBack').innerHTML=I.back;$('#campBack').onclick=$('#achBack').onclick=()=>show('home');$('#bDaily').onclick=()=>needTut()?startTutorial():startDaily();$('#bArcade').onclick=()=>needTut()?startTutorial():arcadeStart();$('#bGal').onclick=()=>show('gallery');
+$('#campBack').innerHTML=I.back;$('#achBack').innerHTML=I.back;$('#campBack').onclick=$('#achBack').onclick=()=>show('home');$('#bDaily').onclick=()=>needTut()?startTutorial():openToday();$('#bArcade').onclick=()=>needTut()?startTutorial():arcadeStart();$('#bGal').onclick=()=>show('gallery');
 $('#bSet').onclick=openSettings;
 $('#bUpload').onclick=()=>$('#file').click();
 $('#bHelp').onclick=()=>openSheet(`<div class="sh-head"><h2>So geht Pixaku</h2><button class="ib" data-x aria-label="Schließen">${I.x}</button></div>
