@@ -479,7 +479,7 @@ html.k3 .lw,html.k3 .lw-h i{border-radius:0}.lst-w{font:700 12px var(--display);
 window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{const f=new File([data],filename,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
-window.PX_VER='27.11.2026 21:56 · 8188e';
+window.PX_VER='27.11.2026 23:23 · 92d64';
 (()=>{let fresh=false;try{fresh=!!sessionStorage.getItem('pxr');sessionStorage.removeItem('pxr')}catch(e){}
   const t0=performance.now(),hide=()=>{const s=document.getElementById('splash');if(!s)return;setTimeout(()=>{s.classList.add('off');setTimeout(()=>s.remove(),600)},Math.max(0,(fresh?350:900)-(performance.now()-t0)))};
   const reload=()=>{try{sessionStorage.setItem('pxr','1')}catch(e){}location.reload()};
@@ -1797,6 +1797,7 @@ function labSlide(L,pos,d,mask,raw){
     x=nx;y=ny;cells.push(i);if(c===4){dead=true;break}if(cells.length>lim){bad=true;break}
     const ky=L.keyAt[i];if(ky>=0&&!(mask>>ky&1)){keys|=1<<ky;if(L.locks[ky].bomb)hit=ky}
     const a=L.arr[i];if(a>=0){dx=LDIR[a][0];dy=LDIR[a][1]}
+    const bm=L.bmp[i];if(bm){const t=dx;if(bm===1){dx=-dy;dy=-t}else{dx=dy;dy=t}}
     const p=L.port[i];if(p>=0){x=p%W;y=(p/W)|0;cells.push(p)}}
   const end=y*W+x;let trap=false;
   /* Bombe: der Zug gilt nur, wenn man danach mit einem weiteren Zug aus dem Sprengkreis kommt */
@@ -1849,7 +1850,7 @@ function labDiff(L){
   return{score:sc,hard};
 }
 function labSettle(L){ /* Sackgassen und unerreichbare Felder nach und nach mit Gegenständen entschärfen: jeder Gegenstand schafft neue Haltepunkte */
-  const free=i=>L.keyAt[i]<0&&L.doorAt[i]<0&&i!==L.start&&L.port[i]<0&&L.arr[i]<0&&!(L.keep&&L.keep[i]);
+  const free=i=>L.keyAt[i]<0&&L.doorAt[i]<0&&i!==L.start&&L.port[i]<0&&L.arr[i]<0&&!L.bmp[i]&&!(L.keep&&L.keep[i]);
   for(let k=0;k<150;k++){const r=labCheck(L);
     if(!r.ok){if(!r.stuck.length)return false;let c=r.stuck.filter(free);
       if(!c.length||L.rnd()<.4){const o=r.stuck[Math.floor(L.rnd()*r.stuck.length)],W=L.W;c=[];for(let b=-3;b<4;b++)for(let a=-3;a<4;a++){const x=o%W+a,y=((o/W)|0)+b,i=y*W+x;if(x>0&&y>0&&x<W-1&&y<L.H-1&&L.grid[i]===1&&free(i))c.push(i)}}
@@ -1881,7 +1882,7 @@ function labGreedy(L){
 const LW_N=15,LW_C=13,
   LW_SIZE=[[6,8,11,15],[7,10,13,19],[9,12,15,21],[9,12,15,23],[9,13,16,23],[9,13,17,23],[11,14,17,25],[9,13,17,25],[10,14,19,27],[10,14,18,26],[10,14,19,27],[10,14,19,27],[11,15,19,29]],
   /* Zutaten je Welt: p Portale, k höchste Zahl an Schlössern, b Bomben (1 gemischt, 2 nur Bomben), a Eisrinnen, g Wachen, rm Zimmer, wa Wasser, h Schlünde */
-  LW_F=[{},{g:1},{p:1,rm:1},{p:1},{p:1,wa:.15},{p:1,k:1,g:1},{p:1,k:3,b:1,g:1,rm:1},{p:1,k:1,b:1,a:1.7},{p:1,k:1,b:1,a:1},{p:1,k:2,b:2,a:.5},{p:1,k:1,a:.9,wa:.15,h:1.3},{p:1,k:1,b:1,a:1,g:1},{p:1,k:3,b:1,a:1,g:1,rm:1}],
+  LW_F=[{},{g:1},{p:1,rm:1},{p:1,m:1.1},{p:1,k:1,wa:.15,m:.4},{p:1,k:1,g:1,m:.4},{p:1,k:3,b:1,g:1,rm:1},{p:1,k:1,b:1,a:1.7},{p:1,k:1,b:1,a:1},{p:1,k:2,b:2,a:.5},{p:1,k:1,a:.9,wa:.15,h:1.3},{p:1,k:1,b:1,a:1,g:1},{p:1,k:3,b:1,a:1,g:1,rm:1}],
   /* Verlauf einer Welt: Größe und Schwierigkeit wechseln sich ab und steigern sich gegenseitig */
   LW_U=[.1,.4,.5,.15,.8,.55,.2,.9,.6,.25,.95,.65,1,.5,1],LW_D=[0,0,1,2,0,1,2,1,2,3,1,2,2,3,2];
 function labSpec(n,world){
@@ -1889,7 +1890,7 @@ function labSpec(n,world){
   if(F.k){const nl=Math.min(F.k,a>2.3?3:a>1.2?2:1);for(let i=0;i<nl;i++)locks.push(F.b===2||(F.b&&(i+j)%2===0)?'bomb':'key')}
   const ar=!rm&&[4,7,10,12,14].includes(j);
   return{W:ar?Math.min(23,Math.round(W*1.4)):W,H:ar?Math.round(H*1.3):H,w,j,df,areas:ar?Math.min(4,2+(u>.85?1:0)+(w>=6?1:0)):0,bridge:[3,4,5,7,8,9,10].includes(w),style:rm?'rooms':ar?'areas':'cave',holes:w===0&&j<5?0:w===0&&j===5?1:Math.round(a*(.9+df*.35)*(w<1?.8:1.05)*(F.h||1)),holeSafe:w===0&&j===5,ports:F.p?Math.min(4,1+Math.floor(a/1.6)):0,locks,
-    arr:F.a?Math.round(a*F.a):0,stars:w===0&&j<10?0:Math.min(5,1+Math.floor(a/1.2)),water:rm?0:F.wa||.06,guards:F.g&&j>=({1:5,5:2}[w]||0)?Math.min(4,1+Math.floor(a/1.4)):0,cand:[3,1,rm?3:6,rm?4:10][df]};
+    arr:F.a?Math.round(a*F.a):0,bmp:F.m?Math.max(1,Math.round(a*F.m)):w>=8?Math.round(a*.5):0,stars:w===0&&j<10?0:Math.min(5,1+Math.floor(a/1.2)),water:rm?0:F.wa||.06,guards:F.g&&j>=({1:5,5:2}[w]||0)?Math.min(4,1+Math.floor(a/1.4)):0,cand:[3,1,rm?3:6,rm?4:10][df]};
 }
 function labGenSpec(sp,seedStr,depth){
   const rng=mulberry32(hashStr('lab3'+seedStr)),ri=k=>Math.floor(rng()*k),rm=sp.style==='rooms';let W=sp.W,H=sp.H,N=W*H,area=(W-2)*(H-2),bridge=null,first=null;
@@ -1937,19 +1938,21 @@ function labGenSpec(sp,seedStr,depth){
         if(hf){hx();vy()}else{vy();hx()}g[y*W+x]=1}
       for(let i=0;i<N;i++)if(g[i]===1&&rng()<.07)g[i]=2}
     const fl=[];for(let i=0;i<N;i++)if(g[i]===1&&(!first||(i%W>=first.x&&i%W<first.x+first.w&&((i/W)|0)>=first.y&&((i/W)|0)<first.y+first.h)))fl.push(i);if(fl.length<6)continue;
-    const L={W,H,grid:g,start:fl[ri(fl.length)],locks:[],doorAt:new Int8Array(N).fill(-1),keyAt:new Int8Array(N).fill(-1),port:new Int32Array(N).fill(-1),arr:new Int8Array(N).fill(-1),ports:[],stars:[],guards:[],gAt:new Int8Array(N).fill(-1),gc:new Map(),room:rm?room:null,rooms:rm?rooms:null,spec:sp,rnd:rng,keep,bridge};
+    const L={W,H,grid:g,start:fl[ri(fl.length)],locks:[],doorAt:new Int8Array(N).fill(-1),keyAt:new Int8Array(N).fill(-1),port:new Int32Array(N).fill(-1),arr:new Int8Array(N).fill(-1),bmp:new Int8Array(N),ports:[],stars:[],guards:[],gAt:new Int8Array(N).fill(-1),gc:new Map(),room:rm?room:null,rooms:rm?rooms:null,spec:sp,rnd:rng,keep,bridge};
     const roomsOk=()=>{if(!rm)return true;for(const r of rooms){let c=0;for(let b=r.y;b<r.y+r.h;b++)for(let a=r.x;a<r.x+r.w;a++)if(L.grid[b*W+a]===1)c++;if(c<r.w*r.h*.4)return false}return true};
     if(!labSettle(L)||!roomsOk())continue;
     const fN=count(g,1);if(fN<area*(rm?.34:first?.3:.36)*lax)continue;
     let sol=labGreedy(L);if(!sol||sol.length<Math.max(4,fN*.24*lax))continue;
-    const floors=()=>{const o=[];for(let i=0;i<N;i++)if(L.grid[i]===1&&i!==L.start&&L.keyAt[i]<0&&L.doorAt[i]<0&&L.port[i]<0&&L.arr[i]<0)o.push(i);return o};
-    const trial=(apply,valid)=>{const bg=L.grid.slice(),bp=L.port.slice(),ba=L.arr.slice(),bd=L.doorAt.slice(),bk=L.keyAt.slice(),bn=L.locks.length,bl=L.ports.length;apply();
-      if(labSettle(L)&&count(L.grid,1)>=fN*.75&&valid()&&roomsOk())return true;L.grid.set(bg);L.port.set(bp);L.arr.set(ba);L.doorAt.set(bd);L.keyAt.set(bk);L.locks.length=bn;L.ports.length=bl;return false};
+    const floors=()=>{const o=[];for(let i=0;i<N;i++)if(L.grid[i]===1&&i!==L.start&&L.keyAt[i]<0&&L.doorAt[i]<0&&L.port[i]<0&&L.arr[i]<0&&!L.bmp[i])o.push(i);return o};
+    const trial=(apply,valid)=>{const bg=L.grid.slice(),bp=L.port.slice(),ba=L.arr.slice(),bm0=L.bmp.slice(),bd=L.doorAt.slice(),bk=L.keyAt.slice(),bn=L.locks.length,bl=L.ports.length;apply();
+      if(labSettle(L)&&count(L.grid,1)>=fN*.75&&valid()&&roomsOk())return true;L.grid.set(bg);L.port.set(bp);L.arr.set(ba);L.bmp.set(bm0);L.doorAt.set(bd);L.keyAt.set(bk);L.locks.length=bn;L.ports.length=bl;return false};
     for(let t=0,made=0;t<sp.holes*5&&made<sp.holes;t++){const c=[],fr=i=>L.grid[i]===1||L.grid[i]===4;for(let i=W+1;i<N-W-1;i++){const x=i%W;if(x<1||x>W-2)continue;if(sp.holeSafe?L.grid[i]===0&&!fr(i-1)&&!fr(i+1)&&!fr(i-W)&&!fr(i+W)&&(fr(i-W-1)||fr(i-W+1)||fr(i+W-1)||fr(i+W+1)||L.grid[i-1]===2||L.grid[i+1]===2):(L.grid[i]===1||L.grid[i]===2)&&i!==L.start&&!keep[i])c.push(i)}if(!c.length)break;const i=c[ri(c.length)];if(trial(()=>{L.grid[i]=4},()=>L.grid[i]===4&&labThreat(L,i)===!sp.holeSafe))made++}
     for(let t=0,made=0;t<sp.ports*7&&made<sp.ports;t++){const f=floors();if(f.length<8)break;const a=f[ri(f.length)],b=f[ri(f.length)];
       if(a===b||Math.abs(a%W-b%W)+Math.abs(((a/W)|0)-((b/W)|0))<5)continue;if(trial(()=>{L.port[a]=b;L.port[b]=a;L.ports.push([a,b])},()=>L.grid[a]===1&&L.grid[b]===1))made++}
     for(let t=0,made=0;t<sp.arr*6&&made<sp.arr;t++){const f=floors();if(f.length<8)break;const a=f[ri(f.length)],d=ri(4),nb=a+LDIR[d][0]+LDIR[d][1]*W;if(L.grid[nb]!==1)continue;
       if(trial(()=>{L.arr[a]=d},()=>L.grid[a]===1))made++}
+    for(let t=0,made=0;t<(sp.bmp|0)*6&&made<sp.bmp;t++){const f=floors();if(f.length<8)break;const a=f[ri(f.length)],x=a%W,y=(a/W)|0;if(x<2||y<2||x>W-3||y>H-3||(keep&&keep[a]))continue;
+      if(trial(()=>{L.bmp[a]=1+ri(2)},()=>L.grid[a]===1))made++}
     for(const kind of sp.locks)for(let t=0,n0=L.locks.length;t<40&&L.locks.length===n0;t++){const f=floors();if(f.length<8)break;const fb=bridge&&t<28?f.filter(i=>bridge[i]):[],d=fb.length?fb[ri(fb.length)]:f[ri(f.length)],k=f[ri(f.length)],x=d%W,y=(d/W)|0,bl=i=>L.grid[i]!==1&&L.grid[i]!==4;
       if(d===k||x<1||y<1||x>W-2||y>H-2||labNearXY(W,d,k)||L.locks.some(q=>labNearXY(W,q.d,d)||labNearXY(W,q.k,k)))continue;const hor=bl(d-W)&&bl(d+W)&&!bl(d-1)&&!bl(d+1),ver=bl(d-1)&&bl(d+1)&&!bl(d-W)&&!bl(d+W);if(!hor&&!ver)continue;
       trial(()=>{const id=L.locks.length;L.locks.push({d,k,bomb:kind==='bomb'});L.doorAt[d]=id;L.keyAt[k]=id},()=>L.grid[d]===1&&L.grid[k]===1)}
@@ -1965,7 +1968,7 @@ function labGenSpec(sp,seedStr,depth){
       const sx=L.start%W,sy=(L.start/W)|0;
       for(let t=0;t<sp.guards*60&&L.guards.length<sp.guards;t++){const len=4+ri(2),hor=rng()<.5,x0=1+ri(Math.max(1,W-2-(hor?len-1:0))),y0=1+ri(Math.max(1,H-2-(hor?0:len-1))),cells=[];let ok=true,fl=0;
         for(let k=0;k<len&&ok;k++){const x=x0+(hor?k:0),y=y0+(hor?0:k),i=y*W+x;if(x>W-2||y>H-2||used[i]||used[i+1]||used[i-1]||used[i+W]||used[i-W]||L.grid[i]===4){ok=false;break}
-          if(L.grid[i]===1){if(stop[i]||L.port[i]>=0||L.arr[i]>=0||L.keyAt[i]>=0||L.doorAt[i]>=0||Math.abs(x-sx)+Math.abs(y-sy)<3)ok=false;fl++}cells.push(i)}
+          if(L.grid[i]===1){if(stop[i]||L.port[i]>=0||L.arr[i]>=0||L.bmp[i]||L.keyAt[i]>=0||L.doorAt[i]>=0||Math.abs(x-sx)+Math.abs(y-sy)<3)ok=false;fl++}cells.push(i)}
         if(!ok||fl<1||fl>len-1)continue;
         /* nur behalten, wenn das Level auch mit dieser Bahn lösbar und ohne Sackgasse bleibt */
         const id=L.guards.length;L.guards.push(cells);cells.forEach(c=>L.gAt[c]=id);L.gc.clear();const r=labCheck(L);if(!r.ok||r.un.length){L.guards.pop();cells.forEach(c=>L.gAt[c]=-1);L.gc.clear();continue}cells.forEach(c=>used[c]=1)}}
@@ -1974,13 +1977,16 @@ function labGenSpec(sp,seedStr,depth){
   if((depth|0)<2)return labGenSpec(sp,seedStr+'~',(depth|0)+1);
   if(W>8)return labGenSpec(Object.assign({},sp,{W:W-2,H:H-3,holes:Math.round(sp.holes*.8)}),seedStr+'s',0);
   const g=new Uint8Array(N);for(let x=1;x<W-1;x++)g[W+x]=g[(H-2)*W+x]=1;for(let y=1;y<H-1;y++)g[y*W+1]=g[y*W+W-2]=1;
-  const L={W,H,grid:g,start:W+1,locks:[],doorAt:new Int8Array(N).fill(-1),keyAt:new Int8Array(N).fill(-1),port:new Int32Array(N).fill(-1),arr:new Int8Array(N).fill(-1),ports:[],stars:[],guards:[],gAt:new Int8Array(N).fill(-1),gc:new Map(),room:null,rooms:null,spec:sp,rnd:rng,keep:null,fallback:true};L.sol=labGreedy(L)||[];L.par=L.sol.length;L.floor=count(g,1);L.diff={score:0,hard:0};return L;
+  const L={W,H,grid:g,start:W+1,locks:[],doorAt:new Int8Array(N).fill(-1),keyAt:new Int8Array(N).fill(-1),port:new Int32Array(N).fill(-1),arr:new Int8Array(N).fill(-1),bmp:new Int8Array(N),ports:[],stars:[],guards:[],gAt:new Int8Array(N).fill(-1),gc:new Map(),room:null,rooms:null,spec:sp,rnd:rng,keep:null,fallback:true};L.sol=labGreedy(L)||[];L.par=L.sol.length;L.floor=count(g,1);L.diff={score:0,hard:0};return L;
 }
 /* Handgebaute Level aus Zeilen: # Wand, . Boden, o Gegenstand, X Schlund, ~ Wasser, S Start, Buchstaben als Marken */
 function labAscii(rows){const W=rows[0].length,H=rows.length,N=W*H,g=new Uint8Array(N),marks={};let st=0;rows.forEach((r,y)=>[...r].forEach((ch,x)=>{const i=y*W+x;g[i]=ch==='#'?0:ch==='o'?2:ch==='X'?4:ch==='~'?3:1;if(ch==='S')st=i;else if(/[A-Z]/.test(ch)&&ch!=='X'){marks[ch]=i;g[i]=2}}));
-  const L={W,H,grid:g,start:st,locks:[],doorAt:new Int8Array(N).fill(-1),keyAt:new Int8Array(N).fill(-1),port:new Int32Array(N).fill(-1),arr:new Int8Array(N).fill(-1),ports:[],stars:[],guards:[],gAt:new Int8Array(N).fill(-1),gc:new Map(),room:null,rooms:null,marks,sol:[],par:0};return L}
+  const L={W,H,grid:g,start:st,locks:[],doorAt:new Int8Array(N).fill(-1),keyAt:new Int8Array(N).fill(-1),port:new Int32Array(N).fill(-1),arr:new Int8Array(N).fill(-1),bmp:new Int8Array(N),ports:[],stars:[],guards:[],gAt:new Int8Array(N).fill(-1),gc:new Map(),room:null,rooms:null,marks,sol:[],par:0};return L}
 /* Bossarenen */
 const LBOSS={schrat:{rows:['###########','#S....o...#','#.........#','#.........#','#........o#','#....B....#','#o........#','#.........#','#.........#','#...o.....#','###########'],seq:[3,1,0]},
+  stier:{rows:['###########','#S........#','#.........#','#o........#','#.........#','#........o#','#.........#','#.........#','###########'],
+    /* je Phase: Tor (Wandfeld), Startfeld des Stiers, Portalpaar */
+    ph:[{door:[10,4],home:[3,4],port:null},{door:[10,2],home:[2,4],port:[[6,4],[4,2]]},{door:[0,6],home:[8,2],port:[[3,2],[7,6]]}]},
   koenig:{rows:['###########','#S........#','#.........#','#.........#','#.........#','#.........#','#.........#','#.........#','###########'],lane:4,ph:[[3,7,.52],[2,6,.42],[4,7,.34]]}};
 const labKoenigProps=(L,p)=>[1*L.W+p[0]+1,7*L.W+p[1]+1];
 /* Mehrere Entwürfe bauen und den passenden wählen: den zahmsten für leichte Level, den kniffligsten für schwere */
@@ -2008,9 +2014,9 @@ const LSTORY=[
  ['Verhext','Der Zauberer Morvan hat Prinzessin Pia in eine Kugel verwandelt und tief in den Dunklen Wald geworfen. Sein Bann hat eine Schwäche: Jeder Fleck, den Pia berührt, beginnt zu leuchten, und wo alles leuchtet, verliert Morvan seine Macht. Roll los, Pia.'],
  ['Raus ins Helle','Der Wald liegt hinter dir. Vor dir wogen goldene Kornfelder, Vogelscheuchen halten Wache, und irgendwo dahinter raucht der Schornstein eines Bauernhofs.'],
  ['Bauer Henrik','Bauer Henrik staunt über die sprechende Kugel in seiner Küche, dann holt er ein Säckchen Feenstaub vom Regal. Seitdem tragen dich schimmernde Portale von einem Ort zum anderen.','Neu: Portale'],
- ['In die Stadt','Henrik bringt dich auf seinem Karren in die Stadt. In den Gassen flüstert man, Morvan sitze schon auf dem Thron. Der Weg zur Burg führt quer über den Markt.'],
- ['Am Kai','Der kürzeste Weg zur Burg führt nachts durch den Hafen. Zwischen Kisten, Booten und Möwen ist der Kai schmal, und das Wasser ist tief.'],
- ['Der Hofzauberer','Im Burghof stehen Morvans Wachen. Der alte Hofzauberer Balduin erkennt dich trotzdem sofort und bringt dir bei, Schlüssel aufzulesen. Verschlossene Türen halten dich jetzt nicht mehr auf.','Neu: Schlüssel und Türen'],
+ ['In die Stadt','Henrik bringt dich auf seinem Karren in die Stadt. Der Weg zur Burg führt quer über den Markt, vorbei an schrägen Prellböcken, die jeden um die Ecke schicken.','Neu: Prellböcke'],
+ ['Am Kai','Der kürzeste Weg zur Burg führt nachts durch den Hafen. Der Kai ist schmal, das Wasser tief, und die Tore sind verschlossen. Die Schlüssel liegen irgendwo zwischen den Kisten.','Neu: Schlüssel und Türen'],
+ ['Der Hofzauberer','Über dem Burghof kreisen Morvans Falken. Der alte Hofzauberer Balduin erkennt dich trotzdem sofort und zeigt dir den Weg ins Schloss.','Neu: Falken'],
  ['Hauptmann Gero','Im Schloss wartet Hauptmann Gero, der treu zu deiner Familie steht. Er rollt dir seine Pulverfässchen zu. Wer darüberrollt, zündet die Lunte, und wer dann nicht schnell Abstand gewinnt, fliegt mit in die Luft.','Neu: Bomben sprengen rissige Wände'],
  ['Verbannt','Morvan hat dich entdeckt. Ein Blitz, ein Wirbel, und du liegst weit im Norden auf blankem Eis. Die glatten Rinnen dort lenken dich in ihre Richtung, ob du willst oder nicht.','Neu: Eisrinnen ändern die Richtung'],
  ['Über die Berge','Hinter den Eisfeldern türmen sich die Berge. Lagerfeuer zeigen dir den Pass, und auf der anderen Seite liegt dein Königreich.'],
@@ -2155,7 +2161,7 @@ function labHelp(){const s0=openSheet(`<div class="sh-head"><h2>So geht das Laby
  <li><i>2</i><span>Jedes Feld, über das sie rollt, beginnt zu leuchten. Leuchten alle Felder, ist das Level geschafft. In großen Leveln zeigt die kleine Karte, was noch fehlt.</span></li>
  <li><i>3</i><span>Wirbelnde Schlünde schlucken die Kugel, dann beginnt das Level von vorn. Portale tragen sie zum Gegenstück, und sie rollt dort in gleicher Richtung weiter.</span></li>
  <li><i>4</i><span>Eine Tür öffnet sich, sobald Pia den Schlüssel überrollt hat. Eine Bombe zündet beim Überrollen und sprengt nach drei Sekunden die rissige Wand. Wer dann noch direkt daneben steht, fängt von vorn an.</span></li>
- <li><i>5</i><span>Eisrinnen mit Pfeilen lenken die Kugel in ihre Richtung. Bonussterne verschwinden nach einiger Zeit.</span></li>
+ <li><i>5</i><span>Schräge Prellböcke schicken die Kugel um die Ecke, ohne sie anzuhalten. Eisrinnen mit Pfeilen lenken die Kugel in ihre Richtung. Bonussterne verschwinden nach einiger Zeit.</span></li>
  <li><i>6</i><span>Krähen, Falken und Gespenster fliegen eine gerade Bahn hin und her, auch über Wände. Rote Rauten und ihr Schatten zeigen, wo sie kreuzen. Wer berührt wird, landet am Start, das Leuchten bleibt.</span></li>
  <li><i>7</i><span>Jedes Level ist geprüft: Festfahren kannst du dich nicht, es gibt von jeder Stelle aus einen Weg zum Ziel.</span></li></ul>${labSpeedRow()}<div class="btns"><button class="ghost" id="lhTut">Übungslevel spielen</button></div>`);labSpeedBind(s0);s0.querySelector('#lhTut').onclick=()=>{closeSheet();labTut(0)}}
 
@@ -2183,6 +2189,7 @@ function labDraw2D(c,L,th,st,ox,oy,s,now){const{W,H}=L,g=L.grid,ne=i=>{const x=i
     if(v===0){if(ne(i)){c.fillStyle=th.wall;c.fillRect(x,y,s+.5,s+.5);c.fillStyle='rgba(255,255,255,.1)';c.fillRect(x,y,s,s*.18)}continue}
     c.fillStyle=th.ground;c.fillRect(x,y,s+.5,s+.5);
     if(v===1){c.fillStyle=st.painted[i]?th.paint:labFloor(L,th,i);c.globalAlpha=st.painted[i]||!dark?1:.55;c.fillRect(x+s*.05,y+s*.05,s*.9,s*.9);c.globalAlpha=1;
+      if(L.bmp[i]){c.strokeStyle='#e0403a';c.lineWidth=Math.max(2,s*.16);c.beginPath();if(L.bmp[i]===1){c.moveTo(x+s*.12,y+s*.88);c.lineTo(x+s*.88,y+s*.12)}else{c.moveTo(x+s*.12,y+s*.12);c.lineTo(x+s*.88,y+s*.88)}c.stroke()}
       if(L.arr[i]>=0){c.save();c.translate(x+s/2,y+s/2);c.rotate([0,Math.PI,Math.PI/2,-Math.PI/2][L.arr[i]]);c.strokeStyle='#eaffff';c.lineWidth=Math.max(1.2,s*.1);c.beginPath();c.moveTo(-s*.15,-s*.22);c.lineTo(s*.12,0);c.lineTo(-s*.15,s*.22);c.stroke();c.restore()}}
     else if(v===2){c.fillStyle=dark?'#5d6b62':'#7a6a4a';c.beginPath();c.arc(x+s/2,y+s/2,s*.34,0,7);c.fill();c.fillStyle='rgba(255,255,255,.18)';c.beginPath();c.arc(x+s*.42,y+s*.42,s*.14,0,7);c.fill()}
     else if(v===3){c.fillStyle='#2a8fb5';c.fillRect(x,y,s+.5,s+.5);c.fillStyle='rgba(255,255,255,.25)';c.fillRect(x+s*(.2+.2*Math.sin(now/700+i)),y+s*.45,s*.4,s*.07)}
@@ -2326,6 +2333,8 @@ function labScene(){
   /* Eisrinnen */
   LAB.arrMat=null;{const ar=[];for(let i=0;i<N;i++)if(L.arr[i]>=0)ar.push(i);if(ar.length){LAB.arrMat=new T.MeshBasicMaterial({map:LAB.arrTex,color:new T.Color('#dffcff'),transparent:true,opacity:.95,depthWrite:false,fog:false});LAB.disp.push(LAB.arrMat);
       for(const c of ar){const b=new T.Mesh(G.box,labMat('#8fe0ff',{emissive:'#3ab8ff',emissiveIntensity:dark?.7:.3}));b.scale.set(.9,.03,.9);b.position.set(wx(c),.112,wz(c));S.add(b);const m=new T.Mesh(G.pl,LAB.arrMat);m.scale.set(.8,1,.8);m.position.set(wx(c),.132,wz(c));m.rotation.y=[0,Math.PI,-Math.PI/2,Math.PI/2][L.arr[c]];S.add(m)}}}
+  /* Prellböcke: schräge, gestreifte Planken */
+  for(let i=0;i<N;i++)if(L.bmp[i]){const b=new T.Group();for(let k=0;k<5;k++){const m=new T.Mesh(G.box,labMat(k%2?'#fff6e6':'#e0403a',{emissive:k%2?'#fff6e6':'#e0403a',emissiveIntensity:dark?.5:.15}));m.scale.set(.27,.4,.13);m.position.set((k-2)*.27,.32,0);m.castShadow=true;b.add(m)}for(const k of[-1,1]){const p=new T.Mesh(G.cyl,labMat('#6a4a2a'));p.scale.set(.12,.56,.12);p.position.set(k*.66,.28,0);p.castShadow=true;b.add(p)}b.rotation.y=L.bmp[i]===1?Math.PI/4:-Math.PI/4;b.position.set(wx(i),.08,wz(i));S.add(b)}
   /* Schlüssel und Tür oder Bombe und rissige Wand */
   LAB.lk=L.locks.map((lk,li)=>{const dx=lk.d%W,dy=(lk.d/W)|0,horiz=g[lk.d-1]===1||g[lk.d-1]===4||g[lk.d+1]===1,d=new T.Group(),o={door:d,key:null,bomb:null},col=LKC[li%3];
     if(lk.bomb){const h=th.ws==='box'||th.ws==='house'?th.wh:.9,body=new T.Mesh(G.box,labMat(th.wall));body.scale.set(1,h,1);body.position.y=h/2;body.castShadow=true;d.add(body);for(let k=0;k<5;k++){const cr=new T.Mesh(G.box,labMat('#0c0a0a'));cr.scale.set(.05,.34+rng()*.3,1.03);cr.position.set((rng()-.5)*.7,h*(.3+rng()*.5),0);cr.rotation.z=(rng()-.5)*1.6;d.add(cr);const c2=cr.clone();c2.scale.set(1.03,cr.scale.y,.05);c2.position.set(0,cr.position.y,(rng()-.5)*.7);c2.rotation.set((rng()-.5)*1.6,0,0);d.add(c2)}
@@ -2462,7 +2471,7 @@ async function labHero(){const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d')
   setGame(GAME)}
 
 /* ---------- Übungslevel ---------- */
-const LCINE={1:'intro',6:'schlund',16:'felder',21:'kraehen',31:'hof'},LCNAME={intro:'Die Verwandlung',schlund:'Der Fluch frisst sich durch',felder:'Raus ins Helle',kraehen:'Die Krähe',hof:'Bauer Henrik'};
+const LCINE={1:'intro',6:'schlund',16:'felder',21:'kraehen',31:'hof',46:'stadt',61:'hafen'},LCNAME={intro:'Die Verwandlung',schlund:'Der Fluch frisst sich durch',felder:'Raus ins Helle',kraehen:'Die Krähe',hof:'Bauer Henrik',stadt:'Auf dem Markt',hafen:'Das Tor am Kai'};
 const LTUT=['Wische in eine Richtung. Pia rollt geradeaus, bis eine Wand sie aufhält. Bring jedes Feld zum Leuchten.','Auch Büsche, Steine und Pilze halten Pia auf. Nutze sie als Bande, um jedes Feld zu erreichen. Der Tipp-Knopf zeigt dir den nächsten Zug.','Vorsicht vor dem wirbelnden Schlund: Wer hineinrollt, beginnt von vorn. Den Bonusstern gibt es nur, solange seine Zeit läuft.'];
 function labTut(i){
   if(i>=LTUT.length){store.set('ltut',1);LB=null;show('home');const s=openSheet(`<div class="sh-head"><h2>Du hast den Dreh raus</h2></div><p>Mehr brauchst du für den Anfang nicht. Portale, Schlüssel, Bomben und Eisrinnen lernst du unterwegs kennen, immer dann, wenn die Geschichte sie bringt.</p><div class="btns"><button class="primary" id="ltGo">Auf zur Reise</button></div>`,true);s.querySelector('#ltGo').onclick=()=>{closeSheet();labPlay(labData().max)};return}
@@ -2472,9 +2481,11 @@ function labTut(i){
 
 
 /* ================= Bosse ================= */
-const LBOSSN={15:'schrat',30:'koenig'};
+const LBOSSN={15:'schrat',30:'koenig',45:'stier'};
 const LBOSSTXT={schrat:{name:'Der Wurzelschrat',wi:0,tip:'Pralle von der Seite gegen den Schrat, an der sein Pilz leuchtet. Weiche aus, wenn eine Reihe rot aufglüht.',
     intro:'Am Waldrand versperrt ein uralter Baumstumpf den Weg, und er ist wach. Verwundbar ist er nur dort, wo sein Leuchtpilz sitzt: Pralle von genau dieser Seite gegen ihn. Glüht deine Reihe oder Spalte rot, schlagen gleich seine Wurzeln zu.'},
+  stier:{name:'Der verhexte Stier',wi:2,tip:'Stell dich in seine Reihe oder Spalte, dann stürmt er los. Roll weg und lass ihn ins rote Tor krachen, notfalls durch ein Portal.',
+    intro:'Morvan hat Henriks Stier verhext. Sieht er dich in seiner Reihe oder Spalte, schnaubt er kurz und stürmt geradeaus, bis ihn etwas aufhält. Portale tragen auch ihn weiter. Lass ihn dreimal ins rote Scheunentor krachen.'},
   koenig:{name:'Der Krähenkönig',wi:1,tip:'Rolle über beide Scheuchenfelder, solange der König dazwischen fliegt. Die Scheuchen bleiben nur sechs Sekunden stehen.',
     intro:'Der Krähenkönig fliegt quer über das letzte Feld. Auf seiner Bahn liegen zwei Scheuchenfelder. Wer darüberrollt, lässt dort eine Vogelscheuche hochklappen. Fängst du ihn zwischen zwei Scheuchen, stürzt er ab.'}};
 function labBossLevel(type){const L=labAscii(LBOSS[type].rows),T=LBOSSTXT[type];L.boss=Object.assign({type},LBOSS[type],T);L.noProp=new Set(type==='schrat'?[L.marks.B]:[]);return{L,wi:T.wi,name:T.name}}
@@ -2484,7 +2495,9 @@ function labBossIntro(n){const type=LBOSSN[n],T=LBOSSTXT[type],seen=store.get('l
   s.querySelector('#lbGo').onclick=()=>{closeSheet();seen.push(type);store.set('lbs',seen);go()}}
 /* Alle Fristen laufen auf der Spieluhr LB.clock, damit ein langsames Gerät den Kampf nicht verzerrt */
 function labBossInit(){const L=LB.L,B=LB.boss={type:L.boss.type,hp:3,phase:0,hitAt:0};
-  if(B.type==='schrat'){B.side=L.boss.seq[0];B.next=LB.clock+3600;B.tel=null;B.alt=false}else{B.props=[];labKoenigPhase()}}
+  if(B.type==='schrat'){B.side=L.boss.seq[0];B.next=LB.clock+3600;B.tel=null;B.alt=false}else if(B.type==='stier')labStierPhase();else{B.props=[];labKoenigPhase()}}
+function labStierPhase(){const L=LB.L,B=LB.boss,W=L.W,P=L.boss.ph[B.phase];L.port.fill(-1);if(P.port){const a=P.port[0][1]*W+P.port[0][0],b=P.port[1][1]*W+P.port[1][0];L.port[a]=b;L.port[b]=a}
+  B.bp=P.home[1]*W+P.home[0];B.bx=P.home[0];B.by=P.home[1];B.sc=1;B.mode='idle';B.dir=0;LB.roll=null;LB.queue=[];LB.bump=null;LB.pos=L.start;LB.bx=L.start%W;LB.by=(L.start/W)|0;LB.tp=1;LB.safe=performance.now()+1200}
 function labKoenigPhase(){const L=LB.L,B=LB.boss,W=L.W;for(const i of B.props)L.grid[i]=1;B.props=labKoenigProps(L,L.boss.ph[B.phase]);for(const i of B.props)L.grid[i]=2;L.noProp=new Set(B.props);L.gc.clear();
   B.up=[0,0];B.kx=W-2;B.kd=-1;B.stun=0;LB.roll=null;LB.queue=[];LB.bump=null;LB.pos=L.start;LB.bx=L.start%W;LB.by=(L.start/W)|0;LB.tp=1;LB.safe=performance.now()+1200}
 function labBossHit(now){const B=LB.boss;B.hp--;B.hitAt=now;LB.shake=now;sfx.ok(6);tone(220,.3,'sawtooth',.07);tone(660,.25,'triangle',.06,.1);labHud();
@@ -2501,6 +2514,15 @@ function labBossStep(now,dt){const B=LB.boss,L=LB.L,W=L.W,c=LB.clock,px=Math.rou
     if(!B.tel&&c>=B.next){B.alt=!B.alt;B.tel={row:B.alt,v:B.alt?py:px,t:c,done:0};tone(140,.5,'sawtooth',.04)}
     if(B.tel&&!B.tel.done&&c-B.tel.t>=1150){B.tel.done=c;LB.shake=now;tone(70,.3,'square',.08);if((B.tel.row?py:px)===B.tel.v&&now>LB.safe)labCaught(now,'Die Wurzeln haben dich erwischt. Zurück zum Start.')}
     if(B.tel&&B.tel.done&&c-B.tel.done>520){B.tel=null;B.next=c+[0,1500,2000,2600][B.hp]}}
+  else if(B.type==='stier'){const P=L.boss.ph[B.phase],bx=B.bp%W,by=(B.bp/W)|0;
+    if(B.mode==='idle'){if(!LB.roll&&now>LB.safe){let d=-1;if(py===by&&px!==bx)d=px>bx?0:1;else if(px===bx&&py!==by)d=py>by?2:3;
+        if(d>=0){let ok=true;for(let x=bx+LDIR[d][0],y=by+LDIR[d][1];x!==px||y!==py;x+=LDIR[d][0],y+=LDIR[d][1])if(L.grid[y*W+x]!==1){ok=false;break}if(ok){B.mode='tel';B.dir=d;B.t=c;tone(110,.5,'sawtooth',.07);tone(90,.4,'square',.05,.2)}}}}
+    else if(B.mode==='tel'){if(c-B.t>=850){const s=labSlide(L,B.bp,B.dir,0,true);if(!s.cells.length)B.mode='idle';else{B.plan=labRollPlan(L,B.bp,s.cells,1.25);B.rt=0;B.mode='run';tone(200,.4,'sawtooth',.05)}}}
+    else if(B.mode==='run'){B.rt+=dt;const st=B.plan.state(Math.min(B.rt,B.plan.T));B.bx=st.x;B.by=st.y;B.sc=st.sc;
+      if(now>LB.safe&&Math.abs(B.bx-LB.bx)<.6&&Math.abs(B.by-LB.by)<.6){labCaught(now,'Der Stier hat dich überrannt. Zurück zum Start.');labStierPhase();return}
+      if(B.rt>=B.plan.T){const pts=B.plan.pts,e=pts[pts.length-1];B.bp=e;B.bx=e%W;B.by=(e/W)|0;B.sc=1;LB.shake=now;tone(70,.25,'square',.08);
+        if(e%W+LDIR[B.dir][0]===P.door[0]&&((e/W)|0)+LDIR[B.dir][1]===P.door[1]){labSpark(e,'#e0403a',26,4);labBossHit(now);if(B.hp>0){B.mode='stun';B.t=c}}else B.mode='idle'}}
+    else if(B.mode==='stun'&&c-B.t>1300){B.phase++;labStierPhase()}}
   else{const p=L.boss.ph[B.phase],y=L.boss.lane;
     if(B.stun){if(c>B.stun){B.phase++;labKoenigPhase()}return}
     for(let k=0;k<2;k++)if(B.up[k]&&c>B.up[k])B.up[k]=0;
@@ -2520,6 +2542,13 @@ function lab3BossBuild(S,th,rng,wx,wz){const T=THREE,G=LAB.geo,L=LB.L,W=L.W,B=L.
     bo.spot=new T.Group();S.add(bo.spot);M('cyl','#f3ead6',.12,.2,.12,0,.5,0,null,bo.spot);M('cone','#58e6ff',.42,.26,.42,0,.7,0,{emissive:'#58e6ff',emissiveIntensity:1.4},bo.spot);const h=labHalo('#58e6ff',1.7,.8);h.position.y=.65;bo.spot.add(h);
     bo.mark=new T.Mesh(G.pl,flat('#58e6ff',.5));bo.mark.scale.set(.8,1,.8);S.add(bo.mark);
     bo.tel=[];bo.spk=[];const tm=flat('#ff2a2a',.5);for(let k=0;k<Math.max(W,L.H);k++){const p=new T.Mesh(G.pl,tm);p.scale.set(.9,1,.9);p.visible=false;S.add(p);bo.tel.push(p);const sp=M('cone','#6b4a32',.3,.9,.3,0,-1,0);sp.visible=false;bo.spk.push(sp)}bo.tm=tm}
+  else if(B.type==='stier'){const g=new T.Group(),bd=new T.Group();g.add(bd);S.add(g);bo.g=g;bo.bd=bd;
+    M('box','#6a4030',.62,.5,.9,0,.5,0,null,bd);M('box','#7a4a36',.5,.44,.42,0,.62,.56,null,bd);M('box','#e8c9a8',.3,.2,.16,0,.5,.8,null,bd);M('tor','#ffd84d',.18,.4,.18,0,.42,.9,{emissive:'#ffb000',emissiveIntensity:.6},bd).rotation.x=Math.PI/2;
+    for(const k of[-1,1]){const h=M('cone','#fff6e6',.12,.34,.12,k*.3,.92,.56,null,bd);h.rotation.z=k*-.9;M('sph','#ff2a2a',.1,.1,.06,k*.14,.7,.78,{emissive:'#ff2a2a',emissiveIntensity:1.6},bd);for(const z of[-.3,.3])M('box','#4a2a20',.14,.3,.14,k*.2,.15,z,null,bd)}
+    M('cone','#4a2a20',.1,.3,.1,0,.6,-.5,null,bd).rotation.x=-1.2;const hl=labHalo('#ff3a2a',1.6,.35);hl.position.y=.7;g.add(hl);
+    bo.door=new T.Group();S.add(bo.door);M('box','#c0303a',1.06,1.02,1.06,0,.51,0,{emissive:'#c0303a',emissiveIntensity:.35},bo.door);for(const k of[-1,1]){const x=M('box','#fff6e6',1.1,.1,1.1,0,.55,0,null,bo.door);x.rotation.z=k*.7;x.scale.set(.1,1.2,1.1)}const dh=labHalo('#ff5a4a',2.4,.5);dh.position.y=.6;bo.door.add(dh);
+    bo.pt=[];const pm=flat('#7df0ff',.75);for(let k=0;k<2;k++){const m=new T.Mesh(G.pl,pm);m.scale.set(.9,1,.9);S.add(m);const h=labHalo('#7df0ff',1.8,.5);S.add(h);bo.pt.push([m,h])}
+    bo.tel=[];bo.tm=flat('#ff2a2a',.5);for(let k=0;k<W;k++){const p=new T.Mesh(G.pl,bo.tm);p.scale.set(.5,1,.5);p.rotation.y=Math.PI/4;p.visible=false;S.add(p);bo.tel.push(p)}}
   else{const y=B.lane,g=labProp('flieger',rng,th);g.scale.setScalar(1.7);S.add(g);bo.g=g;const cr=new T.Group(),gm=labMat('#ffd84d',{emissive:'#ffb000',emissiveIntensity:.6});for(let k=0;k<5;k++){const p=new T.Mesh(G.cone,gm);p.scale.set(.07,.14,.07);p.position.set(Math.cos(k*1.257)*.09,1.12,.24+Math.sin(k*1.257)*.09);cr.add(p)}const rg=new T.Mesh(G.cyl,gm);rg.scale.set(.24,.06,.24);rg.position.set(0,1.05,.24);cr.add(rg);g.children[0].add(cr);
     bo.sh=new T.Mesh(G.cyl,flat('#000000',.4));bo.sh.scale.set(1,.01,1);S.add(bo.sh);const lm=flat('#ff3a4a',.4);for(let x=1;x<W-1;x++){const m=new T.Mesh(G.pl,lm);m.scale.set(.3,1,.3);m.rotation.y=Math.PI/4;m.position.set(wx(y*W+x),.108,wz(y*W+x));S.add(m)}
     bo.sw=[];bo.sc=[];bo.hay=[];const sm=flat('#ffd84d',.75);for(let k=0;k<2;k++){const m=new T.Mesh(G.pl,sm);m.scale.set(.86,1,.86);S.add(m);const rg2=M('tor','#ffd84d',.7,.5,.7,0,.13,0,{emissive:'#ffb000',emissiveIntensity:.8});bo.sw.push([m,rg2]);const sc=labProp('scheuche',rng,th);LAB.anim.pop();S.add(sc);bo.sc.push(sc);const hy=labProp('heu',rng,th);S.add(hy);bo.hay.push(hy)}}}
@@ -2529,6 +2558,11 @@ function lab3BossFrame(now,t,dt){const bo=LAB.bo,B=LB.boss,L=LB.L,W=L.W,X=LAB.X,
     const sx=LDIR[B.side][0],sy=LDIR[B.side][1];bo.spot.visible=bo.mark.visible=!dead;bo.spot.position.set(X(c%W)+sx*.56,Math.sin(t*4)*.04,Z((c/W)|0)+sy*.56);bo.spot.rotation.set(sy*.9,0,-sx*.9);bo.mark.position.set(X(c%W+sx),.11,Z(((c/W)|0)+sy));bo.mark.material.opacity=.3+.25*Math.sin(t*5);
     const tl=B.tel,n=tl?(tl.row?W:L.H):0;bo.tm.opacity=tl&&!tl.done?.25+.3*Math.abs(Math.sin((LB.clock-tl.t)*.012)):0;
     bo.tel.forEach((p,i)=>{const on=tl&&i>0&&i<n-1,x=tl&&tl.row?i:tl?tl.v:0,y=tl&&tl.row?tl.v:i,fl=on&&L.grid[y*W+x]===1;p.visible=!!fl&&!tl.done;if(fl)p.position.set(X(x),.112,Z(y));const s=bo.spk[i];s.visible=!!fl&&!!tl.done;if(s.visible){const u=(LB.clock-tl.done)/520;s.position.set(X(x),-.45+Math.sin(Math.min(1,u)*Math.PI)*.85,Z(y))}})}
+  else if(bo.type==='stier'){const P=L.boss.ph[B.phase],g=bo.g,tel=B.mode==='tel',stun=B.mode==='stun'||dead;g.position.set(X(B.bx)+(tel?Math.sin(now*.08)*.05:0),0,Z(B.by));g.scale.setScalar(dead?Math.max(.05,1-(now-B.hitAt)/700):Math.max(.05,B.sc||1));
+    bo.bd.rotation.y=stun?t*12:[Math.PI/2,-Math.PI/2,0,Math.PI][B.dir];bo.bd.position.y=B.mode==='run'?Math.abs(Math.sin(t*22))*.08:0;bo.bd.rotation.x=tel?-.18:0;
+    bo.door.position.set(X(P.door[0]),0,Z(P.door[1]));bo.door.visible=!dead;bo.door.scale.setScalar(hurt?1+.12*Math.sin(now*.06):1);
+    bo.pt.forEach(([m,h],k)=>{const on=!!P.port&&!dead;m.visible=h.visible=on;if(on){const q=P.port[k];m.position.set(X(q[0]),.113,Z(q[1]));m.rotation.y=t*2;h.position.set(X(q[0]),.4,Z(q[1]));h.scale.setScalar(1.8+.2*Math.sin(t*6+k))}});
+    bo.tm.opacity=tel?.3+.3*Math.abs(Math.sin(LB.clock*.014)):0;const bx=B.bp%W,by=(B.bp/W)|0;bo.tel.forEach((p,i)=>{const x=bx+LDIR[B.dir][0]*(i+1),y=by+LDIR[B.dir][1]*(i+1),on=tel&&x>0&&y>0&&x<W-1&&y<L.H-1&&L.grid[y*W+x]===1&&bo.tel.slice(0,i).every(q=>q.visible);p.visible=!!on;if(on)p.position.set(X(x),.114,Z(y))})}
   else{const y=L.boss.lane,p=L.boss.ph[B.phase],g=bo.g,st=B.stun||dead;g.position.set(X(B.kx),st?LAB.gy*Math.max(0,1-(now-B.hitAt)/500):LAB.gy+Math.sin(t*3)*.08,Z(y));g.children[0].rotation.y=st?t*14:Math.atan2(B.kd,0);g.scale.setScalar(dead?Math.max(.05,1.7-(now-B.hitAt)/500):1.7);bo.sh.position.set(X(B.kx),.118,Z(y));
     for(let k=0;k<2;k++){const up=B.up[k],[m,rg]=bo.sw[k],sc=bo.sc[k];m.position.set(X(p[k]),.112,Z(y));rg.position.set(X(p[k]),.13,Z(y));rg.rotation.y=t*2;m.material.opacity=up?.25:.5+.25*Math.sin(t*5);m.visible=rg.visible=!dead;
       const tg=up?0:-1.5;sc.position.set(X(p[k]),sc.position.y+(tg-sc.position.y)*Math.min(1,dt*12),Z(y));sc.visible=sc.position.y>-1.4;if(up&&up-LB.clock<1500)sc.visible=Math.sin(now*.03)>0;
@@ -2739,6 +2773,31 @@ const CINE={
    tl.to(q('#pb'),{y:296,duration:.18,yoyo:true,repeat:3,ease:'power2.out'},18.7);A.say(18.8,'Pia','„Hui! Nochmal!“');A.face(18.8,'#hen','froh');
    A.say(20.6,'','Neu: Portale bringen dich zum Gegenstück.');A.title(24)},done,2.4)}};
 function cinePlay(name,done){if(typeof name==='function'){done=name;name='intro'}if(!window.gsap||!CINE[name||'intro']){done&&done();return}CINE[name||'intro'](done)}
+/* ---------- Welt 4 und 5 ---------- */
+CINE.stadt=function(done){let hs='';const cols=['#e8c9a0','#d9a07a','#c9d4e0','#e6d9b0','#c8a8c8'];for(let k=0;k<6;k++){const x=k*64-10,h=120+((k*37)%60);hs+=`<rect x="${x}" y="${340-h}" width="58" height="${h}" fill="${cols[k%5]}" ${CNO}/><path d="M${x-6},${340-h} L${x+29},${300-h} L${x+64},${340-h} Z" fill="${k%2?'#8a3a2a':'#a8402e'}" ${CNO}/><rect x="${x+12}" y="${372-h}" width="13" height="17" fill="#ffd98a" filter="url(#gl)"/><rect x="${x+34}" y="${372-h}" width="13" height="17" fill="#ffd98a" filter="url(#gl)"/>`}
+  cineRun(`<rect width="360" height="440" fill="url(#cdawn)"/><circle cx="300" cy="70" r="20" fill="#fff6c8" opacity=".85"/>${hs}<rect y="340" width="360" height="100" fill="#8e8d9c"/><path d="M0,366 H360 M0,398 H360 M40,340 V366 M130,340 V366 M220,340 V366 M310,340 V366 M85,366 V398 M175,366 V398 M265,366 V398" stroke="#6a697a" stroke-width="3"/>
+   <g id="bmp" transform="translate(236,330)"><rect x="-4" y="-4" width="8" height="30" fill="#6a4a2a" ${CNO}/><g transform="rotate(-45)">${[0,1,2,3,4].map(k=>`<rect x="${-50+k*20}" y="-9" width="20" height="18" fill="${k%2?'#fff6e6':'#e0403a'}" ${CNO}/>`).join('')}</g></g>
+   <path id="arc" d="M236,318 Q250,200 250,120" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="3 9" stroke-linecap="round" opacity="0"/>
+   ${cnBall('pb',-40,328)}${cnTitle('WELT 4','Stadt')}`,A=>{const{q,tl}=A;cnFace(q('#pb'),'froh');
+   A.say(.3,'','Die Stadt. Der Weg zur Burg führt über den Markt.');A.roll(1,'#pb',206,1.6,'power2.in');
+   A.at(2.6,()=>{tone(300,.1,'square',.06);tone(520,.2,'triangle',.06,.06)});A.face(2.6,'#pb','ueber');tl.to(q('#bmp'),{rotation:-12,transformOrigin:'50% 100%',duration:.08,yoyo:true,repeat:3},2.6).to(q('#arc'),{opacity:.8,duration:.2},2.6)
+     .to(q('#pb'),{x:250,y:110,duration:.9,ease:'power2.out'},2.62).to(q('#pb .rot'),{rotation:'+=540',transformOrigin:'50% 50%',duration:.9},2.62);
+   A.say(2.8,'Pia','„Hui! Um die Ecke!“');A.face(3.6,'#pb','froh');
+   A.say(5.2,'','Neu: Prellböcke lenken dich um die Ecke, ohne dich anzuhalten.');tl.to(q('#arc'),{opacity:0,duration:.4},7.6);A.title(8.4)},done,1.6)};
+CINE.hafen=function(done){const rng=mulberry32(5);let wv='';for(let k=0;k<5;k++)wv+=`<path class="wv" d="M-40,${362+k*18} q20,-8 40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0" fill="none" stroke="#3f94bc" stroke-width="4" opacity="${.7-k*.1}"/>`;
+  cineRun(`<rect width="360" height="440" fill="url(#cs2)"/><circle cx="70" cy="70" r="48" fill="url(#cg)" opacity=".25"/><circle cx="70" cy="70" r="20" fill="#cfe0e8" opacity=".85"/>
+   <path d="M210,250 l30,-70 l30,70 Z" fill="#f4f0e6" ${CNO} opacity=".8"/><rect x="238" y="170" width="4" height="100" fill="#55402e"/><path d="M190,262 h100 l-14,22 h-72 Z" fill="#7a5134" ${CNO}/>
+   <rect y="352" width="360" height="88" fill="#0c2a3c"/>${wv}<rect y="300" width="360" height="56" fill="#a8845c" ${CNO}/><path d="M0,318 H360 M0,336 H360 M60,300 V356 M150,300 V356 M240,300 V356 M320,300 V356" stroke="#7a5a38" stroke-width="2.500"/>
+   <rect x="20" y="258" width="44" height="42" fill="#a67a48" ${CNO}/><path d="M20,258 L64,300 M64,258 L20,300" stroke="#8a6236" stroke-width="3"/><rect x="36" y="226" width="34" height="32" fill="#b8894f" ${CNO}/>
+   <g id="gate" transform="translate(296,300)"><rect x="-10" y="-150" width="12" height="150" fill="#3a3a42" ${CNO}/><rect x="52" y="-150" width="12" height="150" fill="#3a3a42" ${CNO}/><g id="bars">${[0,1,2,3].map(k=>`<rect x="${6+k*12}" y="-140" width="6" height="140" fill="#ff5a4e" ${CNO}/>`).join('')}<rect x="2" y="-90" width="50" height="8" fill="#ff5a4e" ${CNO}/></g></g>
+   <g id="key" transform="translate(180,250)" filter="url(#gl)"><circle r="12" fill="none" stroke="#ff5a4e" stroke-width="6"/><path d="M0,12 V44 M0,32 H12 M0,42 H9" stroke="#ff5a4e" stroke-width="6" stroke-linecap="round"/></g>
+   ${cnFlies(rng)}<circle id="b2g" cx="-40" cy="278" r="60" fill="url(#cg)" opacity=".3"/>${cnBall('pb',-40,276)}${cnTitle('WELT 5','Hafen')}`,A=>{const{q,tl}=A;cnFace(q('#pb'),'laecheln');
+   A.loop('.wv',{x:40,duration:1.6,ease:'none'});A.loop('#key',{y:242,duration:.7,yoyo:true,ease:'sine.inOut'});
+   A.say(.3,'','Der Hafen bei Nacht. Ein Tor versperrt den Kai.');A.roll(.8,'#pb',110,1.4,'power1.out');tl.to(q('#b2g'),{x:150,duration:1.4},.8);A.face(2.4,'#pb','sorge');
+   A.face(4,'#pb','grinsen');A.roll(4.2,'#pb',180,.8,'power2.in');tl.to(q('#b2g'),{x:220,duration:.8},4.2);
+   A.at(5,()=>{tone(880,.12,'triangle',.06);tone(1320,.2,'triangle',.05,.09)});tl.to(q('#key'),{scale:0,y:230,rotation:200,transformOrigin:'50% 50%',duration:.4},5);A.flash(5,.3,.3);A.face(5.1,'#pb','froh');
+   A.say(5.2,'','Neu: Schlüssel öffnen die Tür in ihrer Farbe.');tl.to(q('#bars'),{y:-150,duration:.9,ease:'power2.in'},5.6);A.at(5.6,()=>{tone(392,.16,'triangle',.06);tone(523,.22,'triangle',.06,.1)});
+   A.roll(7.4,'#pb',420,1.4,'power2.in');tl.to(q('#b2g'),{x:460,duration:1.4},7.4);A.title(8.4)},done,1.6)};
 
 drawLogo(true);let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if($('#lab').classList.contains('on'))labResize();if($('#home').classList.contains('on')){drawLogo(false);heroStart()}},200)});
 function paintIcons(){paintImg($('#icDaily'),compact(pixling(12,12,mulberry32(hashStr('daily-'+today())))));
