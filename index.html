@@ -479,7 +479,7 @@ html.k3 .lw,html.k3 .lw-h i{border-radius:0}.lst-w{font:700 12px var(--display);
 window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{const f=new File([data],filename,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
-window.PX_VER='27.11.2026 15:41 · a37eb';
+window.PX_VER='27.11.2026 15:58 · e6bc0';
 (()=>{let fresh=false;try{fresh=!!sessionStorage.getItem('pxr');sessionStorage.removeItem('pxr')}catch(e){}
   const t0=performance.now(),hide=()=>{const s=document.getElementById('splash');if(!s)return;setTimeout(()=>{s.classList.add('off');setTimeout(()=>s.remove(),600)},Math.max(0,(fresh?350:900)-(performance.now()-t0)))};
   const reload=()=>{try{sessionStorage.setItem('pxr','1')}catch(e){}location.reload()};
@@ -1887,14 +1887,15 @@ const LW_N=15,LW_C=13,
 function labSpec(n,world){
   const k=Math.floor((n-1)/LW_N),end=k>=LW_C,w=world!==undefined?world:end?[8,9,10,11,12,6,4][k%7]:k,j=(n-1)%LW_N,F=LW_F[w],u=LW_U[j],df=LW_D[j],S=LW_SIZE[w],W=Math.round(S[0]+(S[2]-S[0])*u),H=Math.round(S[1]+(S[3]-S[1])*u),a=W*H/100,rm=!!F.rm,locks=[];
   if(F.k){const nl=Math.min(F.k,a>2.3?3:a>1.2?2:1);for(let i=0;i<nl;i++)locks.push(F.b===2||(F.b&&(i+j)%2===0)?'bomb':'key')}
-  return{W,H,w,j,df,style:rm?'rooms':'cave',holes:w===0&&j<5?0:w===0&&j===5?1:Math.round(a*(.9+df*.35)*(w<1?.8:1.05)*(F.h||1)),holeSafe:w===0&&j===5,ports:F.p?Math.min(4,1+Math.floor(a/1.6)):0,locks,
+  const ar=!rm&&[4,7,10,12,14].includes(j);
+  return{W:ar?Math.min(23,Math.round(W*1.4)):W,H:ar?Math.round(H*1.3):H,w,j,df,areas:ar?Math.min(4,2+(u>.85?1:0)+(w>=6?1:0)):0,bridge:[3,4,5,7,8,9,10].includes(w),style:rm?'rooms':ar?'areas':'cave',holes:w===0&&j<5?0:w===0&&j===5?1:Math.round(a*(.9+df*.35)*(w<1?.8:1.05)*(F.h||1)),holeSafe:w===0&&j===5,ports:F.p?Math.min(4,1+Math.floor(a/1.6)):0,locks,
     arr:F.a?Math.round(a*F.a):0,stars:w===0&&j<10?0:Math.min(5,1+Math.floor(a/1.2)),water:rm?0:F.wa||.06,guards:F.g&&j>=({1:5,5:2}[w]||0)?Math.min(4,1+Math.floor(a/1.4)):0,cand:[3,1,rm?3:6,rm?4:10][df]};
 }
 function labGenSpec(sp,seedStr,depth){
-  const rng=mulberry32(hashStr('lab3'+seedStr)),W=sp.W,H=sp.H,N=W*H,ri=k=>Math.floor(rng()*k),area=(W-2)*(H-2),rm=sp.style==='rooms';
+  const rng=mulberry32(hashStr('lab3'+seedStr)),ri=k=>Math.floor(rng()*k),rm=sp.style==='rooms';let W=sp.W,H=sp.H,N=W*H,area=(W-2)*(H-2),bridge=null,first=null;
   const count=(g,v)=>{let c=0;for(let i=0;i<N;i++)if(g[i]===v)c++;return c};
   for(let att=0;att<90;att++){
-    const g=new Uint8Array(N),room=new Int8Array(N).fill(-1),rooms=[],keep=new Uint8Array(N),lax=att>45?.8:1;
+    W=sp.W;H=sp.H;N=W*H;first=null;bridge=null;let fail=false,g=new Uint8Array(N),room=new Int8Array(N).fill(-1),keep=new Uint8Array(N);const rooms=[],lax=att>45?.8:1;
     if(rm){ /* Grundriss: getrennte Zimmer, durch Flure verbunden */
       const cen=[];for(let t=0,want=Math.max(3,Math.round(area/17));t<want*30&&rooms.length<want;t++){const w=3+ri(4),h=3+ri(4),x=1+ri(Math.max(1,W-1-w)),y=1+ri(Math.max(1,H-1-h));if(x+w>W-1||y+h>H-1)continue;
         if(rooms.some(r=>x<r.x+r.w+1&&r.x<x+w+1&&y<r.y+r.h+1&&r.y<y+h+1))continue;rooms.push({x,y,w,h,type:0});cen.push([x+(w>>1),y+(h>>1)])}
@@ -1903,6 +1904,31 @@ function labGenSpec(sp,seedStr,depth){
       const link=(p,q)=>{let[x,y]=cen[p];const[tx,ty]=cen[q],hx=()=>{while(x!==tx){g[y*W+x]=1;keep[y*W+x]=room[y*W+x]<0?1:0;x+=x<tx?1:-1}},vy=()=>{while(y!==ty){g[y*W+x]=1;keep[y*W+x]=room[y*W+x]<0?1:0;y+=y<ty?1:-1}};if(rng()<.5){hx();vy()}else{vy();hx()}};
       for(let k=1;k<ord.length;k++)link(ord[k-1],ord[k]);for(let k=2;k<ord.length;k++)if(rng()<.45)link(ord[k-2],ord[k]);
       for(let i=0;i<N;i++)if(g[i]===1&&!keep[i]&&rng()<.09)g[i]=2}
+    else if(sp.style==='areas'){ /* mehrere Areale, durch schmale Wege oder Brücken verbunden */
+      const rs=[],links=[];bridge=new Uint8Array(N);
+      for(let t=0;t<400&&rs.length<sp.areas;t++){const w=6+ri(4),h=6+ri(5);let x,y,par=-1,dir=0;
+        if(!rs.length){x=1+ri(Math.max(1,W-w-1));y=1+ri(Math.max(1,H-h-1))}
+        else{par=ri(rs.length);const p=rs[par],gap=3+ri(3);dir=ri(4);
+          if(dir<2){y=p.y-h+3+ri(p.h+h-5);x=dir===0?p.x+p.w+gap:p.x-gap-w}else{x=p.x-w+3+ri(p.w+w-5);y=dir===2?p.y+p.h+gap:p.y-gap-h}}
+        if(x<1||y<1||x+w>W-1||y+h>H-1||rs.some(r=>x<r.x+r.w+3&&r.x<x+w+3&&y<r.y+r.h+3&&r.y<y+h+3))continue;
+        rs.push({x,y,w,h});if(par>=0)links.push([par,rs.length-1,dir])}
+      if(rs.length<2)continue;area=0;
+      /* jedes Areal bekommt innen sein eigenes kleines Gewirr aus Kammern und Gängen */
+      for(const r of rs){area+=r.w*r.h;const cen=[],nR=Math.max(2,Math.round(r.w*r.h/12))+ri(2);
+        for(let k=0;k<nR;k++){const w=2+ri(4),h=2+ri(4),x=r.x+ri(Math.max(1,r.w-w+1)),y=r.y+ri(Math.max(1,r.h-h+1));for(let b=y;b<Math.min(r.y+r.h,y+h);b++)for(let a=x;a<Math.min(r.x+r.w,x+w);a++)g[b*W+a]=1;cen.push([Math.min(r.x+r.w-1,x+(w>>1)),Math.min(r.y+r.h-1,y+(h>>1))])}
+        for(let k=1;k<cen.length;k++){let[x,y]=cen[k-1];const[tx,ty]=cen[k];while(x!==tx){g[y*W+x]=1;x+=x<tx?1:-1}while(y!==ty){g[y*W+x]=1;y+=y<ty?1:-1}g[y*W+x]=1}
+        for(let b=r.y;b<r.y+r.h;b++)for(let a=r.x;a<r.x+r.w;a++)if(g[b*W+a]===1&&rng()<.07)g[b*W+a]=2}
+      /* Verbindung: gerade Linie von Boden zu Boden, das freie Stück dazwischen ist Weg oder Brücke */
+      for(const[pa,ch,dir]of links){const p=rs[pa],q=rs[ch],hz=dir<2,lo=hz?Math.max(p.y,q.y):Math.max(p.x,q.x),hi=(hz?Math.min(p.y+p.h,q.y+q.h):Math.min(p.x+p.w,q.x+q.w))-1,fwd=dir===0||dir===2,A=fwd?p:q,B=fwd?q:p;let done=false;
+        for(let tr=0;tr<12&&!done;tr++){const line=lo+ri(hi-lo+1),at=k=>hz?line*W+k:k*W+line,e0=hz?A.x+A.w-1:A.y+A.h-1,e1=hz?B.x:B.y,s0=hz?A.x:A.y,s1=hz?B.x+B.w-1:B.y+B.h-1;let a0=e0,b0=e1;
+          while(a0>=s0&&g[at(a0)]!==1)a0--;while(b0<=s1&&g[at(b0)]!==1)b0++;if(a0<s0||b0>s1)continue;
+          for(let k=a0;k<=b0;k++){const i=at(k);g[i]=1;keep[i]=1;if(k>e0&&k<e1){bridge[i]=1;if(sp.bridge)for(const o of hz?[i-W,i+W]:[i-1,i+1])if(g[o]===0)g[o]=3}}done=true}
+        if(!done)fail=true}
+      if(fail)continue;
+      /* auf das belegte Rechteck zuschneiden */
+      {let x0=W,y0=H,x1=0,y1=0;for(let i=0;i<N;i++)if(g[i]){const x=i%W,y=(i/W)|0;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}x0--;y0--;x1++;y1++;const nW=x1-x0+1,nH=y1-y0+1,ng=new Uint8Array(nW*nH),nk=new Uint8Array(nW*nH),nb=new Uint8Array(nW*nH);
+        for(let y=0;y<nH;y++)for(let x=0;x<nW;x++){const o=(y+y0)*W+x+x0;ng[y*nW+x]=g[o];nk[y*nW+x]=keep[o];nb[y*nW+x]=bridge[o]}
+        first={x:rs[0].x-x0,y:rs[0].y-y0,w:rs[0].w,h:rs[0].h};W=nW;H=nH;N=W*H;g=ng;keep=nk;bridge=nb;room=new Int8Array(N).fill(-1)}}
     else{const cen=[],big=area>100?1:0,nR=Math.max(3,Math.round(area/(13-big*2)))+ri(2);
       for(let r=0;r<nR;r++){const w=2+big+ri(4),h=2+big+ri(4),x=1+ri(Math.max(1,W-1-w)),y=1+ri(Math.max(1,H-1-h));
         for(let b=y;b<Math.min(H-1,y+h);b++)for(let a=x;a<Math.min(W-1,x+w);a++)g[b*W+a]=1;cen.push([Math.min(W-2,x+(w>>1)),Math.min(H-2,y+(h>>1))])}
@@ -1910,11 +1936,11 @@ function labGenSpec(sp,seedStr,depth){
         const hx=()=>{while(x!==tx){g[y*W+x]=1;x+=x<tx?1:-1}},vy=()=>{while(y!==ty){g[y*W+x]=1;y+=y<ty?1:-1}};
         if(hf){hx();vy()}else{vy();hx()}g[y*W+x]=1}
       for(let i=0;i<N;i++)if(g[i]===1&&rng()<.07)g[i]=2}
-    const fl=[];for(let i=0;i<N;i++)if(g[i]===1)fl.push(i);if(fl.length<10)continue;
-    const L={W,H,grid:g,start:fl[ri(fl.length)],locks:[],doorAt:new Int8Array(N).fill(-1),keyAt:new Int8Array(N).fill(-1),port:new Int32Array(N).fill(-1),arr:new Int8Array(N).fill(-1),ports:[],stars:[],guards:[],gAt:new Int8Array(N).fill(-1),gc:new Map(),room:rm?room:null,rooms:rm?rooms:null,spec:sp,rnd:rng,keep};
+    const fl=[];for(let i=0;i<N;i++)if(g[i]===1&&(!first||(i%W>=first.x&&i%W<first.x+first.w&&((i/W)|0)>=first.y&&((i/W)|0)<first.y+first.h)))fl.push(i);if(fl.length<6)continue;
+    const L={W,H,grid:g,start:fl[ri(fl.length)],locks:[],doorAt:new Int8Array(N).fill(-1),keyAt:new Int8Array(N).fill(-1),port:new Int32Array(N).fill(-1),arr:new Int8Array(N).fill(-1),ports:[],stars:[],guards:[],gAt:new Int8Array(N).fill(-1),gc:new Map(),room:rm?room:null,rooms:rm?rooms:null,spec:sp,rnd:rng,keep,bridge};
     const roomsOk=()=>{if(!rm)return true;for(const r of rooms){let c=0;for(let b=r.y;b<r.y+r.h;b++)for(let a=r.x;a<r.x+r.w;a++)if(L.grid[b*W+a]===1)c++;if(c<r.w*r.h*.4)return false}return true};
     if(!labSettle(L)||!roomsOk())continue;
-    const fN=count(g,1);if(fN<area*(rm?.34:.36)*lax)continue;
+    const fN=count(g,1);if(fN<area*(rm?.34:first?.3:.36)*lax)continue;
     let sol=labGreedy(L);if(!sol||sol.length<Math.max(4,fN*.24*lax))continue;
     const floors=()=>{const o=[];for(let i=0;i<N;i++)if(L.grid[i]===1&&i!==L.start&&L.keyAt[i]<0&&L.doorAt[i]<0&&L.port[i]<0&&L.arr[i]<0)o.push(i);return o};
     const trial=(apply,valid)=>{const bg=L.grid.slice(),bp=L.port.slice(),ba=L.arr.slice(),bd=L.doorAt.slice(),bk=L.keyAt.slice(),bn=L.locks.length,bl=L.ports.length;apply();
@@ -1924,11 +1950,11 @@ function labGenSpec(sp,seedStr,depth){
       if(a===b||Math.abs(a%W-b%W)+Math.abs(((a/W)|0)-((b/W)|0))<5)continue;if(trial(()=>{L.port[a]=b;L.port[b]=a;L.ports.push([a,b])},()=>L.grid[a]===1&&L.grid[b]===1))made++}
     for(let t=0,made=0;t<sp.arr*6&&made<sp.arr;t++){const f=floors();if(f.length<8)break;const a=f[ri(f.length)],d=ri(4),nb=a+LDIR[d][0]+LDIR[d][1]*W;if(L.grid[nb]!==1)continue;
       if(trial(()=>{L.arr[a]=d},()=>L.grid[a]===1))made++}
-    for(const kind of sp.locks)for(let t=0,n0=L.locks.length;t<40&&L.locks.length===n0;t++){const f=floors();if(f.length<8)break;const d=f[ri(f.length)],k=f[ri(f.length)],x=d%W,y=(d/W)|0,bl=i=>L.grid[i]!==1&&L.grid[i]!==4;
+    for(const kind of sp.locks)for(let t=0,n0=L.locks.length;t<40&&L.locks.length===n0;t++){const f=floors();if(f.length<8)break;const fb=bridge&&t<28?f.filter(i=>bridge[i]):[],d=fb.length?fb[ri(fb.length)]:f[ri(f.length)],k=f[ri(f.length)],x=d%W,y=(d/W)|0,bl=i=>L.grid[i]!==1&&L.grid[i]!==4;
       if(d===k||x<1||y<1||x>W-2||y>H-2||labNearXY(W,d,k)||L.locks.some(q=>labNearXY(W,q.d,d)||labNearXY(W,q.k,k)))continue;const hor=bl(d-W)&&bl(d+W)&&!bl(d-1)&&!bl(d+1),ver=bl(d-1)&&bl(d+1)&&!bl(d-W)&&!bl(d+W);if(!hor&&!ver)continue;
       trial(()=>{const id=L.locks.length;L.locks.push({d,k,bomb:kind==='bomb'});L.doorAt[d]=id;L.keyAt[k]=id},()=>L.grid[d]===1&&L.grid[k]===1)}
     {const f=floors();for(let s=0;s<sp.stars&&f.length;s++)L.stars.push(f.splice(ri(f.length),1)[0])}
-    if(sp.water)for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const i=y*W+x;if(L.grid[i]===0&&(rng()<sp.water||((L.grid[i-1]===3||L.grid[i-W]===3)&&rng()<.55)))L.grid[i]=3}
+    if(sp.water&&!first)for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const i=y*W+x;if(L.grid[i]===0&&(rng()<sp.water||((L.grid[i-1]===3||L.grid[i-W]===3)&&rng()<.55)))L.grid[i]=3}
     /* Schlünde, die nach allen Umbauten auf keiner Rollbahn mehr liegen, werden zu Gegenständen */
     if(!sp.holeSafe)for(let i=0;i<N;i++)if(L.grid[i]===4&&!labThreat(L,i)){L.grid[i]=2;const r=labCheck(L);if(!r.ok||r.un.length)L.grid[i]=4}
     /* Wachen: kurze gerade Laufwege auf freien Feldern, fern vom Start */
@@ -2141,8 +2167,8 @@ function labNavBack(){ /* Zurück-Geste des Systems: Wischer am Rand gehören zu
 
 /* ---------- 2D-Zeichnung: Vorschau im Menü und Ersatz ohne 3D ---------- */
 const labSave=d=>store.set('lab',{max:d.max,st:d.st,seen3:d.seen});
-const labFloor=(L,th,i)=>(L.room&&L.room[i]>=0&&th.rooms?th.rooms[L.rooms[L.room[i]].type].f:th.floor)[(i%L.W+((i/L.W)|0))&1];
-function labDraw2D(c,L,th,st,ox,oy,s,now){const{W,H}=L,g=L.grid,ne=i=>{const x=i%W,y=(i/W)|0;for(let b=-1;b<2;b++)for(let a=-1;a<2;a++){const X=x+a,Y=y+b;if(X>=0&&Y>=0&&X<W&&Y<H&&g[Y*W+X]!==0)return true}return false},dark=th.amb<.25;
+const labFloor=(L,th,i)=>(L.bridge&&L.bridge[i]&&L.spec&&L.spec.bridge?['#b89060','#a88252']:L.room&&L.room[i]>=0&&th.rooms?th.rooms[L.rooms[L.room[i]].type].f:th.floor)[(i%L.W+((i/L.W)|0))&1];
+function labDraw2D(c,L,th,st,ox,oy,s,now){const{W,H}=L,g=L.grid,ne=i=>{const x=i%W,y=(i/W)|0;for(let b=-1;b<2;b++)for(let a=-1;a<2;a++){const X=x+a,Y=y+b,v=X>=0&&Y>=0&&X<W&&Y<H?g[Y*W+X]:0;if(v===1||v===2||v===4)return true}return false},dark=th.amb<.25;
   for(let i=0;i<W*H;i++){const x=ox+(i%W)*s,y=oy+((i/W)|0)*s,v=g[i];
     if(v===0){if(ne(i)){c.fillStyle=th.wall;c.fillRect(x,y,s+.5,s+.5);c.fillStyle='rgba(255,255,255,.1)';c.fillRect(x,y,s,s*.18)}continue}
     c.fillStyle=th.ground;c.fillRect(x,y,s+.5,s+.5);
@@ -2231,7 +2257,6 @@ function labScene(){
   S.fog=dark?new T.Fog(new T.Color(th.bg[1]),20,60):null;
   S.add(new T.HemisphereLight(lc(dark?th.sunC:'#ffffff'),lc(th.ground),th.amb));
   const sun=new T.DirectionalLight(lc(th.sunC),th.sun);sun.castShadow=true;const sc=sun.shadow.camera;sc.left=-10;sc.right=10;sc.top=12;sc.bottom=-12;sc.near=1;sc.far=34;sun.shadow.mapSize.set(1024,1024);sun.shadow.bias=-.0008;sun.shadow.normalBias=.03;S.add(sun);S.add(sun.target);LAB.sun=sun;
-  const slab=new T.Mesh(G.box,labMat(th.ground));slab.scale.set(W,.6,H);slab.position.y=-.3;slab.receiveShadow=true;S.add(slab);
   const dm=new T.Object3D(),put=(mesh,i,x,y,z,sx,sy,sz,ry)=>{dm.position.set(x,y,z);dm.scale.set(sx,sy,sz);dm.rotation.set(0,ry||0,0);dm.updateMatrix();mesh.setMatrixAt(i,dm.matrix)},
     inst=(geo,mat,n,sh)=>{const m=new T.InstancedMesh(G[geo],mat,Math.max(1,n));m.count=n;m.castShadow=sh!==false;m.receiveShadow=true;m.frustumCulled=false;S.add(m);return m},tint=(hex,j)=>{const c=lc(hex);c.offsetHSL((rng()-.5)*.03,0,(rng()-.5)*j);return c};
   /* Boden, bei Dunkelheit mit leuchtender Spur */
@@ -2240,7 +2265,9 @@ function labScene(){
   LAB.glow=dark||dusk?inst('pl',(()=>{const m=new T.MeshBasicMaterial({color:new T.Color(th.paint),transparent:true,opacity:dark?.62:.3,depthWrite:false,fog:false});LAB.disp.push(m);return m})(),fl.length,false):null;if(LAB.glow)LAB.glow.receiveShadow=false;
   fl.forEach((c,k)=>{LB.fi[c]=k;const x=c%W,y=(c/W)|0;put(fm,k,X(x),.05,Z(y),.94,.1,.94);fm.setColorAt(k,LB.painted[c]?LAB.pc:LAB.fcol(c));if(LAB.glow)put(LAB.glow,k,X(x),.108,Z(y),LB.painted[c]?.9:0,1,LB.painted[c]?.9:0)});fm.instanceColor.needsUpdate=true;
   /* Wände je nach Welt */
-  const ws=[];for(let i=0;i<N;i++){if(g[i]!==0)continue;const x=i%W,y=(i/W)|0;let n=false;for(let b=-1;b<2&&!n;b++)for(let a=-1;a<2;a++){const p=x+a,q=y+b;if(p>=0&&q>=0&&p<W&&q<H&&g[q*W+p]!==0){n=true;break}}if(n)ws.push(i)}
+  const ws=[];for(let i=0;i<N;i++){if(g[i]!==0)continue;const x=i%W,y=(i/W)|0;let n=false;for(let b=-1;b<2&&!n;b++)for(let a=-1;a<2;a++){const p=x+a,q=y+b,v=p>=0&&q>=0&&p<W&&q<H?g[q*W+p]:0;if(v===1||v===2||v===4){n=true;break}}if(n)ws.push(i)}
+  /* Boden nur unter dem, was zum Level gehört: so entstehen Inseln statt eines Rechtecks */
+  {const isW=new Uint8Array(N);for(const c of ws)isW[c]=1;const gc=[];for(let i=0;i<N;i++)if(g[i]!==0||isW[i])gc.push(i);const gm=inst('box',labMat(th.ground),gc.length,false);gc.forEach((c,k)=>put(gm,k,X(c%W),-.3,Z((c/W)|0),1,.6,1))}
   const wn=ws.length,wx=c=>X(c%W),wz=c=>Z((c/W)|0),upd=m=>{if(m.instanceColor)m.instanceColor.needsUpdate=true};LAB.wh=new Float32Array(N);
   const front=c=>c>=W&&(g[c-W]===1||g[c-W]===4);
   if(th.ws==='tree'){const tr=inst('cyl',labMat('#3a281c'),wn),c1=inst('cone',labMat('#ffffff'),wn),c2=inst('cone',labMat('#ffffff'),wn);
