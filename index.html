@@ -479,7 +479,7 @@ html.k3 .lw,html.k3 .lw-h i{border-radius:0}.lst-w{font:700 12px var(--display);
 window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{const f=new File([data],filename,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
-window.PX_VER='27.11.2026 13:08 · 9afaa';
+window.PX_VER='27.11.2026 13:45 · a49b9';
 (()=>{let fresh=false;try{fresh=!!sessionStorage.getItem('pxr');sessionStorage.removeItem('pxr')}catch(e){}
   const t0=performance.now(),hide=()=>{const s=document.getElementById('splash');if(!s)return;setTimeout(()=>{s.classList.add('off');setTimeout(()=>s.remove(),600)},Math.max(0,(fresh?350:900)-(performance.now()-t0)))};
   const reload=()=>{try{sessionStorage.setItem('pxr','1')}catch(e){}location.reload()};
@@ -1473,8 +1473,10 @@ function openSettings(){
   <button class="opt" id="oSound" role="switch"><span><b>Ton</b><small>Klänge beim Setzen und Lösen</small></span><i class="tg"></i></button>
   <button class="opt" id="o3d" role="switch"><span><b>3D-Ansicht</b><small id="o3dTxt"></small></span><i class="tg"></i></button>
   <div class="opt col"><span><b>Look</b><small id="oSkinTxt"></small></span><div class="seg s3" id="oSkin"><button data-s="rund">Klassisch</button><button data-s="k3">3D</button><button data-s="arc">Retro</button></div></div>
+  ${labSpeedRow()}
   <div class="btns"><button class="ghost" id="oHelp">Spielregeln</button>${$('#game').classList.contains('on')?'':'<button class="ghost" id="oTut">Tutorial</button>'}${inGame?'<button class="ghost" id="oClear">Brett leeren</button>':''}${window.PX_CHECK?'<button class="ghost" id="oUpd">Update suchen</button>':''}</div>
   <p style="text-align:center;font-size:12px">Version ${window.PX_VER||'Vorschau in Claude'}</p>`);
+  labSpeedBind(s);
   const up=s.querySelector('#oUpd');if(up)up.onclick=()=>{toast('Suche nach einer neuen Version. Sie wird beim nächsten Besuch der Startseite geladen.',3200);window.PX_CHECK()};
   const a=s.querySelector('#oSound'),b=s.querySelector('#o3d'),sync=()=>{const on3=R3.on&&!R3.failed;a.classList.toggle('on',S.sound);a.setAttribute('aria-checked',S.sound);b.classList.toggle('on',on3);b.setAttribute('aria-checked',on3);b.disabled=R3.failed;s.querySelectorAll('#oSkin button').forEach(x=>x.classList.toggle('sel',x.dataset.s===SKIN));s.querySelector('#oSkinTxt').textContent={rund:'Runde Glasflächen, alles gerade.',k3:'Harte Kanten, Leuchtrand und eine gefaltete Glasbahn auf der Startseite.',arc:'Die Startseite als Spielautomat mit Leuchtschild, Bildschirm und Pult.'}[SKIN];
     s.querySelector('#o3dTxt').textContent=R3.failed?'Auf diesem Gerät nicht verfügbar, das Brett läuft in 2D.':'Glasquader mit Licht und Funken. Ausgeschaltet läuft das flache 2D-Brett.'};
@@ -1805,23 +1807,24 @@ function labSlide(L,pos,d,mask,raw){
   return{end,cells,dead,bad,trap,keys};
 }
 /* Zeitablauf wie im Spiel: Die Kugel braucht je Zug höchstens 0,82 s, ein Wächter 0,64 s je Feld */
-const LG_STEP=.64,LG_OFF=1.37;
+const LG_STEP=.64,LG_OFF=1.37,LG_K=[1.25,1/1.2,.625]; /* Zeitfaktor je Rollgeschwindigkeit: langsam, normal, schnell */
+let labK=LG_K[1];
 function labGuardPos(L,k,t){const cells=L.guards[k],n=cells.length-1,W=L.W;let ph=(t/LG_STEP+k*LG_OFF)%(2*n);if(ph<0)ph+=2*n;const p=ph<n?ph:2*n-ph,i0=Math.min(n-1,Math.floor(p)),f=p-i0,a=cells[i0],b=cells[i0+1];return[a%W+(b%W-a%W)*f,((a/W)|0)+(((b/W)|0)-((a/W)|0))*f]}
 /* Bewegungsablauf eines Zuges, für Spiel und Prüfung derselbe: sanft anrollen, beschleunigen, vor Wasser abbremsen, gegen Wände ungebremst prallen. Portale teilen den Zug in Abschnitte. */
-function labRollPlan(L,pos,cells){const W=L.W,pts=[pos].concat(cells),far=(a,b)=>Math.abs(a%W-b%W)+Math.abs(((a/W)|0)-((b/W)|0))!==1,legs=[];let cur=[0];
+function labRollPlan(L,pos,cells,kk){const K=kk||labK,W=L.W,pts=[pos].concat(cells),far=(a,b)=>Math.abs(a%W-b%W)+Math.abs(((a/W)|0)-((b/W)|0))!==1,legs=[];let cur=[0];
   for(let i=1;i<pts.length;i++){if(far(pts[i-1],pts[i])){legs.push(cur);cur=[i]}else cur.push(i)}legs.push(cur);
   const n=pts.length;let soft=false;if(n>1&&!far(pts[n-2],pts[n-1])){const d=pts[n-1]-pts[n-2],nx=pts[n-1]+d;soft=nx>=0&&nx<W*L.H&&!far(pts[n-1],nx)&&L.grid[nx]===3}
-  const segs=[];let t=0;legs.forEach((lg,k)=>{const m=lg.length-1,first=k===0,last=k===legs.length-1,T=m?Math.min(.82,.105+.057*m)*(first?1.12:.8)*(last&&soft?1.25:1):0;segs.push({lg,m,t0:t,T,mode:first&&last?(soft?0:1):first?1:last&&soft?2:3});t+=T;if(!last)t+=.18});
+  const segs=[];let t=0;legs.forEach((lg,k)=>{const m=lg.length-1,first=k===0,last=k===legs.length-1,T=m?K*Math.min(.82,.105+.057*m)*(first?1.12:.8)*(last&&soft?1.25:1):0;segs.push({lg,m,t0:t,T,mode:first&&last?(soft?0:1):first?1:last&&soft?2:3});t+=T;if(!last)t+=.18*K});
   const ease=(mode,u)=>mode===0?(u<.5?2*u*u:1-2*(1-u)*(1-u)):mode===1?Math.pow(u,1.7):mode===2?1-(1-u)*(1-u):u,xy=i=>[pts[i]%W,(pts[i]/W)|0];
   const state=tt=>{for(let k=0;k<segs.length;k++){const sg=segs[k],last=k===segs.length-1,end=sg.t0+sg.T;
       if(tt<end||last){if(!sg.m){const[x,y]=xy(sg.lg[0]);return{x,y,sc:1,arr:sg.lg[0]}}const u=Math.min(1,Math.max(0,(tt-sg.t0)/sg.T)),s=ease(sg.mode,u)*sg.m,i=Math.min(sg.m-1,Math.floor(s)),f=s-i,[ax,ay]=xy(sg.lg[i]),[bx,by]=xy(sg.lg[i+1]);return{x:ax+(bx-ax)*f,y:ay+(by-ay)*f,sc:1,arr:sg.lg[0]+Math.min(sg.m,Math.floor(s+1e-6))}}
-      if(tt<end+.18){const u=(tt-end)/.18,[x,y]=xy(u<.5?sg.lg[sg.m]:segs[k+1].lg[0]);return{x,y,sc:Math.abs(1-2*u),arr:sg.lg[sg.m]}}}};
+      if(tt<end+.18*K){const u=(tt-end)/(.18*K),[x,y]=xy(u<.5?sg.lg[sg.m]:segs[k+1].lg[0]);return{x,y,sc:Math.abs(1-2*u),arr:sg.lg[sg.m]}}}};
   return{pts,T:t,soft,state,ball(tt){const s=state(Math.min(tt,t));return[s.x,s.y]}}}
 /* Trifft die Kugel auf diesem Zug einen Wächter, wenn sie zur Zeit t0 losrollt? r = Abstand, ab dem es als Treffer zählt */
 function labHit(L,plan,t0,r,ks){for(let t=0;t<=plan.T+.02;t+=.025){const[bx,by]=plan.ball(Math.min(t,plan.T));for(const k of ks){const[gx,gy]=labGuardPos(L,k,t0+t);if(Math.abs(gx-bx)<r&&Math.abs(gy-by)<r)return true}}return false}
 /* Ausweichbar heißt: Der Zug endet nicht auf einem Laufweg, und es gibt ein Startfenster von mindestens 0,4 s, großzügiger gerechnet als im Spiel */
 function labDodge(L,pos,cells,end){if(L.gAt[end]>=0)return false;const ks=[];for(const c of cells){const k=L.gAt[c];if(k>=0&&!ks.includes(k))ks.push(k)}
-  const plan=labRollPlan(L,pos,cells),S=192,dt=15.36/S,ok=new Uint8Array(S);let any=false;for(let s=0;s<S;s++){ok[s]=labHit(L,plan,s*dt,.66,ks)?0:1;if(ok[s])any=true}if(!any)return false;
+  const plan=labRollPlan(L,pos,cells,LG_K[0]),S=192,dt=15.36/S,ok=new Uint8Array(S);let any=false;for(let s=0;s<S;s++){ok[s]=labHit(L,plan,s*dt,.66,ks)?0:1;if(ok[s])any=true}if(!any)return false;
   let run=0,best=0;for(let s=0;s<S*2;s++){if(ok[s%S]){run++;if(run>best)best=run}else run=0}return best>=5}
 /* Prüft über alle Zustände (Position, geöffnete Schlösser): Von überall führt ein Weg zum Start mit allen Schlössern offen, und von dort ist jedes Feld erreichbar. */
 function labCheck(L){
@@ -1984,7 +1987,9 @@ const LSTORY=[
  ['Der Turm','Morvan hat sich im höchsten Turm verschanzt. Jede Kammer, die du mit Licht füllst, nimmt ihm ein Stück seiner Macht. Bring es zu Ende, Pia.']];
 const LKC=['#ff5a4e','#4ea8ff','#6ee06a'],LMAP=[[.2,.93],[.5,.875],[.8,.82],[.52,.74],[.83,.645],[.26,.63],[.5,.525],[.19,.085],[.54,.065],[.83,.15],[.78,.31],[.47,.27],[.2,.38]];
 const LAB={r:null,ready:false,fail:false,geo:null,mats:new Map(),disp:[],anim:[],pops:[],lamps:[],parts:[],view:{d:10,eW:9,eH:13,tx:0,tz:0}};
-let LB=null,GAME=store.get('game',0)?1:0;
+let LB=null,GAME=store.get('game',0)?1:0;labK=LG_K[store.get('lspd',1)]||LG_K[1];
+const labSpeedRow=()=>`<div class="opt col"><span><b>Rollgeschwindigkeit</b><small>Wie schnell Pia im Labyrinth rollt.</small></span><div class="seg s3" id="oSpd"><button data-v="0">Gemütlich</button><button data-v="1">Normal</button><button data-v="2">Flott</button></div></div>`,
+  labSpeedBind=s=>{const box=s.querySelector('#oSpd'),sync=()=>box.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',+b.dataset.v===store.get('lspd',1)));box.onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;store.set('lspd',+b.dataset.v);labK=LG_K[+b.dataset.v];sfx.tick();sync()};sync()};
 const labData=()=>{const d=store.get('lab',null)||{};return{max:d.max||1,st:d.st||{},seen:d.seen3||[]}};
 const LIC={re:svg('<path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v5h5"/>'),hint:svg('<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.300 1 2.200h5.200c0-.9.4-1.700 1-2.200A6 6 0 0 0 12 3z"/>'),lv:svg('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   l:svg('<path d="M15 5l-7 7 7 7"/>'),r:svg('<path d="M9 5l7 7-7 7"/>')};
@@ -2109,14 +2114,14 @@ function labMapDraw(c,w,h,cur){const rng=mulberry32(4711),P=i=>[LMAP[i][0]*w,LMA
   for(let k=0;k<30;k++){const x=rng()*w,y=rng()*h;if(isLand[(y|0)*w+(x|0)]&&LMAP.every(q=>Math.hypot(x-q[0]*w,y-q[1]*h)>22))list.push([y,'tree',x])}
   list.sort((p,q)=>p[0]-q[0]).forEach(q=>spr(q[1],q[2],q[0]));
   c.putImageData(img,0,0)}
-function labHelp(){openSheet(`<div class="sh-head"><h2>So geht das Labyrinth</h2><button class="ib" data-x aria-label="Schließen">${I.x}</button></div>
+function labHelp(){const s0=openSheet(`<div class="sh-head"><h2>So geht das Labyrinth</h2><button class="ib" data-x aria-label="Schließen">${I.x}</button></div>
  <ul class="rules"><li><i>1</i><span>Wische in eine Richtung. Pia rollt geradeaus, bis eine Wand oder ein Gegenstand sie aufhält.</span></li>
  <li><i>2</i><span>Jedes Feld, über das sie rollt, beginnt zu leuchten. Leuchten alle Felder, ist das Level geschafft. In großen Leveln zeigt die kleine Karte, was noch fehlt.</span></li>
  <li><i>3</i><span>Wirbelnde Schlünde schlucken die Kugel, dann beginnt das Level von vorn. Portale tragen sie zum Gegenstück, und sie rollt dort in gleicher Richtung weiter.</span></li>
  <li><i>4</i><span>Eine Tür öffnet sich, sobald Pia den Schlüssel überrollt hat. Eine Bombe zündet beim Überrollen und sprengt nach drei Sekunden die rissige Wand. Wer dann noch direkt daneben steht, fängt von vorn an.</span></li>
  <li><i>5</i><span>Eisrinnen mit Pfeilen lenken die Kugel in ihre Richtung. Bonussterne verschwinden nach einiger Zeit.</span></li>
  <li><i>6</i><span>Krähen, Falken und Gespenster fliegen eine gerade Bahn hin und her, auch über Wände. Rote Rauten und ihr Schatten zeigen, wo sie kreuzen. Wer berührt wird, landet am Start, das Leuchten bleibt.</span></li>
- <li><i>7</i><span>Jedes Level ist geprüft: Festfahren kannst du dich nicht, es gibt von jeder Stelle aus einen Weg zum Ziel.</span></li></ul><div class="btns"><button class="ghost" id="lhTut">Übungslevel spielen</button></div>`).querySelector('#lhTut').onclick=()=>{closeSheet();labTut(0)}}
+ <li><i>7</i><span>Jedes Level ist geprüft: Festfahren kannst du dich nicht, es gibt von jeder Stelle aus einen Weg zum Ziel.</span></li></ul>${labSpeedRow()}<div class="btns"><button class="ghost" id="lhTut">Übungslevel spielen</button></div>`);labSpeedBind(s0);s0.querySelector('#lhTut').onclick=()=>{closeSheet();labTut(0)}}
 
 /* ---------- Eingabe ---------- */
 {const el=$('#lab');let p0=null;LAB.down={x:200,t:0};
@@ -2305,12 +2310,25 @@ function labScene(){
   /* Partikel */
   {const m=new T.MeshBasicMaterial({color:0xffffff,fog:false});LAB.disp.push(m);LAB.pm=new T.InstancedMesh(G.box,m,120);LAB.pm.count=0;LAB.pm.frustumCulled=false;LAB.pm.setColorAt(0,new T.Color(1,1,1));S.add(LAB.pm)}
   /* Pia: Kugel mit Krone */
-  const tc=document.createElement('canvas');tc.width=128;tc.height=64;const tx=tc.getContext('2d');tx.fillStyle=th.ball;tx.fillRect(0,0,128,64);tx.fillStyle='rgba(255,255,255,.95)';tx.fillRect(0,25,128,14);tx.fillStyle='rgba(255,255,255,.75)';for(let k=0;k<8;k++){tx.beginPath();tx.arc(8+k*16,k%2?11:53,4.5,0,7);tx.fill()}
+  const tc=document.createElement('canvas');tc.width=128;tc.height=64;const tx=tc.getContext('2d');{const gr=tx.createLinearGradient(0,0,0,64);gr.addColorStop(0,'#ffffff');gr.addColorStop(.18,th.ball);gr.addColorStop(.82,th.ball);gr.addColorStop(1,'#00000066');tx.fillStyle=th.ball;tx.fillRect(0,0,128,64);tx.globalAlpha=.55;tx.fillStyle=gr;tx.fillRect(0,0,128,64);tx.globalAlpha=1}tx.fillStyle='rgba(255,255,255,.95)';tx.fillRect(0,26,128,12);tx.fillStyle='#ffd84d';tx.fillRect(0,24,128,2.5);tx.fillRect(0,37.5,128,2.5);tx.fillStyle='rgba(255,255,255,.75)';for(let k=0;k<8;k++){tx.beginPath();tx.arc(8+k*16,k%2?11:53,4.5,0,7);tx.fill()}
   const tex=new T.CanvasTexture(tc);tex.encoding=T.sRGBEncoding;const bm=new T.MeshStandardMaterial({map:tex,roughness:.28,metalness:.05,emissive:lc(th.ball),emissiveMap:tex,emissiveIntensity:dark?1.1:dusk?.6:.2});LAB.disp.push(tex,bm);
-  LAB.ball=new T.Mesh(G.ball,bm);LAB.ball.castShadow=true;LAB.bg=new T.Group();LAB.bg.add(LAB.ball);S.add(LAB.bg);LAB.sq=[1,1,1];LAB.bl=new T.PointLight(lc('#ffe9c8'),dark?2.8:dusk?1.3:0,6.5,2);S.add(LAB.bl);LAB.bh=labHalo(th.ball,2.8,dark?.7:dusk?.45:.22);S.add(LAB.bh);
-  {const c=new T.Group(),gm=labMat('#ffd84d',{emissive:'#ffb000',emissiveIntensity:dark?1:.35}),r=new T.Mesh(G.cyl,gm);r.scale.set(.42,.12,.42);c.add(r);for(let k=0;k<5;k++){const p=new T.Mesh(G.cone,gm);p.scale.set(.13,.2,.13);p.position.set(Math.cos(k*1.257)*.16,.14,Math.sin(k*1.257)*.16);c.add(p)}const j=new T.Mesh(G.oct,labMat('#ff4f8b',{emissive:'#ff4f8b',emissiveIntensity:.8}));j.scale.setScalar(.09);j.position.set(0,.02,.2);c.add(j);S.add(c);LAB.crown=c}
+  LAB.ball=new T.Mesh(G.ball,bm);LAB.ball.castShadow=true;LAB.bg=new T.Group();LAB.bg.add(LAB.ball);S.add(LAB.bg);LAB.sq=[1,1,1];LAB.ftex=LAB.ftex||Object.fromEntries(LFACES.map(n=>[n,labFaceTex(n)]));{const fm=new T.SpriteMaterial({map:LAB.ftex.laecheln,transparent:true,depthWrite:false,depthTest:false,fog:false});LAB.disp.push(fm);LAB.face=new T.Sprite(fm);LAB.face.renderOrder=5;S.add(LAB.face);LAB.fname='laecheln'}LAB.bl=new T.PointLight(lc('#ffe9c8'),dark?2.8:dusk?1.3:0,6.5,2);S.add(LAB.bl);LAB.bh=labHalo(th.ball,2.8,dark?.7:dusk?.45:.22);S.add(LAB.bh);
+  {const c=new T.Group(),gm=labMat('#ffd84d',{emissive:'#ffb000',emissiveIntensity:dark?1:.35}),r=new T.Mesh(G.cyl,gm);r.scale.set(.42,.12,.42);c.add(r);for(let k=0;k<5;k++){const p=new T.Mesh(G.cone,gm);p.scale.set(.13,.2,.13);p.position.set(Math.cos(k*1.257)*.16,.14,Math.sin(k*1.257)*.16);c.add(p)}const j=new T.Mesh(G.oct,labMat('#ff4f8b',{emissive:'#ff4f8b',emissiveIntensity:.8}));j.scale.setScalar(.09);j.position.set(0,.02,.2);c.add(j);
+    const rim=new T.Mesh(G.tor,gm);rim.scale.set(.44,.5,.44);rim.position.y=-.05;c.add(rim);for(let k=0;k<5;k++){const p=new T.Mesh(G.sph,labMat('#fffbe8',{emissive:'#fff0b0',emissiveIntensity:.6}));p.scale.setScalar(.07);p.position.set(Math.cos(k*1.257)*.16,.26,Math.sin(k*1.257)*.16);c.add(p)}c.traverse(o=>{if(o.isMesh)o.castShadow=true});S.add(c);LAB.crown=c}
   LAB.trail=[];LAB.tsp=[];for(let k=0;k<18;k++){const h=labHalo(k%2?th.ball:'#ffffff',1,0);h.visible=false;S.add(h);LAB.tsp.push(h)}
   LAB.view.tx=X(LB.bx);LAB.view.tz=Z(LB.by);LAB.lt=0;lab3Fit()}
+const LFACES=['laecheln','froh','ueber','schrei','benommen','grinsen'];
+function labFaceTex(name){const T=THREE,cv=document.createElement('canvas');cv.width=cv.height=128;const c=cv.getContext('2d'),L='#1b1030';c.lineCap=c.lineJoin='round';
+  const eye=(x,rx,ry,pr,py)=>{c.fillStyle='#fff';c.strokeStyle=L;c.lineWidth=5;c.beginPath();c.ellipse(x,52,rx,ry,0,0,7);c.fill();c.stroke();c.fillStyle=L;c.beginPath();c.arc(x+2,52+(py||2),pr,0,7);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(x-2,48,pr*.33,0,7);c.fill()},
+    line=(pts,w)=>{c.strokeStyle=L;c.lineWidth=w||6;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.stroke()},arc=(x,y,r,a0,a1)=>{c.strokeStyle=L;c.lineWidth=6;c.beginPath();c.arc(x,y,r,a0,a1);c.stroke()},
+    blush=()=>{c.fillStyle='rgba(255,255,255,.55)';c.beginPath();c.ellipse(24,76,11,6,0,0,7);c.fill();c.beginPath();c.ellipse(104,76,11,6,0,0,7);c.fill()};
+  if(name==='laecheln'){eye(42,13,17,7);eye(86,13,17,7);blush();arc(64,80,15,.35,2.8)}
+  else if(name==='froh'){arc(42,58,13,3.5,5.9);arc(86,58,13,3.5,5.9);blush();c.fillStyle='#5a1030';c.strokeStyle=L;c.lineWidth=5;c.beginPath();c.moveTo(46,80);c.quadraticCurveTo(64,108,82,80);c.closePath();c.fill();c.stroke()}
+  else if(name==='ueber'){line([[30,42],[50,54],[30,64]]);line([[98,42],[78,54],[98,64]]);c.fillStyle='#5a1030';c.strokeStyle=L;c.lineWidth=5;c.beginPath();c.ellipse(64,90,9,11,0,0,7);c.fill();c.stroke()}
+  else if(name==='schrei'){eye(42,15,19,3.500,0);eye(86,15,19,3.500,0);line([[26,26],[50,20]]);line([[102,26],[78,20]]);c.fillStyle='#5a1030';c.strokeStyle=L;c.lineWidth=5;c.beginPath();c.ellipse(64,96,16,19,0,0,7);c.fill();c.stroke();c.fillStyle='#ff7a9c';c.beginPath();c.ellipse(64,106,9,6,0,0,7);c.fill()}
+  else if(name==='benommen'){for(const x of[42,86]){line([[x-11,41],[x+11,63]]);line([[x+11,41],[x-11,63]])}line([[44,92],[52,84],[60,92],[68,84],[76,92],[84,84]],5)}
+  else{eye(42,13,16,7);eye(86,13,16,7);line([[24,24],[52,36]],7);line([[104,24],[76,36]],7);c.fillStyle='#fff';c.strokeStyle=L;c.lineWidth=5;c.beginPath();c.moveTo(42,80);c.quadraticCurveTo(64,112,86,80);c.closePath();c.fill();c.stroke();line([[50,89],[78,89]],3)}
+  const t=new T.CanvasTexture(cv);t.encoding=T.sRGBEncoding;return t}
 function lab3Tint(c){const k=LB.fi[c];if(k<0||!LAB.floor)return;LAB.floor.setColorAt(k,LAB.pc);LAB.floor.instanceColor.needsUpdate=true}
 function lab3Paint(){if(!LAB.floor)return;const W=LB.L.W,dm=LAB.dm||(LAB.dm=new THREE.Object3D());for(let c=0;c<LB.N;c++){const k=LB.fi[c];if(k<0)continue;LAB.floor.setColorAt(k,LB.painted[c]?LAB.pc:LAB.fcol(c));
     if(LAB.glow){const s=LB.painted[c]?.9:0;dm.position.set(LAB.X(c%W),.108,LAB.Z((c/W)|0));dm.scale.set(s,1,s);dm.rotation.set(0,0,0);dm.updateMatrix();LAB.glow.setMatrixAt(k,dm.matrix)}}
@@ -2357,7 +2375,9 @@ function lab3Frame(now,dt){
   LAB.lx=x;LAB.lz=z;LAB.bg.position.set(x+ox,y-rad*sc*(1-ey),z+oz);LAB.bg.scale.set(ex,ey,ez);b.scale.setScalar(rad*2*Math.max(.02,sc));if(LB.dead&&!LB.burn)b.rotation.y+=dt*14;LAB.bl.position.set(x,.95,z);LAB.bh.position.set(x,y,z);LAB.bh.scale.setScalar(2.6*sc*(1+.06*Math.sin(t*5)));
   if(LB.roll&&LB.tp>.9&&(!LAB.trail.length||now-LAB.trail[LAB.trail.length-1].t>22))LAB.trail.push({x,y,z,t:now});while(LAB.trail.length&&(now-LAB.trail[0].t>420||LAB.trail.length>18))LAB.trail.shift();
   LAB.tsp.forEach((h,i)=>{const p=LAB.trail[LAB.trail.length-1-i];if(!p){h.visible=false;return}const u=1-(now-p.t)/420;h.visible=true;h.position.set(p.x,p.y,p.z);h.scale.setScalar(.35+1.25*u);h.material.opacity=.6*u*u});
-  LAB.crown.position.set(x+ox,y+rad*sc*(.86*ey-(1-ey)),z+oz);LAB.crown.scale.setScalar(sc);LAB.crown.rotation.set(Math.sin(t*2.1)*.08,t*.8,Math.cos(t*1.7)*.08);LAB.crown.visible=LB.fall<.3;b.visible=LAB.crown.visible||LB.fall<1;if(now<LB.safe){const bl=Math.sin(now/60)>0;b.visible=bl;LAB.crown.visible=bl}
+  {const fn=LB.dead?(LB.burn?'benommen':'schrei'):now<LB.safe?'benommen':LB.won?'froh':LB.bump?'ueber':LB.roll?'grinsen':(t+.3)%3.6<.13?'froh':'laecheln';if(fn!==LAB.fname){LAB.fname=fn;LAB.face.material.map=LAB.ftex[fn];LAB.face.material.needsUpdate=true}
+    LAB.face.position.set(x+ox,y-rad*sc*(1-ey)+rad*sc*.12*ey,z+oz+rad*sc*.5);LAB.face.scale.set(.62*sc*ex,.62*sc*(ey+ez)/2,1);LAB.face.visible=b.visible&&LB.fall<.95}
+  LAB.crown.position.set(x+ox,y+rad*sc*(.8*ey-(1-ey)),z+oz-rad*sc*.3);LAB.crown.scale.setScalar(sc*.78);LAB.crown.rotation.set(Math.sin(t*2.1)*.08,t*.8,Math.cos(t*1.7)*.08);LAB.crown.visible=LB.fall<.3;b.visible=LAB.crown.visible||LB.fall<1;if(now<LB.safe){const bl=Math.sin(now/60)>0;b.visible=bl;LAB.crown.visible=bl}
   LAB.lk.forEach((o,k)=>{const open=LB.mask>>k&1;if(o.bomb){o.door.visible=!open;const B=o.bomb,fz=LB.fz[k];B.g.visible=!open&&!(LB.burn&&LB.dead);if(fz){const u=1-Math.max(0,(fz-now)/3200),p=.5+.5*Math.sin(now/1000*(8+u*30));B.body.scale.setScalar(.5+u*.16+p*.05);B.body.material.emissiveIntensity=p*(.6+u);B.sp.scale.setScalar(.7+p*.9)}else{B.body.scale.setScalar(.5);B.body.material.emissiveIntensity=0;B.sp.scale.setScalar(.5+.2*Math.sin(t*9))}}
     else{o.door.position.y=-LB.doorK[k];o.door.visible=LB.doorK[k]<1;o.key.visible=!((LB.got|LB.mask)>>k&1);o.key.rotation.y=t*1.6+k;o.key.position.y=.6+Math.sin(t*2.2+k)*.06}});
   LAB.gd.forEach((o,i)=>{const q=LB.gp[i];if(!q)return;o.position.set(X(q.x),LAB.gy+Math.sin(t*3+i)*.07,Z(q.y));o.children[0].rotation.y=Math.atan2(q.dx,q.dy);LAB.gs[i].position.set(X(q.x),.118,Z(q.y))});
