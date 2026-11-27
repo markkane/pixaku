@@ -438,7 +438,7 @@ html.k3 .lw,html.k3 .lw-h i{border-radius:0}.lst-w{font:700 12px var(--display);
 </section>
 
 <section id="lab" class="screen">
-  <canvas id="lgl" hidden></canvas><canvas id="l2d"></canvas>
+  <canvas id="lgl" hidden></canvas><canvas id="l2d" hidden></canvas>
   <div class="bar glass"><button class="ib" id="lBack" aria-label="Zurück"></button>
     <div class="t"><b id="lName"></b><span id="lSub"></span></div>
     <div class="n"><span id="lMoves">0</span><small id="lPct"></small></div><i class="prog" id="lProg"></i></div>
@@ -479,7 +479,7 @@ html.k3 .lw,html.k3 .lw-h i{border-radius:0}.lst-w{font:700 12px var(--display);
 window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{const f=new File([data],filename,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
-window.PX_VER='27.11.2026 12:59 · 3c865';
+window.PX_VER='27.11.2026 13:08 · 9afaa';
 (()=>{let fresh=false;try{fresh=!!sessionStorage.getItem('pxr');sessionStorage.removeItem('pxr')}catch(e){}
   const t0=performance.now(),hide=()=>{const s=document.getElementById('splash');if(!s)return;setTimeout(()=>{s.classList.add('off');setTimeout(()=>s.remove(),600)},Math.max(0,(fresh?350:900)-(performance.now()-t0)))};
   const reload=()=>{try{sessionStorage.setItem('pxr','1')}catch(e){}location.reload()};
@@ -1807,9 +1807,16 @@ function labSlide(L,pos,d,mask,raw){
 /* Zeitablauf wie im Spiel: Die Kugel braucht je Zug höchstens 0,82 s, ein Wächter 0,64 s je Feld */
 const LG_STEP=.64,LG_OFF=1.37;
 function labGuardPos(L,k,t){const cells=L.guards[k],n=cells.length-1,W=L.W;let ph=(t/LG_STEP+k*LG_OFF)%(2*n);if(ph<0)ph+=2*n;const p=ph<n?ph:2*n-ph,i0=Math.min(n-1,Math.floor(p)),f=p-i0,a=cells[i0],b=cells[i0+1];return[a%W+(b%W-a%W)*f,((a/W)|0)+(((b/W)|0)-((a/W)|0))*f]}
-function labRollPlan(L,pos,cells){const W=L.W,pts=[pos].concat(cells),seg=[];let steps=0;for(let i=1;i<pts.length;i++){const tp=Math.abs(pts[i]%W-pts[i-1]%W)+Math.abs(((pts[i]/W)|0)-((pts[i-1]/W)|0))!==1;seg.push(tp);if(!tp)steps++}
-  const per=Math.min(.82,.105+.057*steps)/Math.max(1,steps);let T=0;const at=[0];for(const tp of seg){T+=tp?.18:per;at.push(T)}
-  return{pts,at,T,ball(t){let i=0;while(i<seg.length-1&&t>=at[i+1])i++;const a=pts[i],b=pts[i+1],u=Math.min(1,Math.max(0,(t-at[i])/(at[i+1]-at[i])));if(seg[i]){const p=u<.5?a:b;return[p%W,(p/W)|0]}return[a%W+(b%W-a%W)*u,((a/W)|0)+(((b/W)|0)-((a/W)|0))*u]}}}
+/* Bewegungsablauf eines Zuges, für Spiel und Prüfung derselbe: sanft anrollen, beschleunigen, vor Wasser abbremsen, gegen Wände ungebremst prallen. Portale teilen den Zug in Abschnitte. */
+function labRollPlan(L,pos,cells){const W=L.W,pts=[pos].concat(cells),far=(a,b)=>Math.abs(a%W-b%W)+Math.abs(((a/W)|0)-((b/W)|0))!==1,legs=[];let cur=[0];
+  for(let i=1;i<pts.length;i++){if(far(pts[i-1],pts[i])){legs.push(cur);cur=[i]}else cur.push(i)}legs.push(cur);
+  const n=pts.length;let soft=false;if(n>1&&!far(pts[n-2],pts[n-1])){const d=pts[n-1]-pts[n-2],nx=pts[n-1]+d;soft=nx>=0&&nx<W*L.H&&!far(pts[n-1],nx)&&L.grid[nx]===3}
+  const segs=[];let t=0;legs.forEach((lg,k)=>{const m=lg.length-1,first=k===0,last=k===legs.length-1,T=m?Math.min(.82,.105+.057*m)*(first?1.12:.8)*(last&&soft?1.25:1):0;segs.push({lg,m,t0:t,T,mode:first&&last?(soft?0:1):first?1:last&&soft?2:3});t+=T;if(!last)t+=.18});
+  const ease=(mode,u)=>mode===0?(u<.5?2*u*u:1-2*(1-u)*(1-u)):mode===1?Math.pow(u,1.7):mode===2?1-(1-u)*(1-u):u,xy=i=>[pts[i]%W,(pts[i]/W)|0];
+  const state=tt=>{for(let k=0;k<segs.length;k++){const sg=segs[k],last=k===segs.length-1,end=sg.t0+sg.T;
+      if(tt<end||last){if(!sg.m){const[x,y]=xy(sg.lg[0]);return{x,y,sc:1,arr:sg.lg[0]}}const u=Math.min(1,Math.max(0,(tt-sg.t0)/sg.T)),s=ease(sg.mode,u)*sg.m,i=Math.min(sg.m-1,Math.floor(s)),f=s-i,[ax,ay]=xy(sg.lg[i]),[bx,by]=xy(sg.lg[i+1]);return{x:ax+(bx-ax)*f,y:ay+(by-ay)*f,sc:1,arr:sg.lg[0]+Math.min(sg.m,Math.floor(s+1e-6))}}
+      if(tt<end+.18){const u=(tt-end)/.18,[x,y]=xy(u<.5?sg.lg[sg.m]:segs[k+1].lg[0]);return{x,y,sc:Math.abs(1-2*u),arr:sg.lg[sg.m]}}}};
+  return{pts,T:t,soft,state,ball(tt){const s=state(Math.min(tt,t));return[s.x,s.y]}}}
 /* Trifft die Kugel auf diesem Zug einen Wächter, wenn sie zur Zeit t0 losrollt? r = Abstand, ab dem es als Treffer zählt */
 function labHit(L,plan,t0,r,ks){for(let t=0;t<=plan.T+.02;t+=.025){const[bx,by]=plan.ball(Math.min(t,plan.T));for(const k of ks){const[gx,gy]=labGuardPos(L,k,t0+t);if(Math.abs(gx-bx)<r&&Math.abs(gy-by)<r)return true}}return false}
 /* Ausweichbar heißt: Der Zug endet nicht auf einem Laufweg, und es gibt ein Startfenster von mindestens 0,4 s, großzügiger gerechnet als im Spiel */
@@ -2006,8 +2013,7 @@ function labMove(d){
   if(!LB||LB.won||LB.dead||sheetOpen)return;if(LB.roll){if(LB.queue.length<4)LB.queue.push(d);return}
   const L=LB.L,s=labSlide(L,LB.pos,d,LB.mask,true);if(!s.cells.length){LB.nudge={d,t:performance.now()};tone(105,.07,'square',.025);return}
   if(!LB.t0)LB.t0=performance.now();LB.moves++;$('#lArrow').classList.remove('on');
-  const pts=[LB.pos].concat(s.cells);let steps=0;for(let i=1;i<pts.length;i++)if(!labTp(pts[i-1],pts[i]))steps++;
-  LB.roll={pts,i:0,u:0,d,dead:s.dead,end:s.end,per:Math.min(.82,.105+.057*steps)/Math.max(1,steps)};tone(170+Math.min(14,steps)*14,.1+Math.min(14,steps)*.02,'sine',.035);labHud();
+  const steps=s.cells.length;LB.bump=null;LB.roll={plan:labRollPlan(L,LB.pos,s.cells),t:0,arr:0,d,dead:s.dead,end:s.end};tone(170+Math.min(14,steps)*14,.1+Math.min(14,steps)*.02,'sine',.035);labHud();
 }
 const labTp=(a,b)=>{const W=LB.L.W;return Math.abs(a%W-b%W)+Math.abs(((a/W)|0)-((b/W)|0))!==1};
 function labArrive(c,now){const L=LB.L;
@@ -2029,16 +2035,15 @@ function labStep(now,dt){
     if(!LB.dead&&!LB.won&&now>LB.safe&&Math.abs(x-LB.bx)<.5&&Math.abs(y-LB.by)<.5){LB.roll=null;LB.queue=[];LB.spin=false;LB.mask|=LB.got;labSpark(Math.round(LB.by)*W+Math.round(LB.bx),'#ffffff',14);LB.pos=L.start;LB.bx=L.start%W;LB.by=(L.start/W)|0;LB.tp=1;LB.deaths++;LB.safe=now+1800;LB.mini=true;
       tone(300,.12,'square',.05);tone(200,.2,'square',.05,.1);toast(`Erwischt! ${LB.th.gname||'Die Krähe'} trägt dich zum Start zurück.`,1900)}});
   if(LB.dead){LB.fall=Math.min(1,(now-LB.dead)/520);if(LB.fall>=1&&now-LB.dead>760){LB.deaths++;const b=LB.burn;labRestart();toast(b?'Zu nah an der Bombe. Das Level beginnt von vorn.':'In den Schlund gefallen. Das Level beginnt von vorn.',1900)}return}
-  const r=LB.roll;if(!r)return;let guard=0;
-  while(guard++<60){const a=r.pts[r.i],b=r.pts[r.i+1],tp=labTp(a,b);r.u+=dt/(tp?.18:r.per);dt=0;
-    if(r.u<1){if(tp){const second=r.u>=.5,p=second?b:a;LB.bx=p%W;LB.by=(p/W)|0;LB.tp=Math.abs(1-r.u*2)}
-      else{const ax=a%W,ay=(a/W)|0,bx=b%W,by=(b/W)|0;LB.bx=ax+(bx-ax)*r.u;LB.by=ay+(by-ay)*r.u;LB.tp=1;LB.spin=true}break}
-    r.u-=1;r.i++;if(tp){tone(660,.12,'sine',.05);labSpark(a,'#b9f6ff',8);labSpark(b,'#b9f6ff',8)}labArrive(b,now);LB.bx=b%W;LB.by=(b/W)|0;LB.tp=1;
-    if(r.i>=r.pts.length-1){LB.roll=null;LB.pos=r.end;LB.spin=false;
-      if(r.dead){LB.dead=now;LB.burn=false;LB.queue=[];tone(240,.3,'sawtooth',.04);tone(120,.4,'sawtooth',.04,.12);break}
-      tone(95,.06,'square',.03);if(LB.got&~LB.mask){LB.mask|=LB.got;tone(392,.16,'triangle',.06);tone(523,.22,'triangle',.06,.1)}
-      labHud();if(LB.left<=0){labWin();break}
-      while(LB.queue.length&&!LB.roll){const q=LB.queue.shift(),m0=LB.moves;labMove(q);if(LB.moves===m0)LB.nudge=null}break}}
+  const r=LB.roll;if(!r)return;r.t+=dt;const P=r.plan,st=P.state(Math.min(r.t,P.T));LB.bx=st.x;LB.by=st.y;LB.tp=st.sc;LB.spin=st.sc===1;
+  while(r.arr<st.arr){r.arr++;const c=P.pts[r.arr];if(labTp(P.pts[r.arr-1],c)){tone(660,.12,'sine',.05);labSpark(P.pts[r.arr-1],'#b9f6ff',8);labSpark(c,'#b9f6ff',8)}labArrive(c,now)}
+  if(r.t>=P.T){const n=P.pts.length,a=P.pts[n-2],b=P.pts[n-1];LB.roll=null;LB.pos=r.end;LB.bx=r.end%W;LB.by=(r.end/W)|0;LB.tp=1;LB.spin=false;
+    if(r.dead){LB.dead=now;LB.burn=false;LB.queue=[];tone(240,.3,'sawtooth',.04);tone(120,.4,'sawtooth',.04,.12);return}
+    /* gegen Wand oder Gegenstand: Aufprall mit Nachfedern. Vor Wasser bremst Pia von selbst. */
+    if(!P.soft&&n>1&&!labTp(a,b)){LB.bump={dx:b%W-a%W,dy:((b/W)|0)-((a/W)|0),t:now};tone(88,.07,'square',.045);tone(140,.05,'triangle',.03,.05)}else tone(200,.08,'sine',.02);
+    if(LB.got&~LB.mask){LB.mask|=LB.got;tone(392,.16,'triangle',.06);tone(523,.22,'triangle',.06,.1)}
+    labHud();if(LB.left<=0){labWin();return}
+    while(LB.queue.length&&!LB.roll){const q=LB.queue.shift(),m0=LB.moves;labMove(q);if(LB.moves===m0)LB.nudge=null}}
 }
 function labRate(){const L=LB.L,goal=Math.ceil(L.par*1.25),all=LB.stars.every(s=>s.got);return{goal,all,s:1+(LB.moves<=goal?1:0)+(all?1:0)}}
 function labHud(){if(!LB)return;const L=LB.L,pct=Math.round((LB.total-LB.left)/LB.total*100),got=LB.stars.filter(s=>s.got).length,now=performance.now(),el=LB.t0?(now-LB.t0)/1000:0,rest=Math.max(0,Math.ceil(LB.starT-el)),open=LB.stars.some(s=>!s.got&&!s.gone);
@@ -2302,7 +2307,7 @@ function labScene(){
   /* Pia: Kugel mit Krone */
   const tc=document.createElement('canvas');tc.width=128;tc.height=64;const tx=tc.getContext('2d');tx.fillStyle=th.ball;tx.fillRect(0,0,128,64);tx.fillStyle='rgba(255,255,255,.95)';tx.fillRect(0,25,128,14);tx.fillStyle='rgba(255,255,255,.75)';for(let k=0;k<8;k++){tx.beginPath();tx.arc(8+k*16,k%2?11:53,4.5,0,7);tx.fill()}
   const tex=new T.CanvasTexture(tc);tex.encoding=T.sRGBEncoding;const bm=new T.MeshStandardMaterial({map:tex,roughness:.28,metalness:.05,emissive:lc(th.ball),emissiveMap:tex,emissiveIntensity:dark?1.1:dusk?.6:.2});LAB.disp.push(tex,bm);
-  LAB.ball=new T.Mesh(G.ball,bm);LAB.ball.castShadow=true;S.add(LAB.ball);LAB.bl=new T.PointLight(lc('#ffe9c8'),dark?2.8:dusk?1.3:0,6.5,2);S.add(LAB.bl);LAB.bh=labHalo(th.ball,2.8,dark?.7:dusk?.45:.22);S.add(LAB.bh);
+  LAB.ball=new T.Mesh(G.ball,bm);LAB.ball.castShadow=true;LAB.bg=new T.Group();LAB.bg.add(LAB.ball);S.add(LAB.bg);LAB.sq=[1,1,1];LAB.bl=new T.PointLight(lc('#ffe9c8'),dark?2.8:dusk?1.3:0,6.5,2);S.add(LAB.bl);LAB.bh=labHalo(th.ball,2.8,dark?.7:dusk?.45:.22);S.add(LAB.bh);
   {const c=new T.Group(),gm=labMat('#ffd84d',{emissive:'#ffb000',emissiveIntensity:dark?1:.35}),r=new T.Mesh(G.cyl,gm);r.scale.set(.42,.12,.42);c.add(r);for(let k=0;k<5;k++){const p=new T.Mesh(G.cone,gm);p.scale.set(.13,.2,.13);p.position.set(Math.cos(k*1.257)*.16,.14,Math.sin(k*1.257)*.16);c.add(p)}const j=new T.Mesh(G.oct,labMat('#ff4f8b',{emissive:'#ff4f8b',emissiveIntensity:.8}));j.scale.setScalar(.09);j.position.set(0,.02,.2);c.add(j);S.add(c);LAB.crown=c}
   LAB.trail=[];LAB.tsp=[];for(let k=0;k<18;k++){const h=labHalo(k%2?th.ball:'#ffffff',1,0);h.visible=false;S.add(h);LAB.tsp.push(h)}
   LAB.view.tx=X(LB.bx);LAB.view.tz=Z(LB.by);LAB.lt=0;lab3Fit()}
@@ -2345,10 +2350,14 @@ function lab3Frame(now,dt){
   if(LB.nudge){const u=(now-LB.nudge.t)/160;if(u<1){const k=Math.sin(u*Math.PI)*.1;x+=LDIR[LB.nudge.d][0]*k;z+=LDIR[LB.nudge.d][1]*k}else LB.nudge=null}
   if(LB.won){const u=(now-LB.wonAt)/1000;y+=Math.abs(Math.sin(u*5))*Math.max(0,.7-u*.25)}
   if(LB.spin&&LAB.lx!==undefined){const dx=x-LAB.lx,dz=z-LAB.lz,q=LAB.q||(LAB.q=new T.Quaternion()),ax=LAB.ax||(LAB.ax=new T.Vector3());if(Math.abs(dx)+Math.abs(dz)<1.5){ax.set(dz,0,-dx);const l=ax.length();if(l>1e-5){ax.multiplyScalar(1/l);q.setFromAxisAngle(ax,l/rad*1.25);b.quaternion.premultiply(q)}}}
-  LAB.lx=x;LAB.lz=z;b.position.set(x,y,z);b.scale.setScalar(rad*2*Math.max(.02,sc));if(LB.dead&&!LB.burn)b.rotation.y+=dt*14;LAB.bl.position.set(x,.95,z);LAB.bh.position.set(x,y,z);LAB.bh.scale.setScalar(2.6*sc*(1+.06*Math.sin(t*5)));
+  /* Dehnen in Rollrichtung, Stauchen beim Aufprall */
+  let ex=1,ey=1,ez=1,ox=0,oz=0;{const vx=(x-(LAB.lx===undefined?x:LAB.lx))/Math.max(.001,dt),vz=(z-(LAB.lz===undefined?z:LAB.lz))/Math.max(.001,dt),v=Math.hypot(vx,vz);if(LB.roll&&LB.tp===1&&v<40){const e=Math.min(.34,v*.024);if(Math.abs(vx)>Math.abs(vz)){ex+=e;ey-=e*.42;ez-=e*.42}else{ez+=e;ey-=e*.42;ex-=e*.42}}}
+  if(LB.bump){const u=(now-LB.bump.t)/420;if(u<1){const env=Math.exp(-4.5*u)*Math.cos(u*9.5),k=.4*env,off=.13*env;ox=LB.bump.dx*off;oz=LB.bump.dy*off;if(LB.bump.dx){ex*=1-k;ey*=1+k*.5;ez*=1+k*.5}else{ez*=1-k;ey*=1+k*.5;ex*=1+k*.5}}else LB.bump=null}
+  {const q=LAB.sq,kk=LB.bump?1:.4;q[0]+=(ex-q[0])*kk;q[1]+=(ey-q[1])*kk;q[2]+=(ez-q[2])*kk;ex=q[0];ey=q[1];ez=q[2]}
+  LAB.lx=x;LAB.lz=z;LAB.bg.position.set(x+ox,y-rad*sc*(1-ey),z+oz);LAB.bg.scale.set(ex,ey,ez);b.scale.setScalar(rad*2*Math.max(.02,sc));if(LB.dead&&!LB.burn)b.rotation.y+=dt*14;LAB.bl.position.set(x,.95,z);LAB.bh.position.set(x,y,z);LAB.bh.scale.setScalar(2.6*sc*(1+.06*Math.sin(t*5)));
   if(LB.roll&&LB.tp>.9&&(!LAB.trail.length||now-LAB.trail[LAB.trail.length-1].t>22))LAB.trail.push({x,y,z,t:now});while(LAB.trail.length&&(now-LAB.trail[0].t>420||LAB.trail.length>18))LAB.trail.shift();
   LAB.tsp.forEach((h,i)=>{const p=LAB.trail[LAB.trail.length-1-i];if(!p){h.visible=false;return}const u=1-(now-p.t)/420;h.visible=true;h.position.set(p.x,p.y,p.z);h.scale.setScalar(.35+1.25*u);h.material.opacity=.6*u*u});
-  LAB.crown.position.set(x,y+rad*sc*.86,z);LAB.crown.scale.setScalar(sc);LAB.crown.rotation.set(Math.sin(t*2.1)*.08,t*.8,Math.cos(t*1.7)*.08);LAB.crown.visible=LB.fall<.3;b.visible=LAB.crown.visible||LB.fall<1;if(now<LB.safe){const bl=Math.sin(now/60)>0;b.visible=bl;LAB.crown.visible=bl}
+  LAB.crown.position.set(x+ox,y+rad*sc*(.86*ey-(1-ey)),z+oz);LAB.crown.scale.setScalar(sc);LAB.crown.rotation.set(Math.sin(t*2.1)*.08,t*.8,Math.cos(t*1.7)*.08);LAB.crown.visible=LB.fall<.3;b.visible=LAB.crown.visible||LB.fall<1;if(now<LB.safe){const bl=Math.sin(now/60)>0;b.visible=bl;LAB.crown.visible=bl}
   LAB.lk.forEach((o,k)=>{const open=LB.mask>>k&1;if(o.bomb){o.door.visible=!open;const B=o.bomb,fz=LB.fz[k];B.g.visible=!open&&!(LB.burn&&LB.dead);if(fz){const u=1-Math.max(0,(fz-now)/3200),p=.5+.5*Math.sin(now/1000*(8+u*30));B.body.scale.setScalar(.5+u*.16+p*.05);B.body.material.emissiveIntensity=p*(.6+u);B.sp.scale.setScalar(.7+p*.9)}else{B.body.scale.setScalar(.5);B.body.material.emissiveIntensity=0;B.sp.scale.setScalar(.5+.2*Math.sin(t*9))}}
     else{o.door.position.y=-LB.doorK[k];o.door.visible=LB.doorK[k]<1;o.key.visible=!((LB.got|LB.mask)>>k&1);o.key.rotation.y=t*1.6+k;o.key.position.y=.6+Math.sin(t*2.2+k)*.06}});
   LAB.gd.forEach((o,i)=>{const q=LB.gp[i];if(!q)return;o.position.set(X(q.x),LAB.gy+Math.sin(t*3+i)*.07,Z(q.y));o.children[0].rotation.y=Math.atan2(q.dx,q.dy);LAB.gs[i].position.set(X(q.x),.118,Z(q.y))});
@@ -2361,12 +2370,12 @@ function lab3Frame(now,dt){
   if(LAB.pool.length){if(now-LAB.lt>180){LAB.lt=now;for(const q of LAB.lamps)q.d=Math.hypot(q.x-V.tx,q.z-V.tz-1);LAB.near=LAB.lamps.slice().sort((p,q)=>p.d-q.d).slice(0,4)}
     LAB.pool.forEach((l,i)=>{const q=LAB.near&&LAB.near[i];if(!q){l.intensity=0;return}l.position.set(q.x,q.y,q.z);l.color.copy(q.col);l.intensity=(3.2+.4*Math.sin(t*9+q.ph)+.2*Math.sin(t*23+q.ph*2))*Math.max(0,Math.min(1,(12-q.d)/3))})}
   LAB.r.render(LAB.scene,cam)}
-function labResize(){const use=LAB.ready&&!LAB.fail;$('#lgl').hidden=!use;$('#l2d').hidden=use;if(use)lab3Fit();else{const cv=$('#l2d'),d=Math.min(2,devicePixelRatio||1);cv.width=cv.clientWidth*d;cv.height=cv.clientHeight*d}}
+function labResize(){const use=LAB.ready&&!LAB.fail;$('#lgl').hidden=!use;$('#l2d').hidden=!LAB.fail;if(use)lab3Fit();else if(LAB.fail){const cv=$('#l2d'),d=Math.min(2,devicePixelRatio||1);cv.width=cv.clientWidth*d;cv.height=cv.clientHeight*d}}
 let labRun=0;
 function labLoop(){const run=++labRun;let last=performance.now(),hud=0;
   (function f(now){if(run!==labRun||!LB||!$('#lab').classList.contains('on'))return;const dt=Math.min(.05,(now-last)/1000);last=now;labStep(now,dt);if(!LB)return;if(now-hud>250){hud=now;LB.mini=LB.mini||!!LB.roll;labHud()}
     if(LAB.ready&&!LAB.fail&&LAB.ball){try{lab3Frame(now,dt)}catch(e){console.error('lab3',e&&e.stack||e);LAB.fail=true;labResize()}}
-    else{const cv=$('#l2d'),c=cv.getContext('2d'),d=Math.min(2,devicePixelRatio||1),w=cv.width/d,h=cv.height/d,L=LB.L,s=Math.min((w-24)/L.W,(h-220)/L.H);c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);labDraw2D(c,L,LB.th,LB,(w-L.W*s)/2,(h-L.H*s)/2,s,now)}
+    else if(LAB.fail){const cv=$('#l2d'),c=cv.getContext('2d'),d=Math.min(2,devicePixelRatio||1),w=cv.width/d,h=cv.height/d,L=LB.L,s=Math.min((w-24)/L.W,(h-220)/L.H);c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);labDraw2D(c,L,LB.th,LB,(w-L.W*s)/2,(h-L.H*s)/2,s,now)}
     requestAnimationFrame(f)})(last)}
 
 /* ---------- Spielauswahl im Hauptmenü ---------- */
