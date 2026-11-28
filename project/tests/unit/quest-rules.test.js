@@ -1,0 +1,36 @@
+/* Rollregeln von Pias Quest: jede Regel an einem kleinen handgebauten Level */
+const test=require('node:test'),assert=require('node:assert/strict');
+const {Q,level,at,reach,replay}=require('./helpers.js');
+const R=0,L_=1,D=2,U=3;
+test('Richtungen: 0 rechts, 1 links, 2 unten, 3 oben',()=>{assert.deepEqual(Q.LDIR,[[1,0],[-1,0],[0,1],[0,-1]])});
+test('Kugel rollt bis zur Wand und überrollt alle Felder dazwischen',()=>{const L=level(['#######','#S....#','#######']),s=Q.labSlide(L,L.start,R,0);
+  assert.equal(s.end,at(L,5,1));assert.deepEqual(s.cells,[2,3,4,5].map(x=>at(L,x,1)));assert.ok(!s.dead)});
+test('Gegen die Wand gibt es keinen Zug',()=>{const L=level(['####','#S.#','####']);assert.equal(Q.labSlide(L,L.start,L_,0).cells.length,0);assert.equal(Q.labSlide(L,L.start,U,0).cells.length,0)});
+test('Gegenstand hält die Kugel ein Feld davor an',()=>{const L=level(['#######','#S..o.#','#######']);assert.equal(Q.labSlide(L,L.start,R,0).end,at(L,3,1))});
+test('Wasser hält die Kugel an, ohne dass sie hineinfällt',()=>{const L=level(['#######','#S..~.#','#######']),s=Q.labSlide(L,L.start,R,0);assert.equal(s.end,at(L,3,1));assert.ok(!s.dead)});
+test('Schlund verschluckt die Kugel',()=>{const L=level(['#######','#S..X.#','#######']),s=Q.labSlide(L,L.start,R,0);assert.ok(s.dead)});
+test('Portal trägt die Kugel weiter und behält die Richtung',()=>{const L=level(['#######','#S....#','#.....#','#######']);const a=at(L,3,1),b=at(L,2,2);L.port[a]=b;L.port[b]=a;L.ports.push([a,b]);
+  const s=Q.labSlide(L,L.start,R,0);assert.equal(s.end,at(L,5,2));assert.ok(s.cells.includes(a)&&s.cells.includes(b))});
+test('Prellbock 1 lenkt von rechts nach oben und von unten nach links',()=>{const L=level(['#####','#...#','#...#','#S..#','#####']);L.bmp[at(L,3,3)]=1;
+  assert.equal(Q.labSlide(L,L.start,R,0).end,at(L,3,1));L.bmp[at(L,3,3)]=0;L.bmp[at(L,1,1)]=0;
+  const M=level(['#####','#S..#','#...#','#...#','#####']);M.bmp[at(M,1,3)]=1;assert.equal(Q.labSlide(M,M.start,D,0).end,at(M,1,3),'unten trifft auf Prellbock 1 und will nach links, dort ist Wand')});
+test('Prellbock 2 lenkt von rechts nach unten',()=>{const L=level(['#####','#S..#','#...#','#...#','#####']);L.bmp[at(L,3,1)]=2;assert.equal(Q.labSlide(L,L.start,R,0).end,at(L,3,3))});
+test('Prellbock hält die Kugel nicht an',()=>{const L=level(['#####','#S..#','#...#','#...#','#####']);L.bmp[at(L,3,1)]=2;const s=Q.labSlide(L,L.start,R,0);assert.equal(s.cells.length,4)});
+test('Eisrinne lenkt in Pfeilrichtung um',()=>{const L=level(['#####','#S..#','#...#','#...#','#####']);L.arr[at(L,2,1)]=D;assert.equal(Q.labSlide(L,L.start,R,0).end,at(L,2,3))});
+test('Tor ist ohne Schlüssel zu und mit Schlüssel offen',()=>{const L=level(['#######','#S....#','#######']);const d=at(L,3,1),k=at(L,2,1);L.locks.push({d,k,bomb:false});L.doorAt[d]=0;L.keyAt[k]=0;
+  const s0=Q.labSlide(L,L.start,R,0);assert.equal(s0.end,k);assert.equal(s0.keys,1);assert.equal(Q.labSlide(L,k,R,1).end,at(L,5,1))});
+test('Lösbarkeitsprüfung erkennt ein lösbares und ein unlösbares Level',()=>{const ok=Q.labCheck(level(['#####','#S..#','#...#','#####']));assert.ok(ok.ok&&!ok.un.length);
+  /* Im leeren Raum mit drei mal drei Feldern liegt die Mitte auf keiner Rollbahn */
+  const r=Q.labCheck(level(['#####','#S..#','#...#','#...#','#####']));assert.ok(!r.ok||r.un.length>0)});
+test('Ein Schlund auf einer Rollbahn gilt als Gefahr, ein abgelegener nicht',()=>{const L=level(['#######','#S..X.#','#######']);assert.equal(Q.labThreat(L,at(L,4,1)),true);
+  const M=level(['#######','#S....#','###o###','###X###','#######']);assert.equal(Q.labThreat(M,at(M,3,3)),false)});
+test('Tor zählt nur, wenn es einen Bereich wirklich abtrennt',()=>{const L=level(['#########','#S..#...#','#...D...#','#...#...#','#########'].map(r=>r.replace('D','.')));const d=at(L,4,2),k=at(L,2,3);L.locks.push({d,k,bomb:false});L.doorAt[d]=0;L.keyAt[k]=0;assert.equal(Q.labGate(L,0),true);
+  const M=level(['#######','#S....#','#.....#','#.....#','#######']);const d2=at(M,3,2),k2=at(M,1,3);M.locks.push({d:d2,k:k2,bomb:false});M.doorAt[d2]=0;M.keyAt[k2]=0;assert.equal(Q.labGate(M,0),false,'Tor mitten im Raum versperrt nichts');
+  const K=level(['#########','#S..#...#','#.......#','#...#...#','#########']);const d3=at(K,4,2),k3=at(K,6,1);K.locks.push({d:d3,k:k3,bomb:false});K.doorAt[d3]=0;K.keyAt[k3]=0;assert.equal(Q.labGate(K,0),false,'Schlüssel hinter dem Tor')});
+test('Tipp führt zum Schlüssel, wenn sonst nichts Neues erreichbar ist',()=>{const L=level(['#########','#S..#...#','#.......#','#...#...#','#########']);const d=at(L,4,2),k=at(L,1,3);L.locks.push({d,k,bomb:false});L.doorAt[d]=0;L.keyAt[k]=0;
+  const p=new Uint8Array(L.W*L.H);for(let y=1;y<4;y++)for(let x=1;x<4;x++)p[at(L,x,y)]=1;const path=Q.labNextPath(L,L.start,p,0);assert.ok(path&&path.length>0);
+  let pos=L.start,keys=0;for(const dd of path){const s=Q.labSlide(L,pos,dd,0);keys|=s.keys;pos=s.end}assert.equal(keys,1)});
+test('Rollplan beginnt am Start, endet am Ziel und dauert länger bei längerem Weg',()=>{const L=level(['##########','#S.......#','##########']);const a=Q.labSlide(L,L.start,R,0),p=Q.labRollPlan(L,L.start,a.cells),q=Q.labRollPlan(L,L.start,a.cells.slice(0,2));
+  assert.ok(p.T>q.T&&q.T>0);const s0=p.state(0),s1=p.state(p.T);assert.ok(Math.abs(s0.x-1)<.01&&Math.abs(s1.x-8)<.01&&Math.abs(s1.y-1)<.01);let last=-1;for(let k=0;k<=20;k++){const x=p.state(p.T*k/20).x;assert.ok(x>=last-.2);last=x}});
+test('Drei Rollgeschwindigkeiten: langsam dauert am längsten',()=>{const L=level(['##########','#S.......#','##########']);const c=Q.labSlide(L,L.start,R,0).cells,[a,b,d]=Q.LG_K.map(k=>Q.labRollPlan(L,L.start,c,k).T);assert.ok(a>b&&b>d)});
+test('Helfer: Erreichbarkeit findet alle Ecken eines leeren Raums',()=>{const L=level(['#####','#S..#','#...#','#...#','#####']);const r=reach(L);assert.equal(r.stops.size,4);assert.equal(replay(L,[R,D,L_,U,R]),1)});
