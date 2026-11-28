@@ -30,11 +30,13 @@ async def main():
             ok=not errs;check(name+': keine Programmfehler',ok,errs[:2]);errs.clear()
         # ---------- Rahmen ----------
         print('Rahmen');await fresh(0)
-        check('Startseite von Pixaku ist sichtbar',await ev("$('#home').classList.contains('on')&&GAME===0"))
+        check('Startseite von Pixaku ist sichtbar',await ev("$('#home').classList.contains('on')&&Shell.is('pixaku')"))
+        check('Zwei Spiele sind beim Rahmen angemeldet',await ev("Shell.games.map(g=>g.id).join()")=='pixaku,quest')
+        check('Nur das Menü des gewählten Spiels ist sichtbar',await ev("[...document.querySelectorAll('.gmenu.on')].map(m=>m.dataset.game).join()==='pixaku'&&$('#blGo').offsetParent===null&&$('#bCamp').offsetParent!==null"))
         check('Logo ist gezeichnet',await ev("$('#logo').width>50"))
         check('Ziffernschrift ist geladen',await ev("document.fonts.check('700 20px PixNum')"))
-        await ev("setGame(1,true)");await wait(600);check('Wechsel zu Pias Quest',await ev("GAME===1&&$('#gLbl').textContent==='Pias Quest'"))
-        await ev("setGame(0,true)");await wait(400);await pg.reload();await wait(1200);check('Spielauswahl bleibt nach Neuladen erhalten',await ev("GAME===0"))
+        await ev("Shell.select('quest',true)");await wait(600);check('Wechsel zu Pias Quest',await ev("Shell.is('quest')&&$('#gLbl').textContent==='Pias Quest'"))
+        await ev("Shell.select('pixaku',true)");await wait(400);await pg.reload();await wait(1200);check('Spielauswahl bleibt nach Neuladen erhalten',await ev("Shell.is('pixaku')"))
         await ev("openSettings()");await wait(400);check('Einstellungen öffnen sich',await ev("sheetOpen"));await ev("closeSheet()");await wait(500);noerr('Rahmen')
         # ---------- Pixaku ----------
         print('Pixaku');await pg.click('#bArcade');await wait(700)
@@ -54,13 +56,15 @@ async def main():
         await pg.click('#gBack');await wait(900);check('Angefangenes Bild wird gespeichert',await ev("saves().length===1&&!$('#bCont').hidden"))
         bb=await ev("(()=>{const r=$('#contCv').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()");await pg.mouse.click(bb[0],bb[1]);await wait(1200)
         check('Tipp auf das Vorschaubild setzt direkt fort',await ev("$('#game').classList.contains('on')&&!sheetOpen"));noerr('Pixaku')
+        await ev("history.back()");await wait(700);check('Zurück-Taste im laufenden Bild fragt nach',await ev("sheetOpen&&$('#sheet').textContent.includes('Spiel verlassen')"));await ev("closeSheet()");await wait(400)
         # ---------- Pias Quest ----------
         print('Pias Quest');await fresh(1)
-        check('Startseite von Pias Quest mit eigenem Schriftzug',await ev("GAME===1&&$('#logo').width>50"))
+        check('Startseite von Pias Quest mit eigenem Schriftzug',await ev("Shell.is('quest')&&$('#logo').width>50"))
         HINT="""(async()=>{const wait=ms=>new Promise(r=>setTimeout(r,ms)),t0=performance.now();while(!LB.won&&performance.now()-t0<90000){if(LB.roll||LB.dead||LB.queue.length){await wait(25);continue}const L=LB.L,fk=LB.fz.findIndex(v=>v);if(fk>=0){if(labNear(L,fk,LB.pos)){for(let d=0;d<4;d++){const s=labSlide(L,LB.pos,d,LB.mask);if(s.cells.length&&!s.dead&&!labNear(L,fk,s.end)){labMove(d);break}}}await wait(80);continue}const p=labNextPath(L,LB.pos,LB.painted,LB.mask);if(!p||!p.length){await wait(60);continue}labMove(p[0]);await wait(40)}return [LB.won,LB.moves,LB.left]})()"""
         async def start(n):
             await ev("closeSheet()");await wait(600);await ev("labStart(%d)"%n);await wait(3500)
         await start(3);r=await ev(HINT);await wait(2200);check('Level 3 lässt sich bis zum Sieg spielen',r[0],r);check('Sterne werden gespeichert',await ev("(labData().st[3]||0)>=1"))
+        await start(4);await ev("labMove(0);labMove(2)");await wait(900);await ev("history.back()");await wait(700);check('Zurück-Taste im Level fragt nach',await ev("sheetOpen&&$('#sheet').textContent.includes('Level verlassen')"));await ev("closeSheet()");await wait(400)
         await start(61);r=await ev("""(async()=>{const wait=ms=>new Promise(r=>setTimeout(r,ms)),L=LB.L,idle=async()=>{let g=0;while((LB.roll||LB.queue.length||LB.dead)&&g++<400)await wait(20)};
           const bfs=goal=>{const seen=new Map([[LB.pos,[]]]),q=[LB.pos];while(q.length){const p=q.shift();for(let d=0;d<4;d++){const s=labSlide(L,p,d,LB.mask);if(!s.cells.length||s.dead)continue;const np=seen.get(p).concat(d);if(goal(s))return np;if(!seen.has(s.end)){seen.set(s.end,np);q.push(s.end)}}}return null};
           let p=bfs(s=>s.cells.includes(L.locks[0].k));for(const d of p){labMove(d);await wait(40);await idle()}const a=[LB.got,LB.dopen[0],$('#lInv').children.length,LB.doorK[0]];

@@ -1,0 +1,15 @@
+<section id="home" class="screen on"><svg id="strip" aria-hidden="true"></svg><div class="hm">
+  <div class="zone z1"><div class="hm-top"><button class="ib" id="bAch" aria-label="Erfolge und Rekorde"></button><button class="ib" id="bSet" aria-label="Optionen"></button><button class="ib" id="bHelp" aria-label="Spielregeln">?</button></div>
+  <h1 class="vh">Pixaku</h1><canvas id="logo" aria-hidden="true"></canvas><p class="tagline">Shikaku trifft Pixel-Art</p></div>
+  <div class="zone z2 stage"><canvas id="hero" aria-hidden="true"></canvas><button class="garr" id="gPrev" aria-label="Voriges Spiel"></button><button class="garr" id="gNext" aria-label="Nächstes Spiel"></button><b id="gLbl"></b><span id="gDots"></span></div>
+  <div class="zone z3 menu">
+    <div class="gmenu" data-game="pixaku">
+%%INCLUDE games/pixaku/html/menu.html%%
+    </div>
+    <div class="gmenu" data-game="quest">
+%%INCLUDE games/quest/html/menu.html%%
+    </div>
+  </div>
+  <input type="file" id="file" accept="image/*" tabindex="-1" aria-hidden="true">
+</div></section>
+

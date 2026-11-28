@@ -1,0 +1,3 @@
+.lvg{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:12px 0}.lvb{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 2px 8px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--text)}
+.lvb b{font:700 20px var(--display)}.lvb .st{font-size:11px;letter-spacing:1px;min-height:14px}.lvb.cur{background:rgba(255,200,87,.2);border-color:var(--amber)}.lvb.lock{opacity:.35}html.k3 .lvb{border-radius:0}
+@media(prefers-reduced-motion:reduce){#bg i,#loader s u{animation:none}#sheet,#scrim{transition:none}}

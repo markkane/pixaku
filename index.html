@@ -381,7 +381,7 @@ html.k3:not(.arc) .tagline{color:#bfe9f0}
 #gLbl{position:absolute;left:calc(50% - var(--colw,100%)/2 + 14px);top:calc(50% - var(--heroh,300px)/2 + 10px);font:700 11px var(--display);letter-spacing:.16em;text-transform:uppercase;color:#fff;background:rgba(4,14,20,.6);padding:5px 9px;border-radius:9px;pointer-events:none;z-index:2}
 #gDots{position:absolute;left:0;right:0;top:calc(50% + var(--heroh,300px)/2 - 18px);display:flex;gap:7px;justify-content:center;pointer-events:none;z-index:2}#gDots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3)}#gDots i.on{background:var(--amber);box-shadow:0 0 8px var(--amber)}
 #hero.sw{animation:hsw .28s ease-out}@keyframes hsw{from{opacity:.2;transform:scale(.96)}}
-.lmenu{display:contents}.hm:not(.g1) .lmenu{display:none}.hm.g1 .z3>:not(.lmenu){display:none!important}
+.gmenu{display:none}.gmenu.on{display:contents}.garr[hidden],#gDots[hidden]{display:none}
 html.k3 .garr,html.k3 #gLbl{border-radius:0}
 #lab .glass{background:rgba(6,12,20,.78)}
 #lTip{position:absolute;left:14px;right:14px;top:calc(96px + var(--sat));padding:10px 14px;background:rgba(8,12,24,.86);border:2px solid var(--amber);color:#fff;font:600 14px/1.4 var(--body);box-shadow:4px 4px 0 rgba(0,0,0,.45);pointer-events:none;z-index:2}
@@ -425,6 +425,7 @@ html.k3 .lw,html.k3 .lw-h i{border-radius:0}.lst-w{font:700 12px var(--display);
   <h1 class="vh">Pixaku</h1><canvas id="logo" aria-hidden="true"></canvas><p class="tagline">Shikaku trifft Pixel-Art</p></div>
   <div class="zone z2 stage"><canvas id="hero" aria-hidden="true"></canvas><button class="garr" id="gPrev" aria-label="Voriges Spiel"></button><button class="garr" id="gNext" aria-label="Nächstes Spiel"></button><b id="gLbl"></b><span id="gDots"></span></div>
   <div class="zone z3 menu">
+    <div class="gmenu" data-game="pixaku">
     <button class="gbtn go" id="bCont" hidden><canvas class="px" id="contCv" title="Dieses Bild direkt weitermalen"></canvas><i class="pl">▶</i><span><b>Weitermalen</b><small><span id="contName"></span>, <span id="contInfo"></span></small></span><i class="tag info" id="contN" hidden></i></button>
     <div class="duo"><button class="gbtn go" id="bCamp">Kampagne<i class="tag info" id="campTag" hidden></i></button><button class="gbtn" id="bPlay">Freies Bild</button></div>
     <div class="quad">
@@ -433,7 +434,8 @@ html.k3 .lw,html.k3 .lw-h i{border-radius:0}.lst-w{font:700 12px var(--display);
       <button class="gbtn sq" id="bUpload"><canvas class="px" id="icUpload"></canvas>Foto</button>
       <button class="gbtn sq" id="bGal"><canvas class="px" id="icGal"></canvas>Galerie<i class="tag info" id="galTxt" hidden></i></button>
     </div>
-    <div class="lmenu">
+    </div>
+    <div class="gmenu" data-game="quest">
       <button class="gbtn go" id="blGo">Level 1</button>
       <div class="duo"><button class="gbtn" id="blLv">Reise</button><button class="gbtn" id="blRnd">Zufall</button></div>
       <button class="gbtn" id="blHelp">So geht's</button>
@@ -502,7 +504,7 @@ html.k3 .lw,html.k3 .lw-h i{border-radius:0}.lst-w{font:700 12px var(--display);
 window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{const f=new File([data],filename,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
-window.PX_VER='28.11.2026 16:03 · 9d852';
+window.PX_VER='28.11.2026 17:19 · 648eb';
 (()=>{let fresh=false;try{fresh=!!sessionStorage.getItem('pxr');sessionStorage.removeItem('pxr')}catch(e){}
   const t0=performance.now(),hide=()=>{const s=document.getElementById('splash');if(!s)return;setTimeout(()=>{s.classList.add('off');setTimeout(()=>s.remove(),600)},Math.max(0,(fresh?350:900)-(performance.now()-t0)))};
   const reload=()=>{try{sessionStorage.setItem('pxr','1')}catch(e){}location.reload()};
@@ -980,24 +982,19 @@ const sfx={ok:a=>tone(SCALE[Math.min(9,Math.floor(Math.log2(a)*2))],.2),bad:()=>
 
 /* ---------- Screens & Sheet ---------- */
 let sheetOpen=false,sheetLocked=false;
-const syncLock=()=>document.documentElement.classList.toggle('lock',sheetOpen||!['gallery','camp','ach','lcamp'].some(i=>$('#'+i).classList.contains('on')));
+/* Bildschirme mit scrollbarem Inhalt melden die Spiele über das Feld scrollScreens an */
+const syncLock=()=>document.documentElement.classList.toggle('lock',sheetOpen||!Shell.games.some(g=>(g.scrollScreens||[]).some(i=>$('#'+i).classList.contains('on'))));
 addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('[role=button]')){e.preventDefault();e.target.click()}});
 let navDepth=0,navSkip=false,inPop=false,backArmed=0;
 const navPush=()=>{try{history.pushState({px:1},'');navDepth++}catch(e){}};
 addEventListener('popstate',()=>{if(navSkip){navSkip=false;return}navDepth=Math.max(0,navDepth-1);inPop=true;
   try{if(sheetOpen){if(!sheetLocked)closeSheet();navPush()}
-    else if($('#game').classList.contains('on')&&G&&!G.won){navPush();const edge=Date.now()-lastDown.t<1200&&(lastDown.x<52||lastDown.x>cw-52);
-      if(edge){const q=edgeDrag;edgeDrag=null;if(q&&Date.now()-q.t<1200&&q.d.w*q.d.h>1&&evalRect(q.d.x,q.d.y,q.d.w,q.d.h).valid&&!blockedAt(q.d.x,q.d.y,q.d.w,q.d.h))commit(q.d.x,q.d.y,q.d.w,q.d.h);
-        if(Date.now()-backArmed>6000){backArmed=Date.now();toast('Wischgeste am Rand abgefangen, das Spiel läuft weiter.',1800)}}
-      else{const quick=A||G.meta.mode==='sprint'||G.meta.mode==='rule'||TUT;
-        const s=openSheet(`<div class="sh-head"><h2>Spiel verlassen?</h2></div><p>${quick?'Diese Runde wird nicht gespeichert und endet beim Verlassen.':'Dein Stand bleibt gespeichert, du kannst später weitermalen.'}</p><div class="btns"><button class="ghost" id="lvY">Verlassen</button><button class="primary" id="lvN">Weiterspielen</button></div>`);
-        s.querySelector('#lvN').onclick=closeSheet;s.querySelector('#lvY').onclick=()=>{closeSheet();$('#gBack').onclick()}}}
-    else if($('#lab').classList.contains('on')&&LB&&!LB.won){navPush();labNavBack()}
+    else if(Shell.games.some(g=>g.onBack&&g.onBack())){}
     else if(!$('#home').classList.contains('on'))show('home')}finally{inPop=false}});
 addEventListener('pagehide',()=>saveNow());
 function show(id){const was=document.querySelector('.screen.on');if(id!=='home'&&was&&was.id==='home')navPush();
   if(id==='home'&&!inPop&&navDepth>0){navSkip=true;const n=navDepth;navDepth=0;try{history.go(-n)}catch(e){navSkip=false}}
-  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));syncLock();scrollTo(0,0);if(id==='home')refreshHome();if(id==='game')resize();if(id==='lab')labResize();if(id==='lcamp')labCamp();if(id==='gallery')renderGallery();if(id==='camp')renderCamp();if(id==='ach')renderAch()}
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));syncLock();scrollTo(0,0);if(id==='home')refreshHome();Shell.each('onShow',id)}
 function openSheet(html,locked){const s=$('#sheet');s.innerHTML=html;s.scrollTop=0;s.classList.add('on');$('#scrim').classList.add('on');sheetOpen=true;sheetLocked=!!locked;syncLock();
   const x=s.querySelector('[data-x]');if(x)x.onclick=closeSheet;return s}
 function closeSheet(){$('#sheet').classList.remove('on');$('#scrim').classList.remove('on');sheetOpen=false;syncLock()}
@@ -1018,6 +1015,41 @@ function tile(c,x,y,w,h,col,s,k){const g=Math.min(1.5,s*.05)*k,rad=Math.min(s*.2
 
 const shade=(h,f)=>{const c=hex2rgb(h);return rgb2hex(c[0]*f,c[1]*f,c[2]*f)};
 function cubo(c,x,y,w,h,col,s,k){if(SKIN==='rund'||k<.05){tile(c,x,y,w,h,col,s,k);return}const d=Math.min(h*.3,s*.2)*k,g=Math.min(1.5,s*.05)*k;c.fillStyle=shade(col,.5);c.fillRect(x+g,y+h-d-g,w-2*g,d);tile(c,x,y,w,h-d,col,s,k)}
+/* ---------- Schnittstelle zwischen Rahmen und Spielen ----------
+   Jedes Spiel meldet sich mit Shell.register({...}) an. Der Rahmen kennt keine Spielnamen.
+   Pflichtfelder:
+     id        eindeutige Kennung in Kleinbuchstaben, zum Beispiel 'quest'
+     name      Anzeigename in der Spielauswahl
+     tagline   Zeile unter dem Schriftzug
+     logo(anim,run)  zeichnet den Schriftzug in die Fläche #logo. run ist die laufende Nummer aus logoRun, damit alte Animationen enden.
+     hero()    startet die Vorschau in der Fläche #hero. Sie endet selbst, sobald heroRun weiterzählt.
+   Wahlweise:
+     init()            einmal beim Start, nachdem alle Spiele angemeldet sind
+     onHome()          vor jedem Anzeigen der Startseite: eigene Knöpfe und Zähler auffrischen
+     onShow(id)        nach jedem Wechsel des Bildschirms, id ist die Kennung des neuen Bildschirms
+     onResize()        nach einer Größenänderung des Fensters
+     onBack()          Zurück-Taste des Geräts: liefert true, wenn das Spiel sie selbst behandelt hat
+     scrollScreens     Liste eigener Bildschirme mit scrollbarem Inhalt
+     onWake()          nach einer längeren Pause der App: gezeichnete Flächen erneuern
+     settingsRows()    liefert HTML für eigene Zeilen in den Einstellungen
+     settingsBind(el)  verdrahtet diese Zeilen im geöffneten Blatt
+   Das Menü eines Spiels liegt in games/<id>/html/menu.html und wird auf der Startseite in <div class="gmenu" data-game="<id>"> eingesetzt.
+   Der Rahmen zeigt immer nur das Menü des gewählten Spiels. */
+const Shell={games:[],cur:0,
+  register(g){for(const k of['id','name','tagline','logo','hero'])if(!g[k])throw new Error('Spiel ohne Feld '+k);if(this.games.some(x=>x.id===g.id))throw new Error('Spiel doppelt angemeldet: '+g.id);this.games.push(g);return g},
+  get game(){return this.games[this.cur]},
+  is(id){return this.game&&this.game.id===id},
+  each(hook,...a){for(const g of this.games)if(typeof g[hook]==='function')g[hook](...a)},
+  /* Wählt ein Spiel nach Nummer oder Kennung. user: der Wechsel kommt von einer Eingabe und wird gespeichert und animiert. */
+  select(which,user){let i=typeof which==='string'?this.games.findIndex(g=>g.id===which):which|0;const n=this.games.length;i=((i%n)+n)%n;this.cur=i;const g=this.game;if(user)store.set('game',i);
+    for(const m of document.querySelectorAll('.gmenu'))m.classList.toggle('on',m.dataset.game===g.id);$('.hm').dataset.game=g.id;$('.tagline').textContent=g.tagline;$('#gLbl').textContent=g.name;
+    $('#gDots').innerHTML=this.games.map((_,k)=>`<i${k===i?' class="on"':''}></i>`).join('');for(const b of[$('#gPrev'),$('#gNext')])b.hidden=n<2;$('#gDots').hidden=n<2;
+    if(g.onHome)g.onHome();if(user){const h=$('#hero');h.classList.remove('sw');void h.offsetWidth;h.classList.add('sw');sfx.tick();layoutHome();drawLogo(false);heroStart()}},
+  /* Einmal beim Start: Spielauswahl verdrahten, gespeichertes Spiel wählen */
+  init(){const z=$('.z2'),ar=d=>`<svg viewBox="0 0 24 24"><path d="${d}"/></svg>`;let p=null;z.addEventListener('pointerdown',e=>{p={x:e.clientX,y:e.clientY}});
+    z.addEventListener('pointerup',e=>{if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p=null;if(Math.abs(dx)>36&&Math.abs(dx)>Math.abs(dy)*1.3)this.select(this.cur+(dx<0?1:-1),true)});
+    $('#gPrev').innerHTML=ar('M15 5l-7 7 7 7');$('#gNext').innerHTML=ar('M9 5l7 7-7 7');$('#gPrev').onclick=e=>{e.stopPropagation();this.select(this.cur-1,true)};$('#gNext').onclick=e=>{e.stopPropagation();this.select(this.cur+1,true)};
+    this.each('init');this.select(Math.min(this.games.length-1,+store.get('game',0)||0))}};
 /* ---------- Motive ---------- */
 const sizeOf=()=>SIZES[cfg.size];
 function uploadPixels(W,H){const sw=uploadSrc.width,sh=uploadSrc.height,src=uploadSrc.data,out=new Uint8ClampedArray(W*H*4);
@@ -1496,10 +1528,10 @@ function openSettings(){
   <button class="opt" id="oSound" role="switch"><span><b>Ton</b><small>Klänge beim Setzen und Lösen</small></span><i class="tg"></i></button>
   <button class="opt" id="o3d" role="switch"><span><b>3D-Ansicht</b><small id="o3dTxt"></small></span><i class="tg"></i></button>
   <div class="opt col"><span><b>Look</b><small id="oSkinTxt"></small></span><div class="seg s3" id="oSkin"><button data-s="rund">Klassisch</button><button data-s="k3">3D</button><button data-s="arc">Retro</button></div></div>
-  ${labSpeedRow()}
+  ${Shell.games.map(g=>g.settingsRows?g.settingsRows():'').join('')}
   <div class="btns"><button class="ghost" id="oHelp">Spielregeln</button>${$('#game').classList.contains('on')?'':'<button class="ghost" id="oTut">Tutorial</button>'}${inGame?'<button class="ghost" id="oClear">Brett leeren</button>':''}${window.PX_CHECK?'<button class="ghost" id="oUpd">Update suchen</button>':''}</div>
   <p style="text-align:center;font-size:12px">Version ${window.PX_VER||'Vorschau in Claude'}</p>`);
-  labSpeedBind(s);
+  Shell.each('settingsBind',s);
   const up=s.querySelector('#oUpd');if(up)up.onclick=()=>{toast('Suche nach einer neuen Version. Sie wird beim nächsten Besuch der Startseite geladen.',3200);window.PX_CHECK()};
   const a=s.querySelector('#oSound'),b=s.querySelector('#o3d'),sync=()=>{const on3=R3.on&&!R3.failed;a.classList.toggle('on',S.sound);a.setAttribute('aria-checked',S.sound);b.classList.toggle('on',on3);b.setAttribute('aria-checked',on3);b.disabled=R3.failed;s.querySelectorAll('#oSkin button').forEach(x=>x.classList.toggle('sel',x.dataset.s===SKIN));s.querySelector('#oSkinTxt').textContent={rund:'Runde Glasflächen, alles gerade.',k3:'Harte Kanten, Leuchtrand und eine gefaltete Glasbahn auf der Startseite.',arc:'Die Startseite als Spielautomat mit Leuchtschild, Bildschirm und Pult.'}[SKIN];
     s.querySelector('#o3dTxt').textContent=R3.failed?'Auf diesem Gerät nicht verfügbar, das Brett läuft in 2D.':'Glasquader mit Licht und Funken. Ausgeschaltet läuft das flache 2D-Brett.'};
@@ -1724,15 +1756,8 @@ function openWork(it){const img=galImg(it),d=DIFFS.find(x=>x.id===it.diff);
   paintImg(s.querySelector('#wArt'),img).style.aspectRatio=it.W+'/'+it.H;let armed=false;
   s.querySelector('#wDel').onclick=e=>{if(!armed){armed=true;e.target.textContent='Wirklich löschen?';return}store.set('gal',store.get('gal',[]).filter(x=>x.id!==it.id));closeSheet();renderGallery()}}
 
-/* ---------- Home ---------- */
-function refreshHome(){
-  const ix=saves(),sv=ix[0],gal=store.get('gal',[]),best=store.get('best',0);$('#contN').hidden=ix.length<2;$('#contN').textContent=ix.length;
-  $('#bCont').hidden=!sv;$('#bCamp').classList.toggle('go',!sv);$('.menu').classList.toggle('has',!!sv);$('#bAch').innerHTML=I.trophy;{const n=campStars();$('#campTag').hidden=!n;$('#campTag').textContent='★ '+n}
-  if(sv){$('#contName').textContent=sv.name;$('#contInfo').textContent=`${sv.W} × ${sv.H}, ${sv.pct} %`;const cv=$('#contCv');cv.width=sv.W;cv.height=sv.H;const im=new Image();im.onload=()=>cv.getContext('2d').drawImage(im,0,0);im.src=sv.thumb}
-  {const e=dayOf(),n=((e.b||gal.some(g=>g.id==='daily-'+today()))?1:0)+(e.s?1:0)+(e.r?1:0);$('#dailyTag').textContent=n===3?'Fertig':n+'/3';$('#dailyTag').classList.toggle('done',n===3);$('#icDaily').classList.toggle('mute',!n)}
-  $('#galTxt').hidden=!gal.length;$('#galTxt').textContent=gal.length;$('#arcTxt').hidden=!best;$('#arcTxt').textContent=best;
-  $('#bSet').innerHTML=I.gear;labHomeInfo();layoutHome();heroStart();
-}
+/* ---------- Startseite: Aufteilung, Schriftzug und Vorschau. Die Inhalte liefert das gewählte Spiel. ---------- */
+function refreshHome(){$('#bAch').innerHTML=I.trophy;$('#bSet').innerHTML=I.gear;Shell.each('onHome');layoutHome();heroStart()}
 const HOME={col:340,hh:340};
 function layoutHome(){const hm=$('.hm');if(!hm.clientWidth)return;const k3=document.documentElement.classList.contains('k3'),cs=getComputedStyle(hm),zs=getComputedStyle($('.z2')),
     zx=k3?parseFloat(zs.paddingLeft)*2:0,zy=k3?parseFloat(zs.paddingTop)*2:0,iw=hm.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-zx,ih=hm.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom),z1=$('.z1'),z3=$('.z3'),lg=$('#logo'),cv=$('#hero');
@@ -1755,7 +1780,18 @@ function layoutHome(){const hm=$('.hm');if(!hm.clientWidth)return;const k3=docum
    <g class="grid">${gl}</g><polyline class="cheek" points="${E(-1)}"/><polyline class="cheek" points="${E(1)}"/><polyline class="edge" points="${E(-1)}"/><polyline class="edge" points="${E(1)}"/>
    <line class="fold" x1="${cx-w1}" x2="${cx+w1}" y1="${y1}" y2="${y1}"/><line class="fold" x1="${cx-w2}" x2="${cx+w2}" y1="${y2}" y2="${y2}"/>`}
 let logoRun=0;
-function drawLogo(anim){layoutHome();const run=++logoRun;if(typeof GAME!=='undefined'&&GAME===1)return questLogo(anim,run);
+function drawLogo(anim){layoutHome();const run=++logoRun;return Shell.game.logo(anim,run)}
+let heroRun=0;
+function heroStart(){return Shell.game.hero()}
+/* ---------- Pixaku auf der Startseite: Menü, Schriftzug, Vorschau, Anmeldung beim Rahmen ---------- */
+function pixakuHome(){
+  const ix=saves(),sv=ix[0],gal=store.get('gal',[]),best=store.get('best',0);$('#contN').hidden=ix.length<2;$('#contN').textContent=ix.length;
+  $('#bCont').hidden=!sv;$('#bCamp').classList.toggle('go',!sv);$('.menu').classList.toggle('has',!!sv);{const n=campStars();$('#campTag').hidden=!n;$('#campTag').textContent='★ '+n}
+  if(sv){$('#contName').textContent=sv.name;$('#contInfo').textContent=`${sv.W} × ${sv.H}, ${sv.pct} %`;const cv=$('#contCv');cv.width=sv.W;cv.height=sv.H;const im=new Image();im.onload=()=>cv.getContext('2d').drawImage(im,0,0);im.src=sv.thumb}
+  {const e=dayOf(),n=((e.b||gal.some(g=>g.id==='daily-'+today()))?1:0)+(e.s?1:0)+(e.r?1:0);$('#dailyTag').textContent=n===3?'Fertig':n+'/3';$('#dailyTag').classList.toggle('done',n===3);$('#icDaily').classList.toggle('mute',!n)}
+  $('#galTxt').hidden=!gal.length;$('#galTxt').textContent=gal.length;$('#arcTxt').hidden=!best;$('#arcTxt').textContent=best;
+}
+function pixakuLogo(anim,run){
   const L=[['1110','1001','1110','1000','1000'],['111','010','010','010','111'],['1001','1001','0110','1001','1001'],['0110','1001','1111','1001','1001'],['1001','1010','1100','1010','1001'],['1001','1001','1001','1001','0110']],
     cols=['#ff7a59','#ffc857','#4fe3c1','#ff5d8f','#5cc8ff','#ffc857'],cv=$('#logo'),s=HOME.col/28,d=Math.min(3,devicePixelRatio||1);
   cv.style.width=28*s+'px';cv.style.height=5*s+'px';cv.width=28*s*d;cv.height=5*s*d;const c=cv.getContext('2d'),t0=performance.now();
@@ -1763,8 +1799,7 @@ function drawLogo(anim){layoutHome();const run=++logoRun;if(typeof GAME!=='undef
     L.forEach((g,li)=>{g.forEach((row,y)=>[...row].forEach((b,x)=>{if(b!=='1')return;const age=anim&&!reduce?(now-t0-(x0+x)*38-y*22)/260:1;if(age<=0){more=true;return}
       const t=Math.min(1,age),sc=.4+.6*(1-Math.pow(1-t,3));if(t<1)more=true;c.save();c.translate((x0+x+.5)*s,(y+.5)*s);c.scale(sc,sc);cubo(c,-s/2,-s/2,s,s,cols[li],s,1);c.restore()}));x0+=g[0].length+1});
     if(more)requestAnimationFrame(f)})(t0)}
-let heroRun=0;
-async function heroStart(){if(GAME===1)return labHero();const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d'),px=HOME.col,ph=HOME.hh,d=Math.min(3,devicePixelRatio||1);cv.width=px*d;cv.height=ph*d;let order=SPRITES.map((_,i)=>i).sort(()=>Math.random()-.5),oi=0;
+async function pixakuHero(){const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d'),px=HOME.col,ph=HOME.hh,d=Math.min(3,devicePixelRatio||1);cv.width=px*d;cv.height=ph*d;let order=SPRITES.map((_,i)=>i).sort(()=>Math.random()-.5),oi=0;
   while(run===heroRun&&$('#home').classList.contains('on')){
     const puz=await buildPuzzle(spriteImage(SPRITES[order[oi++%order.length]]),12,mulberry32((Math.random()*1e9)|0)),{W,H}=puz,s=Math.min((px-16)/W,(ph-16)/H),ox=(px-W*s)/2,oy=(ph-H*s)/2;
     const seq=puz.rects.map((r,i)=>i).sort(()=>Math.random()-.5),born=new Float64Array(seq.length).fill(1e18);
@@ -1798,7 +1833,28 @@ $('#file').onchange=async e=>{const inp=e.target,f=inp.files&&inp.files[0];if(!f
     uploadSrc={width:cv.width,height:cv.height,data:new Uint8ClampedArray(px.data)};cfg.motif='upload';cfg.pal='orig';if(cfg.size<5)cfg.size=7;openSetup()}
   catch(err){toast('Dieses Bild konnte der Browser nicht lesen. Mit JPG oder PNG klappt es.',3500)}
   inp.value=''};
-
+function paintIcons(){paintImg($('#icDaily'),compact(pixling(12,12,mulberry32(hashStr('daily-'+today())))));
+  paintImg($('#icArcade'),spriteImage(SPRITES.find(s=>s.id==='rakete')));paintImg($('#icUpload'),spriteImage(SPRITES.find(s=>s.id==='kaktus')));paintImg($('#icGal'),spriteImage(SPRITES.find(s=>s.id==='diamant')))}
+/* Nach einer Pause wirft Android gezeichnete Flächen weg: alles neu zeichnen */
+function pixakuWake(){paintIcons();if($('#gallery').classList.contains('on'))renderGallery();
+  if(G){G.pctx.clearRect(0,0,G.W,G.H);for(const r of G.rects.values())if(r.valid){G.pctx.fillStyle=r.col;G.pctx.fillRect(r.x,r.y,r.w,r.h)}
+    if(R3.ready){R3.lost=R3.r.getContext().isContextLost();if(R3.atlas)R3.atlas.needsUpdate=true;$('#gl').hidden=!use3D()}
+    if($('#game').classList.contains('on')){resize();requestDraw()}}}
+/* Zurück-Taste oder Wischgeste am Rand, während ein Bild läuft */
+function pixakuBack(){if(!($('#game').classList.contains('on')&&G&&!G.won))return false;navPush();const edge=Date.now()-lastDown.t<1200&&(lastDown.x<52||lastDown.x>cw-52);
+      if(edge){const q=edgeDrag;edgeDrag=null;if(q&&Date.now()-q.t<1200&&q.d.w*q.d.h>1&&evalRect(q.d.x,q.d.y,q.d.w,q.d.h).valid&&!blockedAt(q.d.x,q.d.y,q.d.w,q.d.h))commit(q.d.x,q.d.y,q.d.w,q.d.h);
+        if(Date.now()-backArmed>6000){backArmed=Date.now();toast('Wischgeste am Rand abgefangen, das Spiel läuft weiter.',1800)}}
+      else{const quick=A||G.meta.mode==='sprint'||G.meta.mode==='rule'||TUT;
+        const s=openSheet(`<div class="sh-head"><h2>Spiel verlassen?</h2></div><p>${quick?'Diese Runde wird nicht gespeichert und endet beim Verlassen.':'Dein Stand bleibt gespeichert, du kannst später weitermalen.'}</p><div class="btns"><button class="ghost" id="lvY">Verlassen</button><button class="primary" id="lvN">Weiterspielen</button></div>`);
+        s.querySelector('#lvN').onclick=closeSheet;s.querySelector('#lvY').onclick=()=>{closeSheet();$('#gBack').onclick()}}return true}
+Shell.register({id:'pixaku',name:'Pixaku',tagline:'Shikaku trifft Pixel-Art',logo:pixakuLogo,hero:pixakuHero,onHome:pixakuHome,onWake:pixakuWake,onBack:pixakuBack,scrollScreens:['gallery','camp','ach'],
+  onShow(id){if(id==='game')resize();if(id==='gallery')renderGallery();if(id==='camp')renderCamp();if(id==='ach')renderAch()},
+  init(){paintIcons();
+    $('#gl').addEventListener('webglcontextrestored',()=>{R3.lost=false;setTimeout(refreshVisuals,50)});
+    $('#gl').addEventListener('webglcontextlost',()=>{R3.lost=true;$('#gl').hidden=true;if(G)requestDraw()});
+    for(const id of['board','miniCv','contCv','icDaily','icArcade','icUpload','icGal'])document.getElementById(id).addEventListener('contextrestored',()=>{clearTimeout(rvT);rvT=setTimeout(refreshVisuals,60)});
+    window.claude?.hot?.snapshot?.(()=>{saveNow();return{}});
+    document.fonts&&document.fonts.load('800 92px PixNum','0123456789').then(()=>{if(R3.numAtlas)R3.numAtlas();if(G)requestDraw()}).catch(()=>{});document.fonts&&document.fonts.ready.then(()=>{if(G)requestDraw()})}});
 /*!
  * GSAP 3.15.1
  * https://gsap.com
@@ -2093,7 +2149,7 @@ const LSTORY=[
  ['Der Turm','Morvan hat sich im höchsten Turm verschanzt. Jede Kammer, die du mit Licht füllst, nimmt ihm ein Stück seiner Macht. Bring es zu Ende, Pia.']];
 const LKC=['#ff5a4e','#4ea8ff','#6ee06a'],LMAP=[[.2,.93],[.5,.875],[.8,.82],[.52,.74],[.83,.645],[.26,.63],[.5,.525],[.19,.085],[.54,.065],[.83,.15],[.78,.31],[.47,.27],[.2,.38]];
 const LAB={r:null,ready:false,fail:false,geo:null,mats:new Map(),disp:[],anim:[],pops:[],lamps:[],parts:[],view:{d:10,eW:9,eH:13,tx:0,tz:0}};
-let LB=null,GAME=store.get('game',0)?1:0;labK=LG_K[store.get('lspd',1)]||LG_K[1];
+let LB=null;labK=LG_K[store.get('lspd',1)]||LG_K[1];
 const labSpeedRow=()=>`<div class="opt col"><span><b>Rollgeschwindigkeit</b><small>Wie schnell Pia in Pias Quest rollt.</small></span><div class="seg s3" id="oSpd"><button data-v="0">Gemütlich</button><button data-v="1">Normal</button><button data-v="2">Flott</button></div></div>`,
   labSpeedBind=s=>{const box=s.querySelector('#oSpd'),sync=()=>box.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',+b.dataset.v===store.get('lspd',1)));box.onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;store.set('lspd',+b.dataset.v);labK=LG_K[+b.dataset.v];sfx.tick();sync()};sync()};
 const labData=()=>{const d=store.get('lab',null)||{};return{max:d.max||1,st:d.st||{},seen:d.seen3||[]}};
@@ -2525,8 +2581,6 @@ function labLoop(){const run=++labRun;let last=performance.now(),hud=0;
 
 /* ---------- Spielauswahl im Hauptmenü ---------- */
 function labHomeInfo(){const d=labData(),n=Object.values(d.st).reduce((a,b)=>a+b,0),w=Math.min(LW_C-1,Math.floor((d.max-1)/LW_N));$('#blGo').innerHTML=`<span><b>Level ${d.max}</b><small>${d.max>LW_N*LW_C?'Endlose Reise':'Welt '+(w+1)+' · '+LTH[w].name}</small></span><i class="tag info"${n?'':' hidden'}>★ ${n}</i>`}
-function setGame(g,user){GAME=g?1:0;if(user)store.set('game',GAME);$('.hm').classList.toggle('g1',GAME===1);$('.tagline').textContent=GAME?'Ein Kugel-Abenteuer':'Shikaku trifft Pixel-Art';
-  $('#gDots').innerHTML=[0,1].map(i=>`<i${i===GAME?' class="on"':''}></i>`).join('');$('#gLbl').textContent=GAME?'Pias Quest':'Pixaku';labHomeInfo();if(user){const h=$('#hero');h.classList.remove('sw');void h.offsetWidth;h.classList.add('sw');sfx.tick();layoutHome();drawLogo(false);heroStart()}}
 async function labHero(){const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d'),px=HOME.col,ph=HOME.hh,d=Math.min(3,devicePixelRatio||1);cv.width=px*d;cv.height=ph*d;let k=(Math.random()*LW_C)|0;
   const wait=ms=>new Promise(r=>setTimeout(r,ms)),alive=()=>run===heroRun&&$('#home').classList.contains('on');
   while(alive()){const wi=k++%LW_C,sp=labSpec(wi*LW_N+1+(wi<3?6:0));sp.W=Math.min(sp.W,11);sp.H=Math.min(sp.H,12);sp.guards=0;const L=labGenSpec(sp,'hero'+((Math.random()*1e6)|0)),th=LTH[wi],W=L.W,s=Math.min((px-20)/W,(ph-20)/L.H),ox=(px-W*s)/2,oy=(ph-L.H*s)/2,
@@ -2539,12 +2593,7 @@ async function labHero(){const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d')
         st.tp=1;if(L.grid[b]===1)st.painted[b]=1;{const ky=L.keyAt[b];if(ky>=0)st.got|=1<<ky}for(const q of st.stars)if(q.c===b)q.got=true}
       pos=sl.end;st.mask|=st.got;await wait(150)}
     await wait(1500)}}
-{const z=$('.z2');let p=null;
-  z.addEventListener('pointerdown',e=>{p={x:e.clientX,y:e.clientY}});
-  z.addEventListener('pointerup',e=>{if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p=null;if(Math.abs(dx)>36&&Math.abs(dx)>Math.abs(dy)*1.3)setGame(1-GAME,true)});
-  $('#gPrev').innerHTML=LIC.l;$('#gNext').innerHTML=LIC.r;$('#gPrev').onclick=$('#gNext').onclick=e=>{e.stopPropagation();setGame(1-GAME,true)};
-  $('#blGo').onclick=()=>labPlay(labData().max);$('#blLv').onclick=()=>show('lcamp');$('#blRnd').onclick=labRandom;$('#blHelp').onclick=labHelp;
-  setGame(GAME)}
+$('#blGo').onclick=()=>labPlay(labData().max);$('#blLv').onclick=()=>show('lcamp');$('#blRnd').onclick=labRandom;$('#blHelp').onclick=labHelp;
 
 /* ---------- Übungslevel ---------- */
 const LCINE={1:'intro',6:'schlund',16:'felder',21:'kraehen',31:'hof',46:'stadt',61:'hafen',76:'balduin',91:'gero',106:'eis',121:'berge',136:'mine',151:'sumpf',166:'schlacht',181:'turm'},LCNAME={intro:'Die Verwandlung',schlund:'Der Fluch frisst sich durch',felder:'Raus ins Helle',kraehen:'Die Krähe',hof:'Bauer Henrik',stadt:'Auf dem Markt',hafen:'Das Tor am Kai',balduin:'Hofzauberer Balduin',gero:'Hauptmann Gero',eis:'Verbannt ins Eis',berge:'Über die Berge',mine:'Durch den Berg',sumpf:'Wandernde Schlünde',schlacht:'Morvans Heer',turm:'Der Turm',finale:'Der Fluch bricht'};
@@ -2578,7 +2627,11 @@ function questLogo(anim,run){const word=[['P',0,0],['I',0,1],['A',0,0],['S',0,1]
     for(const[p,o]of vis){c.fillStyle=p.col;R(p.x,p.y+o,1,1)}
     c.fillStyle='rgba(255,255,255,.75)';for(const[p,o]of vis)if(p.hi)R(p.x,p.y+o,1,.34);
     if(!more||!anim){const tw=reduce?1:.5+.5*Math.sin(now/260);c.fillStyle='#fff';sp.forEach(([x,y],i)=>{const a=reduce?1:.35+.65*Math.abs(Math.sin(now/420+i*1.7));c.globalAlpha=a;R(x,y-1,1,3);R(x-1,y,3,1)});c.globalAlpha=1}
-    if(more||(!reduce&&$('#home').classList.contains('on')&&GAME===1))requestAnimationFrame(f)})(t0)}
+    if(more||(!reduce&&$('#home').classList.contains('on')&&Shell.is('quest')))requestAnimationFrame(f)})(t0)}
+/* ---------- Anmeldung beim Rahmen ---------- */
+Shell.register({id:'quest',name:'Pias Quest',tagline:'Ein Kugel-Abenteuer',logo:questLogo,hero:labHero,onHome:labHomeInfo,
+  onResize(){if($('#lab').classList.contains('on'))labResize()},onShow(id){if(id==='lab')labResize();if(id==='lcamp')labCamp()},scrollScreens:['lcamp'],
+  onBack(){if(!($('#lab').classList.contains('on')&&LB&&!LB.won))return false;navPush();labNavBack();return true},settingsRows:labSpeedRow,settingsBind:labSpeedBind});
 
 /* ================= Bosse ================= */
 const LBOSSN={15:'schrat',30:'koenig',45:'stier'};
@@ -3192,27 +3245,17 @@ CINE.finale=function(done){let ry='';for(let k=0;k<12;k++)ry+=`<path d="M180,250
    A.at(5.4,()=>{tone(523,.2,'triangle',.06);tone(659,.2,'triangle',.06,.15);tone(784,.4,'triangle',.06,.3)});A.flash(5.4,.9,.6);tl.set(q('#pb'),{opacity:0},5.45).set(q('#pr'),{opacity:1},5.45).fromTo(q('#pr'),{scale:.4,transformOrigin:'50% 100%'},{scale:1,duration:.6,ease:'elastic.out(1,.5)',immediateRender:false},5.45);
    A.say(5.8,'Pia','„Ich habe wieder Beine! Und ein Königreich zu regieren.“');tl.to(q('#pr'),{y:326,duration:.25,yoyo:true,repeat:5,ease:'power1.out'},6.4);A.title(8.2)},done,1.6)};
 
-drawLogo(true);let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if($('#lab').classList.contains('on'))labResize();if($('#home').classList.contains('on')){drawLogo(false);heroStart()}},200)});
-function paintIcons(){paintImg($('#icDaily'),compact(pixling(12,12,mulberry32(hashStr('daily-'+today())))));
-  paintImg($('#icArcade'),spriteImage(SPRITES.find(s=>s.id==='rakete')));paintImg($('#icUpload'),spriteImage(SPRITES.find(s=>s.id==='kaktus')));paintImg($('#icGal'),spriteImage(SPRITES.find(s=>s.id==='diamant')))}
-paintIcons();
+/* ---------- Start der App: Spiele anmelden lassen, Startseite zeichnen, auf Größe und Pausen reagieren ---------- */
+Shell.init();drawLogo(true);let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{Shell.each('onResize');if($('#home').classList.contains('on')){drawLogo(false);heroStart()}},200)});
 /* Nach einer Pause wirft Android gezeichnete Flächen weg: beim Zurückkehren alles neu zeichnen */
 function refreshVisuals(){
-  try{paintIcons();
+  try{Shell.each('onWake');
     if($('#home').classList.contains('on')){drawLogo(false);refreshHome()}
-    if($('#gallery').classList.contains('on'))renderGallery();
-    if(G){G.pctx.clearRect(0,0,G.W,G.H);for(const r of G.rects.values())if(r.valid){G.pctx.fillStyle=r.col;G.pctx.fillRect(r.x,r.y,r.w,r.h)}
-      if(R3.ready){R3.lost=R3.r.getContext().isContextLost();if(R3.atlas)R3.atlas.needsUpdate=true;$('#gl').hidden=!use3D()}
-      if($('#game').classList.contains('on')){resize();requestDraw()}}
   }catch(e){}}
 let rvT=0,hidAt=0;
 const wake=()=>{if(document.hidden){hidAt=Date.now();return}if(!hidAt||performance.now()<5000||Date.now()-hidAt<1500)return;hidAt=0;clearTimeout(rvT);refreshVisuals();rvT=setTimeout(refreshVisuals,700)};
 document.addEventListener('visibilitychange',wake);addEventListener('pageshow',e=>{if(e.persisted)wake()});
-$('#gl').addEventListener('webglcontextrestored',()=>{R3.lost=false;setTimeout(refreshVisuals,50)});
-$('#gl').addEventListener('webglcontextlost',()=>{R3.lost=true;$('#gl').hidden=true;if(G)requestDraw()});
-for(const id of['logo','hero','board','miniCv','contCv','icDaily','icArcade','icUpload','icGal'])document.getElementById(id).addEventListener('contextrestored',()=>{clearTimeout(rvT);rvT=setTimeout(refreshVisuals,60)});
-window.claude?.hot?.snapshot?.(()=>{saveNow();return{}});
-document.fonts&&document.fonts.load('800 92px PixNum','0123456789').then(()=>{if(R3.numAtlas)R3.numAtlas();if(G)requestDraw()}).catch(()=>{});document.fonts&&document.fonts.ready.then(()=>{if(G)requestDraw()});
+for(const id of['logo','hero'])document.getElementById(id).addEventListener('contextrestored',()=>{clearTimeout(rvT);rvT=setTimeout(refreshVisuals,60)});
 refreshHome();
 </script>
 </body>

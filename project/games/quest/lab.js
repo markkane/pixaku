@@ -32,7 +32,7 @@ const LSTORY=[
  ['Der Turm','Morvan hat sich im höchsten Turm verschanzt. Jede Kammer, die du mit Licht füllst, nimmt ihm ein Stück seiner Macht. Bring es zu Ende, Pia.']];
 const LKC=['#ff5a4e','#4ea8ff','#6ee06a'],LMAP=[[.2,.93],[.5,.875],[.8,.82],[.52,.74],[.83,.645],[.26,.63],[.5,.525],[.19,.085],[.54,.065],[.83,.15],[.78,.31],[.47,.27],[.2,.38]];
 const LAB={r:null,ready:false,fail:false,geo:null,mats:new Map(),disp:[],anim:[],pops:[],lamps:[],parts:[],view:{d:10,eW:9,eH:13,tx:0,tz:0}};
-let LB=null,GAME=store.get('game',0)?1:0;labK=LG_K[store.get('lspd',1)]||LG_K[1];
+let LB=null;labK=LG_K[store.get('lspd',1)]||LG_K[1];
 const labSpeedRow=()=>`<div class="opt col"><span><b>Rollgeschwindigkeit</b><small>Wie schnell Pia in Pias Quest rollt.</small></span><div class="seg s3" id="oSpd"><button data-v="0">Gemütlich</button><button data-v="1">Normal</button><button data-v="2">Flott</button></div></div>`,
   labSpeedBind=s=>{const box=s.querySelector('#oSpd'),sync=()=>box.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',+b.dataset.v===store.get('lspd',1)));box.onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;store.set('lspd',+b.dataset.v);labK=LG_K[+b.dataset.v];sfx.tick();sync()};sync()};
 const labData=()=>{const d=store.get('lab',null)||{};return{max:d.max||1,st:d.st||{},seen:d.seen3||[]}};
@@ -464,8 +464,6 @@ function labLoop(){const run=++labRun;let last=performance.now(),hud=0;
 
 /* ---------- Spielauswahl im Hauptmenü ---------- */
 function labHomeInfo(){const d=labData(),n=Object.values(d.st).reduce((a,b)=>a+b,0),w=Math.min(LW_C-1,Math.floor((d.max-1)/LW_N));$('#blGo').innerHTML=`<span><b>Level ${d.max}</b><small>${d.max>LW_N*LW_C?'Endlose Reise':'Welt '+(w+1)+' · '+LTH[w].name}</small></span><i class="tag info"${n?'':' hidden'}>★ ${n}</i>`}
-function setGame(g,user){GAME=g?1:0;if(user)store.set('game',GAME);$('.hm').classList.toggle('g1',GAME===1);$('.tagline').textContent=GAME?'Ein Kugel-Abenteuer':'Shikaku trifft Pixel-Art';
-  $('#gDots').innerHTML=[0,1].map(i=>`<i${i===GAME?' class="on"':''}></i>`).join('');$('#gLbl').textContent=GAME?'Pias Quest':'Pixaku';labHomeInfo();if(user){const h=$('#hero');h.classList.remove('sw');void h.offsetWidth;h.classList.add('sw');sfx.tick();layoutHome();drawLogo(false);heroStart()}}
 async function labHero(){const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d'),px=HOME.col,ph=HOME.hh,d=Math.min(3,devicePixelRatio||1);cv.width=px*d;cv.height=ph*d;let k=(Math.random()*LW_C)|0;
   const wait=ms=>new Promise(r=>setTimeout(r,ms)),alive=()=>run===heroRun&&$('#home').classList.contains('on');
   while(alive()){const wi=k++%LW_C,sp=labSpec(wi*LW_N+1+(wi<3?6:0));sp.W=Math.min(sp.W,11);sp.H=Math.min(sp.H,12);sp.guards=0;const L=labGenSpec(sp,'hero'+((Math.random()*1e6)|0)),th=LTH[wi],W=L.W,s=Math.min((px-20)/W,(ph-20)/L.H),ox=(px-W*s)/2,oy=(ph-L.H*s)/2,
@@ -478,12 +476,7 @@ async function labHero(){const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d')
         st.tp=1;if(L.grid[b]===1)st.painted[b]=1;{const ky=L.keyAt[b];if(ky>=0)st.got|=1<<ky}for(const q of st.stars)if(q.c===b)q.got=true}
       pos=sl.end;st.mask|=st.got;await wait(150)}
     await wait(1500)}}
-{const z=$('.z2');let p=null;
-  z.addEventListener('pointerdown',e=>{p={x:e.clientX,y:e.clientY}});
-  z.addEventListener('pointerup',e=>{if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p=null;if(Math.abs(dx)>36&&Math.abs(dx)>Math.abs(dy)*1.3)setGame(1-GAME,true)});
-  $('#gPrev').innerHTML=LIC.l;$('#gNext').innerHTML=LIC.r;$('#gPrev').onclick=$('#gNext').onclick=e=>{e.stopPropagation();setGame(1-GAME,true)};
-  $('#blGo').onclick=()=>labPlay(labData().max);$('#blLv').onclick=()=>show('lcamp');$('#blRnd').onclick=labRandom;$('#blHelp').onclick=labHelp;
-  setGame(GAME)}
+$('#blGo').onclick=()=>labPlay(labData().max);$('#blLv').onclick=()=>show('lcamp');$('#blRnd').onclick=labRandom;$('#blHelp').onclick=labHelp;
 
 /* ---------- Übungslevel ---------- */
 const LCINE={1:'intro',6:'schlund',16:'felder',21:'kraehen',31:'hof',46:'stadt',61:'hafen',76:'balduin',91:'gero',106:'eis',121:'berge',136:'mine',151:'sumpf',166:'schlacht',181:'turm'},LCNAME={intro:'Die Verwandlung',schlund:'Der Fluch frisst sich durch',felder:'Raus ins Helle',kraehen:'Die Krähe',hof:'Bauer Henrik',stadt:'Auf dem Markt',hafen:'Das Tor am Kai',balduin:'Hofzauberer Balduin',gero:'Hauptmann Gero',eis:'Verbannt ins Eis',berge:'Über die Berge',mine:'Durch den Berg',sumpf:'Wandernde Schlünde',schlacht:'Morvans Heer',turm:'Der Turm',finale:'Der Fluch bricht'};
@@ -517,4 +510,8 @@ function questLogo(anim,run){const word=[['P',0,0],['I',0,1],['A',0,0],['S',0,1]
     for(const[p,o]of vis){c.fillStyle=p.col;R(p.x,p.y+o,1,1)}
     c.fillStyle='rgba(255,255,255,.75)';for(const[p,o]of vis)if(p.hi)R(p.x,p.y+o,1,.34);
     if(!more||!anim){const tw=reduce?1:.5+.5*Math.sin(now/260);c.fillStyle='#fff';sp.forEach(([x,y],i)=>{const a=reduce?1:.35+.65*Math.abs(Math.sin(now/420+i*1.7));c.globalAlpha=a;R(x,y-1,1,3);R(x-1,y,3,1)});c.globalAlpha=1}
-    if(more||(!reduce&&$('#home').classList.contains('on')&&GAME===1))requestAnimationFrame(f)})(t0)}
+    if(more||(!reduce&&$('#home').classList.contains('on')&&Shell.is('quest')))requestAnimationFrame(f)})(t0)}
+/* ---------- Anmeldung beim Rahmen ---------- */
+Shell.register({id:'quest',name:'Pias Quest',tagline:'Ein Kugel-Abenteuer',logo:questLogo,hero:labHero,onHome:labHomeInfo,
+  onResize(){if($('#lab').classList.contains('on'))labResize()},onShow(id){if(id==='lab')labResize();if(id==='lcamp')labCamp()},scrollScreens:['lcamp'],
+  onBack(){if(!($('#lab').classList.contains('on')&&LB&&!LB.won))return false;navPush();labNavBack();return true},settingsRows:labSpeedRow,settingsBind:labSpeedBind});

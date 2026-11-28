@@ -1,0 +1,77 @@
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+/* Kantiger Look: Glasplatten mit harten Ecken, Leuchtrand, Seitenkante und leichter Kippung, angelehnt an das 3D-Brett */
+html.k3 *:not(i),html.k3 *::before,html.k3 *::after,html.k3 .tg,html.k3 .ind,html.k3 .pal i,html.k3 .tag,html.k3 .rules li i{border-radius:0!important}
+html.k3 input[type=range]::-webkit-slider-thumb,html.k3 input[type=range]::-webkit-slider-runnable-track{border-radius:0}
+html.k3 input[type=range]::-moz-range-thumb,html.k3 input[type=range]::-moz-range-track{border-radius:0}
+html.k3 .glass,html.k3 #sheet,html.k3 #hero{border:1px solid rgba(190,236,242,.6);box-shadow:0 0 0 4px rgba(150,220,232,.1),0 0 28px rgba(110,215,232,.3),0 7px 0 rgba(9,32,42,.96),0 20px 44px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.4)}
+html.k3 .opt,html.k3 .stats div,html.k3 .seg,html.k3 .pvrow .frame,html.k3 #toast,html.k3 #bubble{border:1px solid rgba(190,236,242,.42);box-shadow:0 3px 0 rgba(9,32,42,.9),0 0 14px rgba(110,215,232,.14),inset 0 1px 0 rgba(255,255,255,.22)}
+html.k3 .gbtn,html.k3 .ghost,html.k3 .ib,html.k3 .sw .ar{border:1px solid rgba(200,240,246,.55);box-shadow:0 6px 0 rgba(8,28,38,.96),0 0 20px rgba(110,215,232,.22),inset 0 0 0 1px rgba(255,255,255,.1),inset 0 1px 0 rgba(255,255,255,.55)}
+html.k3 .ib,html.k3 .sw .ar{box-shadow:0 3px 0 rgba(8,28,38,.96),0 0 12px rgba(110,215,232,.2),inset 0 1px 0 rgba(255,255,255,.45)}
+html.k3 .ghost{box-shadow:0 4px 0 rgba(8,28,38,.96),0 0 16px rgba(110,215,232,.2),inset 0 1px 0 rgba(255,255,255,.5)}
+html.k3 .gbtn.go,html.k3 .primary,html.k3 .seg button.sel{border:1px solid rgba(255,246,224,.85);box-shadow:0 6px 0 #a3421d,0 0 30px rgba(255,150,90,.5),inset 0 2px 0 rgba(255,255,255,.7)}
+html.k3 .seg button.sel{box-shadow:0 3px 0 #a3421d,0 0 16px rgba(255,150,90,.4),inset 0 1px 0 rgba(255,255,255,.7)}
+html.k3 .gbtn:active{box-shadow:0 2px 0 rgba(8,28,38,.96),0 0 12px rgba(110,215,232,.2),inset 0 1px 0 rgba(255,255,255,.5)}
+html.k3 .gbtn.go:active,html.k3 .primary:active{box-shadow:0 2px 0 #a3421d,0 0 18px rgba(255,150,90,.4),inset 0 2px 0 rgba(255,255,255,.7)}
+html.k3 .primary,html.k3 .ghost{position:relative}
+html.k3 .gbtn::before,html.k3 .primary::before,html.k3 .ghost::before{content:"";position:absolute;left:6px;top:5px;width:9px;height:9px;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,255,255,0) 68%);pointer-events:none}
+html.k3 #go{position:sticky}
+html.k3 .tb.act{box-shadow:inset 0 0 0 1px rgba(255,200,87,.6)}
+html.k3 .mo.sel canvas,html.k3 .pal.sel i{box-shadow:0 0 0 2px rgba(255,200,87,.35),0 0 14px rgba(255,200,87,.4)}
+html.k3{--s1a:rgba(4,14,20,.5);--s1b:rgba(255,255,255,.14);--s2a:rgba(255,255,255,.2);--s2b:rgba(4,14,20,.55);--s3a:rgba(4,14,20,.6);--s3b:rgba(255,255,255,.12);--edge:rgba(190,236,242,.5);--fold:rgba(225,248,252,.85)}
+#strip{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none}
+html.k3 #strip{display:block}
+#strip .edge{fill:none;stroke:var(--edge);stroke-width:1.3}#strip .fold{stroke:var(--fold);stroke-width:1.3}#strip .cheek{display:none;fill:none;stroke:#04070e;stroke-width:16}
+html.k3 .hm{perspective:560px;gap:0;--fa:17deg;--fb:7deg;--fc:15deg;--z0:8px;padding:calc(8px + var(--sat)) 6px calc(12px + var(--sab));position:relative}
+html.k3 .zone{box-sizing:content-box;padding:14px 14px;transform-origin:50% 100%}
+html.k3 .z3{transform:translateZ(var(--z0)) rotateX(var(--fa))}
+html.k3 .z2{transform:translateZ(var(--z0)) translateY(var(--hm)) rotateX(var(--fa)) translateY(calc(-1*var(--hm))) rotateX(calc(-1*(var(--fa) + var(--fb))))}
+html.k3 .z1{transform:translateZ(var(--z0)) translateY(var(--hi)) translateY(var(--hm)) rotateX(var(--fa)) translateY(calc(-1*var(--hm))) rotateX(calc(-1*(var(--fa) + var(--fb)))) translateY(calc(-1*var(--hi))) rotateX(calc(var(--fb) + var(--fc)))}
+html.k3 .hm-top{margin-bottom:10px}
+@media(max-height:680px){html.k3 .zone{padding-top:9px;padding-bottom:9px}}
+/* Retro: Automat aus dunklem Glas mit Neonkanten, Leuchtschild, Bildschirm und Pult */
+html.arc{--s1a:rgba(46,12,34,.9);--s1b:rgba(255,150,90,.36);--s2a:rgba(12,18,38,.93);--s2b:rgba(3,6,14,.95);--s3a:rgba(4,8,18,.94);--s3b:rgba(28,36,70,.9)}
+html.arc #strip .cheek{display:inline}
+html.arc #strip .edge{stroke:#ff5d8f;stroke-width:3.5;filter:drop-shadow(0 0 7px rgba(255,93,143,.95))}
+html.arc #strip .fold{stroke:#5cc8ff;stroke-width:2.2;filter:drop-shadow(0 0 6px rgba(92,200,255,.95))}
+html.arc #logo{filter:drop-shadow(0 0 8px rgba(255,220,150,.8)) drop-shadow(0 0 26px rgba(255,120,90,.6));animation:flick 1.7s linear 1}
+@keyframes flick{0%,6%{opacity:.2}7%,12%{opacity:1}13%,17%{opacity:.35}18%,100%{opacity:1}}
+html.arc .tagline{color:#9fe8ff;text-shadow:0 0 8px rgba(92,200,255,.85)}
+html.arc #hero{border:9px solid #04070e;background:#02040a;box-shadow:0 0 0 2px rgba(92,200,255,.7),0 0 36px rgba(92,200,255,.38),inset 0 0 40px rgba(0,0,0,.85)}
+html.arc .z2::after{content:"";position:absolute;left:50%;top:50%;width:var(--colw);height:var(--heroh);transform:translate(-50%,-50%);pointer-events:none;background:linear-gradient(118deg,rgba(255,255,255,.17),rgba(255,255,255,0) 32%),repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px)}
+html.arc .gbtn.go{animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 6px 0 #a3421d,0 0 50px rgba(255,175,95,.9),inset 0 2px 0 rgba(255,255,255,.7)}}
+html.arc .gbtn.sq{background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding-top:4px;gap:10px;color:#cfe9f2;min-height:0}
+html.arc .gbtn.sq::before{display:none}
+html.arc .gbtn.sq:active{transform:none;box-shadow:none}
+html.arc .gbtn.sq canvas{width:min(54px,13.5vw);height:min(54px,13.5vw);border-radius:50%!important;border:3px solid var(--bc);box-shadow:0 6px 0 var(--bd),0 0 20px var(--bc),inset 0 0 0 2px rgba(255,255,255,.35);transition:transform .07s,box-shadow .07s}
+html.arc .gbtn.sq:active canvas{transform:translateY(4px);box-shadow:0 2px 0 var(--bd),0 0 12px var(--bc),inset 0 0 0 2px rgba(255,255,255,.35)}
+html.arc #bDaily{--bc:#ff5d8f;--bd:#8c1f45}html.arc #bArcade{--bc:#ffc857;--bd:#96661a}html.arc #bUpload{--bc:#4fe3c1;--bd:#157a63}html.arc #bGal{--bc:#5cc8ff;--bd:#1c6a96}
+html.arc .tag{border-radius:0!important;top:-10px}
+html.arc .z3::after{content:"FREISPIEL";text-align:center;font:700 11px var(--display);letter-spacing:.42em;color:var(--amber);text-shadow:0 0 8px rgba(255,200,87,.85);animation:blink 1.4s steps(2,jump-none) infinite}
+@keyframes blink{50%{opacity:.25}}
+@media(max-height:700px){html.arc .z3::after{content:none}}
+@media(prefers-reduced-motion:reduce){html.arc #logo,html.arc .gbtn.go,html.arc .z3::after{animation:none}}
+.opt.col{flex-direction:column;align-items:stretch}.seg.s3{grid-template-columns:repeat(3,1fr)}
+html.k3 #hero{box-shadow:0 0 0 1px rgba(190,236,242,.25),0 10px 30px rgba(0,0,0,.4)}
+
+html.k3 #sheet.on{transform:perspective(1300px) rotateX(3deg);transform-origin:50% 100%}
+html.k3 .gal{transform:perspective(1100px) rotateX(5deg);transform-origin:50% 0}
+@media(min-width:720px){html.k3 #sheet.on{transform:translate(-50%,50%) perspective(1300px) rotateX(4deg);transform-origin:50% 50%}}
+#strip .grid line{stroke:rgba(255,255,255,.075);stroke-width:1}html.arc #strip .grid{display:none}
+/* 3D-Look der Startseite: das Menü als Spielbrett, Tasten als farbige Glasquader */
+html.k3:not(.arc){--s1a:rgba(4,14,20,.74);--s1b:rgba(12,34,46,.62);--s2a:rgba(16,42,56,.64);--s2b:rgba(4,14,20,.8);--s3a:rgba(4,14,20,.82);--s3b:rgba(12,34,46,.62);--edge:rgba(170,225,235,.8)}
+html.k3:not(.arc) #strip .edge{stroke-width:2;filter:drop-shadow(0 0 6px rgba(120,220,235,.6))}
+html.k3:not(.arc) .gbtn{border:0;-webkit-backdrop-filter:none;backdrop-filter:none;color:#0b1a24;background:linear-gradient(180deg,var(--ht,#d2f1f6),var(--bc,#93cad5));box-shadow:0 9px 0 var(--bd,#2f6672),0 18px 22px rgba(0,0,0,.45),0 0 26px var(--gl,rgba(120,220,235,.28)),inset 0 0 0 1px rgba(255,255,255,.5),inset 0 3px 0 rgba(255,255,255,.6)}
+html.k3:not(.arc) .gbtn:active{transform:translateY(6px);box-shadow:0 3px 0 var(--bd,#2f6672),0 8px 12px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.5),inset 0 3px 0 rgba(255,255,255,.6)}
+html.k3:not(.arc) .gbtn.go{--ht:#ffe08a;--bc:#ff8f5e;--bd:#a3421d;--gl:rgba(255,150,90,.55)}
+html.k3:not(.arc) #bDaily{--ht:#ffa3bd;--bc:#ff5d8f;--bd:#9c2550;--gl:rgba(255,93,143,.42)}
+html.k3:not(.arc) #bArcade{--ht:#ffe7a6;--bc:#ffc857;--bd:#a37418;--gl:rgba(255,200,87,.42)}
+html.k3:not(.arc) #bUpload{--ht:#b0f7e6;--bc:#4fe3c1;--bd:#1b8a70;--gl:rgba(79,227,193,.42)}
+html.k3:not(.arc) #bGal{--ht:#bfe9ff;--bc:#5cc8ff;--bd:#1f76a8;--gl:rgba(92,200,255,.42)}
+html.k3:not(.arc) .gbtn{letter-spacing:.02em}
+html.k3:not(.arc) .gbtn.sq{aspect-ratio:1/.9;min-height:0;padding:6px 1px 5px;gap:4px;justify-content:center}
+html.k3:not(.arc) .gbtn.sq canvas{width:44%;height:auto;aspect-ratio:1;border:2px solid rgba(255,255,255,.8);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+html.k3:not(.arc) .hm-top .ib{background:linear-gradient(180deg,#d2f1f6,#93cad5);color:#0b1a24;border:0;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 4px 0 #2f6672,0 0 14px rgba(120,220,235,.3),inset 0 2px 0 rgba(255,255,255,.65)}
+html.k3:not(.arc) .menu{gap:21px}html.k3:not(.arc) .menu.has{gap:19px}html.k3:not(.arc) .quad{padding-bottom:8px}
+html.k3:not(.arc) #hero{background:rgba(3,12,18,.78);border:1px solid rgba(170,225,235,.65);box-shadow:0 0 0 5px rgba(150,220,232,.1),0 0 30px rgba(110,215,232,.32),inset 0 0 30px rgba(0,0,0,.5)}
+html.k3:not(.arc) .tagline{color:#bfe9f0}
