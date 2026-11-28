@@ -466,7 +466,7 @@ html.k3 .lw,html.k3 .lw-h i{border-radius:0}.lst-w{font:700 12px var(--display);
 <div id="cine" hidden><div id="cnStage"></div><div id="cnBox"><b id="cnWho" hidden></b><p id="cnTxt"></p></div><button id="cnSkip">Überspringen</button></div>
 
 <section id="lcamp" class="screen"><div class="scroll"><div class="wrap">
-  <header class="top"><div class="row"><button class="ib" id="lcBack" aria-label="Zurück"></button><h1 style="font:700 28px var(--display)">Pias Reise</h1></div><b class="ws" id="lcStars"></b></header>
+  <header class="top"><div class="row"><button class="ib" id="lcBack" aria-label="Zurück"></button><h1 style="font:700 28px var(--display)">Pias Quest</h1></div><b class="ws" id="lcStars"></b></header>
   <div id="lcMap"><canvas id="lcCv" class="px"></canvas><div id="lcNodes"></div></div><div id="lcEnd"></div>
 </div></div></section>
 
@@ -496,7 +496,7 @@ html.k3 .lw,html.k3 .lw-h i{border-radius:0}.lst-w{font:700 12px var(--display);
 window.claude={use:async n=>n!=='downloads'?null:{save:async({filename,data})=>{const f=new File([data],filename,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Pixaku'});return{status:'saved'}}catch(e){throw{code:'declined'}}}
   const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}}};
-window.PX_VER='28.11.2026 12:25 · c2a8a';
+window.PX_VER='28.11.2026 14:12 · bbaa3';
 (()=>{let fresh=false;try{fresh=!!sessionStorage.getItem('pxr');sessionStorage.removeItem('pxr')}catch(e){}
   const t0=performance.now(),hide=()=>{const s=document.getElementById('splash');if(!s)return;setTimeout(()=>{s.classList.add('off');setTimeout(()=>s.remove(),600)},Math.max(0,(fresh?350:900)-(performance.now()-t0)))};
   const reload=()=>{try{sessionStorage.setItem('pxr','1')}catch(e){}location.reload()};
@@ -1749,7 +1749,7 @@ function layoutHome(){const hm=$('.hm');if(!hm.clientWidth)return;const k3=docum
    <g class="grid">${gl}</g><polyline class="cheek" points="${E(-1)}"/><polyline class="cheek" points="${E(1)}"/><polyline class="edge" points="${E(-1)}"/><polyline class="edge" points="${E(1)}"/>
    <line class="fold" x1="${cx-w1}" x2="${cx+w1}" y1="${y1}" y2="${y1}"/><line class="fold" x1="${cx-w2}" x2="${cx+w2}" y1="${y2}" y2="${y2}"/>`}
 let logoRun=0;
-function drawLogo(anim){layoutHome();const run=++logoRun;
+function drawLogo(anim){layoutHome();const run=++logoRun;if(typeof GAME!=='undefined'&&GAME===1)return questLogo(anim,run);
   const L=[['1110','1001','1110','1000','1000'],['111','010','010','010','111'],['1001','1001','0110','1001','1001'],['0110','1001','1111','1001','1001'],['1001','1010','1100','1010','1001'],['1001','1001','1001','1001','0110']],
     cols=['#ff7a59','#ffc857','#4fe3c1','#ff5d8f','#5cc8ff','#ffc857'],cv=$('#logo'),s=HOME.col/28,d=Math.min(3,devicePixelRatio||1);
   cv.style.width=28*s+'px';cv.style.height=5*s+'px';cv.width=28*s*d;cv.height=5*s*d;const c=cv.getContext('2d'),t0=performance.now();
@@ -1907,7 +1907,7 @@ function labGreedy(L){
 const LW_N=15,LW_C=13,
   LW_SIZE=[[6,8,11,15],[7,10,12,16],[8,11,12,16],[8,11,12,16],[8,11,12,17],[8,11,12,17],[9,12,13,17],[8,11,13,17],[9,12,13,18],[9,12,13,18],[9,12,13,18],[9,12,13,18],[9,12,14,18]],
   /* Zutaten je Welt: p Portale, k höchste Zahl an Schlössern, b Bomben (1 gemischt, 2 nur Bomben), a Eisrinnen, g Wachen, rm Zimmer, wa Wasser, h Schlünde */
-  LW_F=[{},{g:1},{p:1,rm:1},{p:1,m:1.1},{p:1,k:1,wa:.15,m:.4},{p:1,k:1,g:1,m:.4},{p:1,k:3,b:1,g:1,rm:1},{p:1,k:1,b:1,a:1.7},{p:1,k:1,b:1,a:1},{p:1,k:2,b:2,a:.5},{p:1,k:1,a:.9,wa:.15,h:1.3},{p:1,k:1,b:1,a:1,g:1},{p:1,k:3,b:1,a:1,g:1,rm:1}],
+  LW_F=[{},{g:1},{p:1,rm:1},{p:1,m:.7},{p:1,k:1,wa:.15,m:.4},{p:1,k:1,g:1,m:.4},{p:1,k:3,b:1,g:1,rm:1},{p:1,k:1,b:1,a:1.7},{p:1,k:1,b:1,a:1},{p:1,k:2,b:2,a:.5},{p:1,k:1,a:.9,wa:.15,h:1.3},{p:1,k:1,b:1,a:1,g:1},{p:1,k:3,b:1,a:1,g:1,rm:1}],
   /* Verlauf einer Welt: Größe und Schwierigkeit wechseln sich ab und steigern sich gegenseitig */
   LW_U=[.1,.4,.5,.15,.8,.55,.2,.9,.6,.25,.95,.65,1,.5,1],LW_D=[0,0,1,2,0,1,2,1,2,3,1,2,2,3,2];
 function labSpec(n,world){
@@ -1976,12 +1976,25 @@ function labGenSpec(sp,seedStr,depth){
       if(a===b||Math.abs(a%W-b%W)+Math.abs(((a/W)|0)-((b/W)|0))<5)continue;if(trial(()=>{L.port[a]=b;L.port[b]=a;L.ports.push([a,b])},()=>L.grid[a]===1&&L.grid[b]===1))made++}
     for(let t=0,made=0;t<sp.arr*6&&made<sp.arr;t++){const f=floors();if(f.length<8)break;const a=f[ri(f.length)],d=ri(4),nb=a+LDIR[d][0]+LDIR[d][1]*W;if(L.grid[nb]!==1)continue;
       if(trial(()=>{L.arr[a]=d},()=>L.grid[a]===1))made++}
-    for(let t=0,made=0;t<(sp.bmp|0)*6&&made<sp.bmp;t++){const f=floors();if(f.length<8)break;const a=f[ri(f.length)],x=a%W,y=(a/W)|0;if(x<2||y<2||x>W-3||y>H-3||(keep&&keep[a]))continue;
-      if(trial(()=>{L.bmp[a]=1+ri(2)},()=>L.grid[a]===1))made++}
     for(const kind of sp.locks)for(let t=0,n0=L.locks.length;t<40&&L.locks.length===n0;t++){const f=floors();if(f.length<8)break;const fb=bridge&&t<28?f.filter(i=>bridge[i]):[],d=fb.length?fb[ri(fb.length)]:f[ri(f.length)],k=f[ri(f.length)],x=d%W,y=(d/W)|0,bl=i=>L.grid[i]!==1&&L.grid[i]!==4;
       if(d===k||x<1||y<1||x>W-2||y>H-2||labNearXY(W,d,k)||L.locks.some(q=>labNearXY(W,q.d,d)||labNearXY(W,q.k,k)))continue;const hor=bl(d-W)&&bl(d+W)&&!bl(d-1)&&!bl(d+1),ver=bl(d-1)&&bl(d+1)&&!bl(d-W)&&!bl(d+W);if(!hor&&!ver)continue;
       trial(()=>{const id=L.locks.length;L.locks.push({d,k,bomb:kind==='bomb'});L.doorAt[d]=id;L.keyAt[k]=id},()=>L.grid[d]===1&&L.grid[k]===1)}
+    /* Prellböcke nur dort, wo sie gebraucht werden: Ein Gegenstand, ohne den das Level unlösbar wäre, wird entfernt und durch einen Prellbock ersetzt, der es wieder lösbar macht.
+       Der Prellbock steht nie in einem engen Gang, und nach der Kurve geht es in beide Richtungen mindestens zwei Felder weiter. */
+    if(sp.bmp){const fl=i=>L.grid[i]===1,okC=r=>r.ok&&!r.un.length,free2=(i,d)=>fl(i+LDIR[d][0]+LDIR[d][1]*W)&&fl(i+2*(LDIR[d][0]+LDIR[d][1]*W));
+      const shape=(a,o)=>{const x=a%W,y=(a/W)|0;if(x<2||y<2||x>W-3||y>H-3||a===L.start||(keep&&keep[a])||L.port[a]>=0||L.arr[a]>=0||L.keyAt[a]>=0||L.doorAt[a]>=0||L.bmp[a]||(bridge&&bridge[a]))return false;
+          if((!fl(a-1)&&!fl(a+1))||(!fl(a-W)&&!fl(a+W)))return false;for(let d=0;d<4;d++)if(L.bmp[a+LDIR[d][0]+LDIR[d][1]*W])return false;
+          return o===1?(free2(a,1)&&free2(a,2))||(free2(a,0)&&free2(a,3)):(free2(a,1)&&free2(a,3))||(free2(a,0)&&free2(a,2))};
+      for(let made=0,round=0;round<3&&made<sp.bmp;round++){const props=[];for(let i=W+1;i<N-W-1;i++){const x=i%W;if(L.grid[i]===2&&x>0&&x<W-1&&!(keep&&keep[i]))props.push(i)}
+        for(let k=props.length-1;k>0;k--){const j=ri(k+1),t=props[k];props[k]=props[j];props[j]=t}let tries=0;
+        for(const p of props){if(made>=sp.bmp||tries>=16)break;L.grid[p]=1;if(okC(labCheck(L))){L.grid[p]=2;continue}tries++;const f=floors();let done=false;
+          for(let t=0;t<30&&!done&&f.length;t++){const a=f.splice(ri(f.length),1)[0];if(a===p)continue;for(const o of ri(2)?[1,2]:[2,1]){if(!shape(a,o))continue;L.bmp[a]=o;
+              if(okC(labCheck(L))&&(sp.holeSafe||!L.grid.some((g,i)=>g===4&&!labThreat(L,i)))){done=true;break}L.bmp[a]=0}}
+          if(done)made++;else L.grid[p]=2}}
+      /* Im ersten Level der Stadt steht auf jeden Fall einer, damit man ihn kennenlernt */
+      if(sp.w===3&&sp.j===0&&!L.bmp.some(v=>v))for(let t=0;t<60;t++){const f=floors();if(!f.length)break;const a=f[ri(f.length)],o=1+ri(2);if(shape(a,o)&&trial(()=>{L.bmp[a]=o},()=>L.grid[a]===1))break}}
     {const f=floors();for(let s=0;s<sp.stars&&f.length;s++)L.stars.push(f.splice(ri(f.length),1)[0])}
+    L.shields=[];if(sp.w>=2&&!sp.holeSafe&&(sp.j*3+sp.w)%5<2&&L.grid.some(g=>g===4)){const f=floors().filter(i=>!L.stars.includes(i)&&i!==L.start);if(f.length)L.shields.push(f[ri(f.length)])}
     if(sp.water&&!first)for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const i=y*W+x;if(L.grid[i]===0&&(rng()<sp.water||((L.grid[i-1]===3||L.grid[i-W]===3)&&rng()<.55)))L.grid[i]=3}
     /* Schlünde, die nach allen Umbauten auf keiner Rollbahn mehr liegen, werden zu Gegenständen */
     if(!sp.holeSafe)for(let i=0;i<N;i++)if(L.grid[i]===4&&!labThreat(L,i)){L.grid[i]=2;const r=labCheck(L);if(!r.ok||r.un.length)L.grid[i]=4}
@@ -2062,7 +2075,7 @@ const LSTORY=[
 const LKC=['#ff5a4e','#4ea8ff','#6ee06a'],LMAP=[[.2,.93],[.5,.875],[.8,.82],[.52,.74],[.83,.645],[.26,.63],[.5,.525],[.19,.085],[.54,.065],[.83,.15],[.78,.31],[.47,.27],[.2,.38]];
 const LAB={r:null,ready:false,fail:false,geo:null,mats:new Map(),disp:[],anim:[],pops:[],lamps:[],parts:[],view:{d:10,eW:9,eH:13,tx:0,tz:0}};
 let LB=null,GAME=store.get('game',0)?1:0;labK=LG_K[store.get('lspd',1)]||LG_K[1];
-const labSpeedRow=()=>`<div class="opt col"><span><b>Rollgeschwindigkeit</b><small>Wie schnell Pia im Labyrinth rollt.</small></span><div class="seg s3" id="oSpd"><button data-v="0">Gemütlich</button><button data-v="1">Normal</button><button data-v="2">Flott</button></div></div>`,
+const labSpeedRow=()=>`<div class="opt col"><span><b>Rollgeschwindigkeit</b><small>Wie schnell Pia in Pias Quest rollt.</small></span><div class="seg s3" id="oSpd"><button data-v="0">Gemütlich</button><button data-v="1">Normal</button><button data-v="2">Flott</button></div></div>`,
   labSpeedBind=s=>{const box=s.querySelector('#oSpd'),sync=()=>box.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',+b.dataset.v===store.get('lspd',1)));box.onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;store.set('lspd',+b.dataset.v);labK=LG_K[+b.dataset.v];sfx.tick();sync()};sync()};
 const labData=()=>{const d=store.get('lab',null)||{};return{max:d.max||1,st:d.st||{},seen:d.seen3||[]}};
 const LIC={re:svg('<path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v5h5"/>'),hint:svg('<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.300 1 2.200h5.200c0-.9.4-1.700 1-2.200A6 6 0 0 0 12 3z"/>'),lv:svg('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
@@ -2087,8 +2100,8 @@ function labStart(n,seed,pre){
     labLoop()},40)}
 function labReset(){const L=LB.L;LB.painted=new Uint8Array(LB.N);LB.left=0;for(let i=0;i<LB.N;i++)if(L.grid[i]===1)LB.left++;LB.total=LB.left;LB.painted[L.start]=1;LB.left--;
   LB.pos=L.start;LB.mask=0;LB.got=0;LB.fz=L.locks.map(()=>0);LB.doorK=L.locks.map(()=>0);LB.gp=[];LB.gt0=performance.now();LB.safe=0;LB.moves=0;LB.t0=0;LB.roll=null;LB.queue=[];LB.dead=0;LB.burn=false;LB.won=false;LB.hints=0;LB.fall=0;LB.tp=1;LB.mini=true;
-  LB.bx=L.start%L.W;LB.by=(L.start/L.W)|0;LB.stars=L.stars.map(c=>({c,got:false,gone:false}));LB.starT=Math.round(10+L.par*1.6);LB.deaths=LB.deaths||0;LB.boss=null;LB.clock=0;if(L.boss)labBossInit();labHud()}
-function labRestart(){if(!LB)return;const d=LB.deaths;labReset();LB.deaths=d;if(LAB.ready&&!LAB.fail)lab3Paint()}
+  LB.bx=L.start%L.W;LB.by=(L.start/L.W)|0;LB.stars=L.stars.map(c=>({c,got:false,gone:false}));LB.shields=(L.shields||[]).map(c=>({c,got:false}));LB.shield=false;LB.lost=LB.lost||false;LB.starT=Math.round(10+L.par*1.6);LB.deaths=LB.deaths||0;LB.boss=null;LB.clock=0;if(L.boss)labBossInit();labHud()}
+function labRestart(){if(!LB)return;const d=LB.deaths,lo=LB.lost;labReset();LB.deaths=d;LB.lost=lo;if(LAB.ready&&!LAB.fail)lab3Paint()}
 function labMove(d){
   if(!LB||LB.won||LB.dead||sheetOpen)return;if(LB.roll){if(LB.queue.length<4)LB.queue.push(d);return}
   const L=LB.L,s=labSlide(L,LB.pos,d,LB.mask,true);if(!s.cells.length){LB.nudge={d,t:performance.now()};tone(105,.07,'square',.025);return}
@@ -2101,6 +2114,7 @@ function labArrive(c,now){const L=LB.L;
   const ky=L.keyAt[c];if(ky>=0&&!(LB.got>>ky&1)){if(L.locks[ky].bomb){if(!LB.fz[ky]){LB.fz[ky]=now+3200;tone(700,.08,'square',.04);tone(900,.08,'square',.04,.1)}}else{LB.got|=1<<ky;tone(880,.12,'triangle',.06);tone(1320,.2,'triangle',.05,.09);labSpark(c,LKC[ky%3],10)}}
   if(L.arr[c]>=0)tone(520,.06,'sine',.03);
   for(const s of LB.stars)if(s.c===c&&!s.got&&!s.gone){s.got=true;sfx.spark();labSpark(c,'#ffe36b',12)}
+  for(const s of LB.shields)if(s.c===c&&!s.got){s.got=true;LB.shield=true;sfx.spark();tone(660,.12,'triangle',.06);tone(990,.2,'triangle',.06,.1);labSpark(c,'#6ad8ff',16);toast('Schutzschild! Beim nächsten Sturz in einen Schlund behältst du dein Licht.',2600)}
   if(LB.boss)labBossArrive(c,now);
 }
 function labSpark(c,col,n,sp){if(!LAB.ready||LAB.fail||!LAB.X)return;const W=LB.L.W,x=LAB.X(c%W),z=LAB.Z((c/W)|0),k=new THREE.Color(col);for(let i=0;i<n;i++){const a=Math.random()*6.3,v=(sp||2.2)*(.4+Math.random());LAB.parts.push({x,y:.4,z,vx:Math.cos(a)*v,vy:2+Math.random()*3,vz:Math.sin(a)*v,t:0,l:.5+Math.random()*.5,c:k,s:.07+Math.random()*.08})}}
@@ -2115,7 +2129,7 @@ function labStep(now,dt){
     LB.gp[gi]={x,y,dx:(b%W-a%W)*sg,dy:(((b/W)|0)-((a/W)|0))*sg};
     if(!LB.dead&&!LB.won&&now>LB.safe&&Math.abs(x-LB.bx)<.5&&Math.abs(y-LB.by)<.5)labCaught(now,`Erwischt! ${LB.th.gname||'Die Krähe'} trägt dich zum Start zurück.`)});
   if(LB.boss&&!LB.won&&!LB.dead)labBossStep(now,dt);
-  if(LB.dead){LB.fall=Math.min(1,(now-LB.dead)/520);if(LB.fall>=1&&now-LB.dead>760){const b=LB.burn;LB.dead=0;LB.fall=0;labCaught(now,b?'Zu nah an der Bombe. Zurück zum Start, dein Licht bleibt.':'In den Schlund gefallen. Zurück zum Start, dein Licht bleibt.')}return}
+  if(LB.dead){LB.fall=Math.min(1,(now-LB.dead)/520);if(LB.fall>=1&&now-LB.dead>760){const b=LB.burn;if(LB.shield){LB.dead=0;LB.fall=0;LB.burn=false;LB.shield=false;labCaught(now,'Dein Schutzschild ist zerplatzt, aber dein Licht bleibt. Zurück zum Start.')}else{LB.deaths++;LB.lost=true;labRestart();toast(b?'Zu nah an der Bombe. Das Level beginnt von vorn und kostet einen Stern.':'In den Schlund gefallen. Das Level beginnt von vorn und kostet einen Stern.',2600)}}return}
   const r=LB.roll;if(!r)return;r.t+=dt;const P=r.plan,st=P.state(Math.min(r.t,P.T));LB.bx=st.x;LB.by=st.y;LB.tp=st.sc;LB.spin=st.sc===1;
   while(r.arr<st.arr){r.arr++;const c=P.pts[r.arr];if(labTp(P.pts[r.arr-1],c)){tone(660,.12,'sine',.05);labSpark(P.pts[r.arr-1],'#b9f6ff',8);labSpark(c,'#b9f6ff',8)}labArrive(c,now)}
   if(r.t>=P.T){const n=P.pts.length,a=P.pts[n-2],b=P.pts[n-1];LB.roll=null;LB.pos=r.end;LB.bx=r.end%W;LB.by=(r.end/W)|0;LB.tp=1;LB.spin=false;
@@ -2128,10 +2142,10 @@ function labStep(now,dt){
     while(LB.queue.length&&!LB.roll){const q=LB.queue.shift(),m0=LB.moves;labMove(q);if(LB.moves===m0)LB.nudge=null}}
 }
 function labCaught(now,msg){const L=LB.L,W=L.W;LB.roll=null;LB.queue=[];LB.spin=false;LB.bump=null;LB.mask|=LB.got;labSpark(Math.round(LB.by)*W+Math.round(LB.bx),'#ffffff',14);LB.pos=L.start;LB.bx=L.start%W;LB.by=(L.start/W)|0;LB.tp=1;LB.deaths++;LB.safe=now+1800;LB.mini=true;tone(300,.12,'square',.05);tone(200,.2,'square',.05,.1);if(msg)toast(msg,1900);if(LB.boss&&B2[LB.boss.type]&&B2[LB.boss.type].caught)B2[LB.boss.type].caught(LB.boss,L)}
-function labRate(){const L=LB.L,goal=Math.ceil(L.par*1.25),all=LB.stars.every(s=>s.got);return{goal,all,s:1+(LB.moves<=goal?1:0)+(all?1:0)}}
+function labRate(){const L=LB.L,goal=Math.ceil(L.par*1.25),all=LB.stars.every(s=>s.got);return{goal,all,s:Math.max(1,1+(LB.moves<=goal?1:0)+(all?1:0)-(LB.lost?1:0))}}
 function labHud(){if(!LB)return;const L=LB.L,pct=Math.round((LB.total-LB.left)/LB.total*100),got=LB.stars.filter(s=>s.got).length,now=performance.now(),el=LB.t0?(now-LB.t0)/1000:0,rest=Math.max(0,Math.ceil(LB.starT-el)),open=LB.stars.some(s=>!s.got&&!s.gone);
   {const nl=L.locks.length,fz=LB.fz.find(v=>v);let op=0;for(let k=0;k<nl;k++)if(LB.mask>>k&1)op++;$('#lSub').textContent=LB.th.name+(fz?', Lunte brennt: '+Math.max(0,Math.ceil((fz-now)/1000)):nl?`, offen ${op}/${nl}`:'')}if(LB.boss){$('#lSub').textContent='Bosskampf · '+LB.th.name;$('#lMoves').textContent='♥'.repeat(Math.max(0,LB.boss.hp))+'♡'.repeat(3-Math.max(0,LB.boss.hp))}else $('#lMoves').textContent=LB.moves+' / '+Math.ceil(L.par*1.25);
-  $('#lPct').textContent=LB.boss?'':`★ ${got}/${LB.stars.length}`+(open&&!LB.won?` · ${rest} s`:'');$('#lProg').style.width=pct+'%';if(LB.mini)labMini()}
+  $('#lPct').textContent=LB.boss?'':`★ ${got}/${LB.stars.length}`+(open&&!LB.won?` · ${rest} s`:'')+(LB.shield?' · Schild':'');$('#lProg').style.width=pct+'%';if(LB.mini)labMini()}
 function labMini(){const L=LB.L,cv=$('#lMini'),big=L.W>10||L.H>14;cv.hidden=!big;LB.mini=false;if(!big)return;const s=3;cv.width=L.W*s;cv.height=L.H*s;const c=cv.getContext('2d');
   for(let i=0;i<LB.N;i++){const v=L.grid[i];if(v!==1&&v!==4)continue;c.fillStyle=v===4?'#b0372c':LB.painted[i]?LB.th.paint:'rgba(255,255,255,.3)';c.fillRect((i%L.W)*s,((i/L.W)|0)*s,s,s)}
   c.fillStyle='#fff';c.fillRect(Math.round(LB.bx)*s-1,Math.round(LB.by)*s-1,s+2,s+2)}
@@ -2193,11 +2207,11 @@ function labMapDraw(c,w,h,cur){const rng=mulberry32(4711),P=i=>[LMAP[i][0]*w,LMA
   for(let k=0;k<30;k++){const x=rng()*w,y=rng()*h;if(isLand[(y|0)*w+(x|0)]&&LMAP.every(q=>Math.hypot(x-q[0]*w,y-q[1]*h)>22))list.push([y,'tree',x])}
   list.sort((p,q)=>p[0]-q[0]).forEach(q=>spr(q[1],q[2],q[0]));
   c.putImageData(img,0,0)}
-function labHelp(){const s0=openSheet(`<div class="sh-head"><h2>So geht das Labyrinth</h2><button class="ib" data-x aria-label="Schließen">${I.x}</button></div>
+function labHelp(){const s0=openSheet(`<div class="sh-head"><h2>So geht Pias Quest</h2><button class="ib" data-x aria-label="Schließen">${I.x}</button></div>
  <ul class="rules"><li><i>1</i><span>Wische in eine Richtung. Pia rollt geradeaus, bis eine Wand oder ein Gegenstand sie aufhält.</span></li>
  <li><i>2</i><span>Jedes Feld, über das sie rollt, beginnt zu leuchten. Leuchten alle Felder, ist das Level geschafft. In großen Leveln zeigt die kleine Karte, was noch fehlt.</span></li>
- <li><i>3</i><span>Wirbelnde Schlünde schlucken die Kugel. Sie landet wieder am Start, die leuchtenden Felder bleiben. Portale tragen sie zum Gegenstück, und sie rollt dort in gleicher Richtung weiter.</span></li>
- <li><i>4</i><span>Eine Tür öffnet sich, sobald Pia den Schlüssel überrollt hat. Eine Bombe zündet beim Überrollen und sprengt nach drei Sekunden die rissige Wand. Wer dann noch direkt daneben steht, landet wieder am Start.</span></li>
+ <li><i>3</i><span>Wirbelnde Schlünde schlucken die Kugel. Dann beginnt das Level von vorn und ein Stern ist weg. Ab dem Bauernhof liegt manchmal ein blaues Schutzschild im Level. Wer es eingesammelt hat, behält beim nächsten Sturz sein Licht. Portale tragen sie zum Gegenstück, und sie rollt dort in gleicher Richtung weiter.</span></li>
+ <li><i>4</i><span>Eine Tür öffnet sich, sobald Pia den Schlüssel überrollt hat. Eine Bombe zündet beim Überrollen und sprengt nach drei Sekunden die rissige Wand. Wer dann noch direkt daneben steht, fängt von vorn an.</span></li>
  <li><i>5</i><span>Schräge Prellböcke schicken die Kugel um die Ecke, ohne sie anzuhalten. Eisrinnen mit Pfeilen lenken die Kugel in ihre Richtung. Bonussterne verschwinden nach einiger Zeit.</span></li>
  <li><i>6</i><span>Krähen, Falken und Gespenster fliegen eine gerade Bahn hin und her, auch über Wände. Rote Rauten und ihr Schatten zeigen, wo sie kreuzen. Wer berührt wird, landet am Start, das Leuchten bleibt.</span></li>
  <li><i>7</i><span>Jedes Level ist geprüft: Festfahren kannst du dich nicht, es gibt von jeder Stelle aus einen Weg zum Ziel.</span></li></ul>${labSpeedRow()}<div class="btns"><button class="ghost" id="lhTut">Übungslevel spielen</button></div>`);labSpeedBind(s0);s0.querySelector('#lhTut').onclick=()=>{closeSheet();labTut(0)}}
@@ -2215,7 +2229,7 @@ function labHelp(){const s0=openSheet(`<div class="sh-head"><h2>So geht das Laby
   $('#ltRe').onclick=()=>{if(LB&&!LB.won)labRestart()};$('#ltHint').onclick=labHint;$('#ltLv').onclick=()=>{LB=null;show('home');show('lcamp')};addEventListener('resize',()=>{if($('#lcamp').classList.contains('on'))labCamp()});$('#ltHelp').onclick=labHelp}
 function labNavBack(){ /* Zurück-Geste des Systems: Wischer am Rand gehören zum Spiel */
   if(Date.now()-LAB.down.t<1300||Date.now()-(LAB.swipe||0)<900)return;
-  const s=openSheet(`<div class="sh-head"><h2>Labyrinth verlassen?</h2></div><p>Der Stand in diesem Level geht dabei verloren.</p><div class="btns"><button class="ghost" id="lvY">Verlassen</button><button class="primary" id="lvN">Weiterspielen</button></div>`);
+  const s=openSheet(`<div class="sh-head"><h2>Level verlassen?</h2></div><p>Der Stand in diesem Level geht dabei verloren.</p><div class="btns"><button class="ghost" id="lvY">Verlassen</button><button class="primary" id="lvN">Weiterspielen</button></div>`);
   s.querySelector('#lvN').onclick=closeSheet;s.querySelector('#lvY').onclick=()=>{closeSheet();labQuit()}}
 
 /* ---------- 2D-Zeichnung: Vorschau im Menü und Ersatz ohne 3D ---------- */
@@ -2388,6 +2402,7 @@ function labScene(){
     for(const c of cells)if(g[c]===1){const m=new T.Mesh(G.pl,gm);m.scale.set(.34,1,.34);m.rotation.y=Math.PI/4;m.position.set(wx(c),.108,wz(c));S.add(m)}
     const sh=new T.Mesh(G.cyl,LAB.gsm||(LAB.gsm=new T.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.38,depthWrite:false,fog:false})));sh.scale.set(.62,.01,.62);S.add(sh);LAB.gs.push(sh);
     const h=labHalo(th.guard==='geist'?'#bfe8ff':'#ff5a4a',1.5,dark?.45:.15);h.position.y=.8;o.add(h);return o});
+  LAB.shs=LB.shields.map(s=>{const g=new T.Group();const m=new T.Mesh(G.cone,labMat('#3aa8ff',{emissive:'#2a8aff',emissiveIntensity:1}));m.scale.set(.5,.5,.16);m.rotation.x=Math.PI;m.position.y=-.06;g.add(m);const b=new T.Mesh(G.box,labMat('#3aa8ff',{emissive:'#2a8aff',emissiveIntensity:1}));b.scale.set(.5,.2,.16);b.position.y=.28;g.add(b);const k=new T.Mesh(G.box,labMat('#ffffff',{emissive:'#ffffff',emissiveIntensity:.8}));k.scale.set(.1,.42,.18);k.position.y=.12;g.add(k);const k2=new T.Mesh(G.box,labMat('#ffffff',{emissive:'#ffffff',emissiveIntensity:.8}));k2.scale.set(.34,.1,.18);k2.position.y=.2;g.add(k2);g.position.set(wx(s.c),.55,wz(s.c));S.add(g);const h=labHalo('#6ad8ff',1.5,dark?.6:.35);g.add(h);return g});
   LAB.stars=LB.stars.map(s=>{const m=new T.Mesh(G.oct,labMat('#ffe36b',{emissive:'#ffc21a',emissiveIntensity:1}));m.scale.set(.3,.42,.3);m.position.set(wx(s.c),.5,wz(s.c));m.castShadow=true;S.add(m);const h=labHalo('#ffe36b',1.2,dark?.55:.3);m.add(h);h.scale.setScalar(3.4);return m});
   /* Glühwürmchen und Funken */
   LAB.flies=[];if(th.fx)for(let k=0,n=Math.min(40,Math.round(W*H/9));k<n;k++){const h=labHalo(th.fx===2?'#ff7a3a':k%3?'#b6ff8a':'#8afff0',.3+rng()*.25,.8);h.position.set(X(rng()*W),.4+rng()*1.6,Z(rng()*H));S.add(h);LAB.flies.push({o:h,x:h.position.x,y:h.position.y,z:h.position.z,ph:rng()*6.3,sp:.3+rng()*.6,up:th.fx===2})}
@@ -2396,7 +2411,7 @@ function labScene(){
   /* Pia: Kugel mit Krone */
   const tc=document.createElement('canvas');tc.width=128;tc.height=64;const tx=tc.getContext('2d');{const gr=tx.createLinearGradient(0,0,0,64);gr.addColorStop(0,'#ffffff');gr.addColorStop(.18,th.ball);gr.addColorStop(.82,th.ball);gr.addColorStop(1,'#00000066');tx.fillStyle=th.ball;tx.fillRect(0,0,128,64);tx.globalAlpha=.55;tx.fillStyle=gr;tx.fillRect(0,0,128,64);tx.globalAlpha=1}tx.fillStyle='rgba(255,255,255,.95)';tx.fillRect(0,26,128,12);tx.fillStyle='#ffd84d';tx.fillRect(0,24,128,2.5);tx.fillRect(0,37.5,128,2.5);tx.fillStyle='rgba(255,255,255,.75)';for(let k=0;k<8;k++){tx.beginPath();tx.arc(8+k*16,k%2?11:53,4.5,0,7);tx.fill()}
   const tex=new T.CanvasTexture(tc);tex.encoding=T.sRGBEncoding;const bm=new T.MeshStandardMaterial({map:tex,roughness:.28,metalness:.05,emissive:lc(th.ball),emissiveMap:tex,emissiveIntensity:dark?1.1:dusk?.6:.2});LAB.disp.push(tex,bm);
-  LAB.ball=new T.Mesh(G.ball,bm);LAB.ball.castShadow=true;LAB.bg=new T.Group();LAB.bg.add(LAB.ball);S.add(LAB.bg);LAB.sq=[1,1,1];LAB.ftex=LAB.ftex||Object.fromEntries(LFACES.map(n=>[n,labFaceTex(n)]));{const fm=new T.SpriteMaterial({map:LAB.ftex.laecheln,transparent:true,depthWrite:false,depthTest:false,fog:false});LAB.disp.push(fm);LAB.face=new T.Sprite(fm);LAB.face.renderOrder=5;S.add(LAB.face);LAB.fname='laecheln'}LAB.bl=new T.PointLight(lc('#ffe9c8'),dark?2.8:dusk?1.3:0,6.5,2);S.add(LAB.bl);LAB.bh=labHalo(th.ball,2.8,dark?.7:dusk?.45:.22);S.add(LAB.bh);
+  LAB.ball=new T.Mesh(G.ball,bm);LAB.ball.castShadow=true;LAB.bg=new T.Group();LAB.bg.add(LAB.ball);S.add(LAB.bg);LAB.bub=new T.Mesh(G.ball,labMat('#8ae0ff',{emissive:'#4ac8ff',emissiveIntensity:.9,transparent:true,opacity:.3,depthWrite:false}));LAB.bub.visible=false;S.add(LAB.bub);LAB.sq=[1,1,1];LAB.ftex=LAB.ftex||Object.fromEntries(LFACES.map(n=>[n,labFaceTex(n)]));{const fm=new T.SpriteMaterial({map:LAB.ftex.laecheln,transparent:true,depthWrite:false,depthTest:false,fog:false});LAB.disp.push(fm);LAB.face=new T.Sprite(fm);LAB.face.renderOrder=5;S.add(LAB.face);LAB.fname='laecheln'}LAB.bl=new T.PointLight(lc('#ffe9c8'),dark?2.8:dusk?1.3:0,6.5,2);S.add(LAB.bl);LAB.bh=labHalo(th.ball,2.8,dark?.7:dusk?.45:.22);S.add(LAB.bh);
   {const c=new T.Group(),gm=labMat('#ffd84d',{emissive:'#ffb000',emissiveIntensity:dark?1:.35}),r=new T.Mesh(G.cyl,gm);r.scale.set(.42,.12,.42);c.add(r);for(let k=0;k<5;k++){const p=new T.Mesh(G.cone,gm);p.scale.set(.13,.2,.13);p.position.set(Math.cos(k*1.257)*.16,.14,Math.sin(k*1.257)*.16);c.add(p)}const j=new T.Mesh(G.oct,labMat('#ff4f8b',{emissive:'#ff4f8b',emissiveIntensity:.8}));j.scale.setScalar(.09);j.position.set(0,.02,.2);c.add(j);
     const rim=new T.Mesh(G.tor,gm);rim.scale.set(.44,.5,.44);rim.position.y=-.05;c.add(rim);for(let k=0;k<5;k++){const p=new T.Mesh(G.sph,labMat('#fffbe8',{emissive:'#fff0b0',emissiveIntensity:.6}));p.scale.setScalar(.07);p.position.set(Math.cos(k*1.257)*.16,.26,Math.sin(k*1.257)*.16);c.add(p)}c.traverse(o=>{if(o.isMesh)o.castShadow=true});S.add(c);LAB.crown=c}
   LAB.bo=null;if(L.boss)lab3BossBuild(S,th,rng,wx,wz);
@@ -2466,7 +2481,7 @@ function lab3Frame(now,dt){
   LAB.lk.forEach((o,k)=>{const open=LB.mask>>k&1;if(o.bomb){o.door.visible=!open;const B=o.bomb,fz=LB.fz[k];B.g.visible=!open&&!(LB.burn&&LB.dead);if(fz){const u=1-Math.max(0,(fz-now)/3200),p=.5+.5*Math.sin(now/1000*(8+u*30));B.body.scale.setScalar(.5+u*.16+p*.05);B.body.material.emissiveIntensity=p*(.6+u);B.sp.scale.setScalar(.7+p*.9)}else{B.body.scale.setScalar(.5);B.body.material.emissiveIntensity=0;B.sp.scale.setScalar(.5+.2*Math.sin(t*9))}}
     else{o.door.position.y=-LB.doorK[k];o.door.visible=LB.doorK[k]<1;o.key.visible=!((LB.got|LB.mask)>>k&1);o.key.rotation.y=t*1.6+k;o.key.position.y=.6+Math.sin(t*2.2+k)*.06}});
   LAB.gd.forEach((o,i)=>{const q=LB.gp[i];if(!q)return;o.position.set(X(q.x),LAB.gy+Math.sin(t*3+i)*.07,Z(q.y));o.children[0].rotation.y=Math.atan2(q.dx,q.dy);LAB.gs[i].position.set(X(q.x),.118,Z(q.y))});
-  const el=LB.t0?(now-LB.t0)/1000:0,k=Math.max(0,1-el/LB.starT);LAB.stars.forEach((m,i)=>{const s=LB.stars[i];m.visible=!s.got&&!s.gone;m.rotation.y=t*2+i;m.position.y=.5+Math.sin(t*2.6+i)*.06;const f=.55+.45*k,bl=k<.25?(.75+.25*Math.sin(t*14)):1;m.scale.set(.3*f*bl,.42*f*bl,.3*f*bl)});
+  const el=LB.t0?(now-LB.t0)/1000:0,k=Math.max(0,1-el/LB.starT);if(LAB.shs)LAB.shs.forEach((g,i)=>{const s=LB.shields[i];g.visible=!!s&&!s.got;g.rotation.y=t*1.6;g.position.y=.55+Math.sin(t*2.2+i)*.06});if(LAB.bub){LAB.bub.visible=!!LB.shield&&!LB.dead;if(LAB.bub.visible){LAB.bub.position.copy(LAB.bg.position);LAB.bub.position.y+=LAB.ball.position.y;LAB.bub.scale.setScalar((LAB.ball.scale.x||1)*(1.38+.05*Math.sin(t*5)))}}LAB.stars.forEach((m,i)=>{const s=LB.stars[i];m.visible=!s.got&&!s.gone;m.rotation.y=t*2+i;m.position.y=.5+Math.sin(t*2.6+i)*.06;const f=.55+.45*k,bl=k<.25?(.75+.25*Math.sin(t*14)):1;m.scale.set(.3*f*bl,.42*f*bl,.3*f*bl)});
   /* Kamera folgt der Kugel, Sonne und Lampenlichter wandern mit */
   const mx=Math.max(0,(L.W-V.eW)/2),mz=Math.max(0,(L.H-V.eH)/2),gx=Math.max(-mx,Math.min(mx,X(LB.bx))),gz=Math.max(-mz,Math.min(mz,Z(LB.by))),kk=1-Math.exp(-dt*4);V.tx+=(gx-V.tx)*kk;V.tz+=(gz-V.tz)*kk;
   let sx=0,sy=0;if(LB.shake){const u=(now-LB.shake)/450;if(u<1){sx=Math.sin(now*.09)*.16*(1-u);sy=Math.cos(now*.11)*.12*(1-u)}else LB.shake=0}
@@ -2486,8 +2501,8 @@ function labLoop(){const run=++labRun;let last=performance.now(),hud=0;
 
 /* ---------- Spielauswahl im Hauptmenü ---------- */
 function labHomeInfo(){const d=labData(),n=Object.values(d.st).reduce((a,b)=>a+b,0),w=Math.min(LW_C-1,Math.floor((d.max-1)/LW_N));$('#blGo').innerHTML=`<span><b>Level ${d.max}</b><small>${d.max>LW_N*LW_C?'Endlose Reise':'Welt '+(w+1)+' · '+LTH[w].name}</small></span><i class="tag info"${n?'':' hidden'}>★ ${n}</i>`}
-function setGame(g,user){GAME=g?1:0;if(user)store.set('game',GAME);$('.hm').classList.toggle('g1',GAME===1);$('.tagline').textContent=GAME?'Pix-Labyrinth · Pias Reise':'Shikaku trifft Pixel-Art';
-  $('#gDots').innerHTML=[0,1].map(i=>`<i${i===GAME?' class="on"':''}></i>`).join('');$('#gLbl').textContent=GAME?'Pix-Labyrinth':'Pixaku';labHomeInfo();if(user){const h=$('#hero');h.classList.remove('sw');void h.offsetWidth;h.classList.add('sw');sfx.tick();layoutHome();drawLogo(false);heroStart()}}
+function setGame(g,user){GAME=g?1:0;if(user)store.set('game',GAME);$('.hm').classList.toggle('g1',GAME===1);$('.tagline').textContent=GAME?'Ein Kugel-Abenteuer':'Shikaku trifft Pixel-Art';
+  $('#gDots').innerHTML=[0,1].map(i=>`<i${i===GAME?' class="on"':''}></i>`).join('');$('#gLbl').textContent=GAME?'Pias Quest':'Pixaku';labHomeInfo();if(user){const h=$('#hero');h.classList.remove('sw');void h.offsetWidth;h.classList.add('sw');sfx.tick();layoutHome();drawLogo(false);heroStart()}}
 async function labHero(){const run=++heroRun,cv=$('#hero'),c=cv.getContext('2d'),px=HOME.col,ph=HOME.hh,d=Math.min(3,devicePixelRatio||1);cv.width=px*d;cv.height=ph*d;let k=(Math.random()*LW_C)|0;
   const wait=ms=>new Promise(r=>setTimeout(r,ms)),alive=()=>run===heroRun&&$('#home').classList.contains('on');
   while(alive()){const wi=k++%LW_C,sp=labSpec(wi*LW_N+1+(wi<3?6:0));sp.W=Math.min(sp.W,11);sp.H=Math.min(sp.H,12);sp.guards=0;const L=labGenSpec(sp,'hero'+((Math.random()*1e6)|0)),th=LTH[wi],W=L.W,s=Math.min((px-20)/W,(ph-20)/L.H),ox=(px-W*s)/2,oy=(ph-L.H*s)/2,
@@ -2517,12 +2532,36 @@ function labTut(i){
   labStart(0,undefined,{L,wi:0,name:`Übung ${i+1} von ${LTUT.length}`,tut:i})}
 
 
+/* ---------- Schriftzug „Pias Quest“: eigene Pixelbuchstaben mit Kontur, Schatten und Farbverlauf ---------- */
+const QL={P:['111110','111111','110011','110011','111111','111110','110000','110000','110000'],I:['20202','22222','00000','01110','01110','01110','01110','01110','01110'],
+  A:['011110','111111','110011','110011','111111','111111','110011','110011','110011'],S:['011111','111111','110000','111110','011111','000011','000011','111111','111110'],
+  Q:['011110','111111','110011','110011','110011','110011','110111','111111','011101'],U:['110011','110011','110011','110011','110011','110011','110011','111111','011110'],
+  E:['111111','111111','110000','111110','111110','110000','110000','111111','111111'],T:['111111','111111','001100','001100','001100','001100','001100','001100','001100']};
+function questLogo(anim,run){const word=[['P',0,0],['I',0,1],['A',0,0],['S',0,1],null,['Q',1,1],['U',1,0],['E',1,1],['S',1,0],['T',1,1]],GW=79,GH=14,cv=$('#logo'),W=HOME.col,u=W/GW,d=Math.min(3,devicePixelRatio||1);
+  cv.style.width=W+'px';cv.style.height=GH*u+'px';cv.width=Math.round(W*d);cv.height=Math.round(GH*u*d);const c=cv.getContext('2d'),t0=performance.now();
+  const G=[['#fff0f8','#ffd0ea','#ffa6d6','#ff7ac0','#ff5cb0','#f0409c','#dc308c','#c4247c','#a81c6c'],['#fffbd8','#fff09a','#ffe066','#ffcf3a','#ffb828','#ffa01e','#ff861a','#f06a1a','#d8521a']],px=[];let x0=2;
+  for(const w of word){if(!w){x0+=3;continue}const g=QL[w[0]];g.forEach((row,y)=>[...row].forEach((b,x)=>{if(b!=='0')px.push({x:x0+x,y:2+w[2]+y,col:b==='2'?(y?'#ffc21a':'#ffe36b'):G[w[1]][y],li:x0,hi:b==='1'&&y===(w[0]==='I'?3:0)})}));x0+=g[0].length+1}
+  /* Pia rollt hinter dem T her */
+  const bx=x0+1,ball=['0011100','0111110','1111111','1111111','1111111','0111110','0011100'],bc=['#ffc0e6','#ff9ad6','#ff6ec7','#ff4fb0','#f03c9c','#d82c88','#b82074'];
+  ball.forEach((row,y)=>[...row].forEach((b,x)=>{if(b==='1')px.push({x:bx+x,y:5+y,col:((y===2||y===3)&&(x===2||x===4))?'#2a0f3a':(y===4&&x===3)?'#7a1048':(y===1&&x===1)?'#ffffff':bc[y],li:bx})}));
+  ['10101','11111'].forEach((row,y)=>[...row].forEach((b,x)=>{if(b==='1')px.push({x:bx+1+x,y:3+y,col:y?'#ffc21a':'#ffe36b',li:bx})}));
+  const sp=[[1,1],[29,1],[58,0],[GW-2,2],[36,12]];
+  (function f(now){if(run!==logoRun)return;c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,W,GH*u);c.imageSmoothingEnabled=false;let more=false;const el=now-t0,vis=[];
+    for(const p of px){const age=anim&&!reduce?(el-p.li*16)/260:1;if(age<=0){more=true;continue}const k=Math.min(1,age);if(k<1)more=true;vis.push([p,(1-k)*(1-k)*-5])}
+    const R=(x,y,w,h)=>c.fillRect(Math.round(x*u),Math.round(y*u),Math.round((x+w)*u)-Math.round(x*u),Math.round((y+h)*u)-Math.round(y*u));
+    c.fillStyle='rgba(8,4,20,.55)';for(const[p,o]of vis)R(p.x-1,p.y+o+1,3,3);
+    c.fillStyle='#2a0f3a';for(const[p,o]of vis)R(p.x-1,p.y+o-1,3,3);
+    for(const[p,o]of vis){c.fillStyle=p.col;R(p.x,p.y+o,1,1)}
+    c.fillStyle='rgba(255,255,255,.75)';for(const[p,o]of vis)if(p.hi)R(p.x,p.y+o,1,.34);
+    if(!more||!anim){const tw=reduce?1:.5+.5*Math.sin(now/260);c.fillStyle='#fff';sp.forEach(([x,y],i)=>{const a=reduce?1:.35+.65*Math.abs(Math.sin(now/420+i*1.7));c.globalAlpha=a;R(x,y-1,1,3);R(x-1,y,3,1)});c.globalAlpha=1}
+    if(more||(!reduce&&$('#home').classList.contains('on')&&GAME===1))requestAnimationFrame(f)})(t0)}
+
 /* ================= Bosse ================= */
 const LBOSSN={15:'schrat',30:'koenig',45:'stier'};
 const LBOSSTXT={schrat:{name:'Der Wurzelschrat',wi:0,tip:'Pralle von der Seite gegen den Schrat, an der sein Pilz leuchtet. Weiche aus, wenn eine Reihe rot aufglüht.',
     intro:'Am Waldrand versperrt ein uralter Baumstumpf den Weg, und er ist wach. Verwundbar ist er nur dort, wo sein Leuchtpilz sitzt: Pralle von genau dieser Seite gegen ihn. Glüht deine Reihe oder Spalte rot, schlagen gleich seine Wurzeln zu.'},
-  stier:{name:'Der verhexte Stier',wi:2,tip:'Stell dich in seine Reihe oder Spalte, dann stürmt er los. Roll weg und lass ihn ins rote Tor krachen, notfalls durch ein Portal.',
-    intro:'Morvan hat Henriks Stier verhext. Sieht er dich in seiner Reihe oder Spalte, schnaubt er kurz und stürmt geradeaus, bis ihn etwas aufhält. Portale tragen auch ihn weiter. Lass ihn dreimal ins rote Scheunentor krachen.'},
+  stier:{name:'Der verhexte Stier',wi:2,tip:'Bleib nicht stehen, er trabt auf dich zu. Stell dich so, dass das rote Tor hinter dir liegt, und roll zur Seite, sobald er schnaubt.',
+    intro:'Morvan hat Henriks Stier verhext. Er trabt auf dich zu, bis er dich in seiner Reihe oder Spalte sieht. Dann schnaubt er nur ganz kurz und stürmt los, bis ihn etwas aufhält. Portale tragen auch ihn weiter. Lass ihn dreimal ins rote Scheunentor krachen.'},
   koenig:{name:'Der Krähenkönig',wi:1,tip:'Rolle über beide Scheuchenfelder, solange der König dazwischen fliegt. Die Scheuchen bleiben nur sechs Sekunden stehen.',
     intro:'Der Krähenkönig fliegt quer über das letzte Feld. Auf seiner Bahn liegen zwei Scheuchenfelder. Wer darüberrollt, lässt dort eine Vogelscheuche hochklappen. Fängst du ihn zwischen zwei Scheuchen, stürzt er ab.'}};
 function labBossLevel(type){const L=labAscii(LBOSS[type].rows),T=LBOSSTXT[type];L.boss=Object.assign({type},LBOSS[type],T);L.noProp=new Set(type==='schrat'?[L.marks.B]:B2[type]?Object.values(L.marks):[]);if(B2[type]&&B2[type].level)B2[type].level(L);return{L,wi:T.wi,name:T.name}}
@@ -2534,7 +2573,7 @@ function labBossIntro(n){const type=LBOSSN[n],T=LBOSSTXT[type],seen=store.get('l
 function labBossInit(){const L=LB.L,B=LB.boss={type:L.boss.type,hp:3,phase:0,hitAt:0};if(B2[B.type]){B2[B.type].init(B,L);return}
   if(B.type==='schrat'){B.side=L.boss.seq[0];B.next=LB.clock+3600;B.tel=null;B.alt=false}else if(B.type==='stier')labStierPhase();else{B.props=[];labKoenigPhase()}}
 function labStierPhase(){const L=LB.L,B=LB.boss,W=L.W,P=L.boss.ph[B.phase];L.port.fill(-1);if(P.port){const a=P.port[0][1]*W+P.port[0][0],b=P.port[1][1]*W+P.port[1][0];L.port[a]=b;L.port[b]=a}
-  B.bp=P.home[1]*W+P.home[0];B.bx=P.home[0];B.by=P.home[1];B.sc=1;B.mode='idle';B.dir=0;LB.roll=null;LB.queue=[];LB.bump=null;LB.pos=L.start;LB.bx=L.start%W;LB.by=(L.start/W)|0;LB.tp=1;LB.safe=performance.now()+1200}
+  B.bp=P.home[1]*W+P.home[0];B.bx=P.home[0];B.by=P.home[1];B.sc=1;B.mode='idle';B.dir=0;B.from=B.bp;B.ws=0;B.wt=LB.clock+1400;LB.roll=null;LB.queue=[];LB.bump=null;LB.pos=L.start;LB.bx=L.start%W;LB.by=(L.start/W)|0;LB.tp=1;LB.safe=performance.now()+1200}
 function labKoenigPhase(){const L=LB.L,B=LB.boss,W=L.W;for(const i of B.props)L.grid[i]=1;B.props=labKoenigProps(L,L.boss.ph[B.phase]);for(const i of B.props)L.grid[i]=2;L.noProp=new Set(B.props);L.gc.clear();
   B.up=[0,0];B.kx=W-2;B.kd=-1;B.stun=0;LB.roll=null;LB.queue=[];LB.bump=null;LB.pos=L.start;LB.bx=L.start%W;LB.by=(L.start/W)|0;LB.tp=1;LB.safe=performance.now()+1200}
 function labBossHit(now){const B=LB.boss;B.hp--;B.hitAt=now;LB.shake=now;sfx.ok(6);tone(220,.3,'sawtooth',.07);tone(660,.25,'triangle',.06,.1);labHud();
@@ -2552,14 +2591,20 @@ function labBossStep(now,dt){const B=LB.boss,L=LB.L,W=L.W,c=LB.clock,px=Math.rou
     if(!B.tel&&c>=B.next){B.alt=!B.alt;B.tel={row:B.alt,v:B.alt?py:px,t:c,done:0};tone(140,.5,'sawtooth',.04)}
     if(B.tel&&!B.tel.done&&c-B.tel.t>=1150){B.tel.done=c;LB.shake=now;tone(70,.3,'square',.08);if((B.tel.row?py:px)===B.tel.v&&now>LB.safe)labCaught(now,'Die Wurzeln haben dich erwischt. Zurück zum Start.')}
     if(B.tel&&B.tel.done&&c-B.tel.done>520){B.tel=null;B.next=c+[0,1500,2000,2600][B.hp]}}
-  else if(B.type==='stier'){const P=L.boss.ph[B.phase],bx=B.bp%W,by=(B.bp/W)|0;
-    if(B.mode==='idle'){if(!LB.roll&&now>LB.safe){let d=-1;if(py===by&&px!==bx)d=px>bx?0:1;else if(px===bx&&py!==by)d=py>by?2:3;
-        if(d>=0){let ok=true;for(let x=bx+LDIR[d][0],y=by+LDIR[d][1];x!==px||y!==py;x+=LDIR[d][0],y+=LDIR[d][1])if(L.grid[y*W+x]!==1){ok=false;break}if(ok){B.mode='tel';B.dir=d;B.t=c;tone(110,.5,'sawtooth',.07);tone(90,.4,'square',.05,.2)}}}}
-    else if(B.mode==='tel'){if(c-B.t>=850){const s=labSlide(L,B.bp,B.dir,0,true);if(!s.cells.length)B.mode='idle';else{B.plan=labRollPlan(L,B.bp,s.cells,1.25);B.rt=0;B.mode='run';tone(200,.4,'sawtooth',.05)}}}
+  else if(B.type==='stier'){const P=L.boss.ph[B.phase],ph=Math.min(2,B.phase),TEL=[520,440,380][ph],WALK=[520,430,360][ph],bx=B.bp%W,by=(B.bp/W)|0;
+    if(B.mode==='idle'){const u=B.ws?Math.min(1,(c-B.ws)/(WALK*.8)):1,fx=B.from%W,fy=(B.from/W)|0;B.bx=fx+(bx-fx)*u;B.by=fy+(by-fy)*u;B.sc=1;
+      if(b2Near(B.bx,B.by,.6,now)){labCaught(now,'Der Stier hat dich auf die Hörner genommen. Zurück zum Start.');labStierPhase();return}
+      if(now>LB.safe&&u>=1){let d=-1;if(!LB.roll){if(py===by&&px!==bx)d=px>bx?0:1;else if(px===bx&&py!==by)d=py>by?2:3;
+          if(d>=0)for(let x=bx+LDIR[d][0],y=by+LDIR[d][1];x!==px||y!==py;x+=LDIR[d][0],y+=LDIR[d][1])if(L.grid[y*W+x]!==1){d=-1;break}}
+        if(d>=0){B.mode='tel';B.dir=d;B.t=c;tone(110,.4,'sawtooth',.07);tone(90,.3,'square',.05,.15)}
+        else if(c>=B.wt){/* Er trabt Schritt für Schritt auf Pias Reihe oder Spalte zu */
+          const dx=px-bx,dy=py-by,sx=dx>0?0:1,sy=dy>0?2:3,o=[];if(Math.abs(dy)<=Math.abs(dx)){if(dy)o.push(sy);if(dx)o.push(sx)}else{if(dx)o.push(sx);if(dy)o.push(sy)}
+          for(const k of o){const nc=B.bp+LDIR[k][0]+LDIR[k][1]*W;if(L.grid[nc]===1&&L.port[nc]<0){B.from=B.bp;B.bp=nc;B.ws=c;B.dir=k;tone(120,.05,'square',.03);break}}B.wt=c+WALK}}}
+    else if(B.mode==='tel'){if(c-B.t>=TEL){const s=labSlide(L,B.bp,B.dir,0,true);if(!s.cells.length){B.mode='idle';B.wt=c+400}else{B.plan=labRollPlan(L,B.bp,s.cells,[1,.86,.74][ph]);B.rt=0;B.mode='run';tone(200,.4,'sawtooth',.05)}}}
     else if(B.mode==='run'){B.rt+=dt;const st=B.plan.state(Math.min(B.rt,B.plan.T));B.bx=st.x;B.by=st.y;B.sc=st.sc;
       if(now>LB.safe&&Math.abs(B.bx-LB.bx)<.6&&Math.abs(B.by-LB.by)<.6){labCaught(now,'Der Stier hat dich überrannt. Zurück zum Start.');labStierPhase();return}
-      if(B.rt>=B.plan.T){const pts=B.plan.pts,e=pts[pts.length-1];B.bp=e;B.bx=e%W;B.by=(e/W)|0;B.sc=1;LB.shake=now;tone(70,.25,'square',.08);
-        if(e%W+LDIR[B.dir][0]===P.door[0]&&((e/W)|0)+LDIR[B.dir][1]===P.door[1]){labSpark(e,'#e0403a',26,4);labBossHit(now);if(B.hp>0){B.mode='stun';B.t=c}}else B.mode='idle'}}
+      if(B.rt>=B.plan.T){const pts=B.plan.pts,e=pts[pts.length-1];B.bp=e;B.from=e;B.ws=0;B.bx=e%W;B.by=(e/W)|0;B.sc=1;LB.shake=now;tone(70,.25,'square',.08);
+        if(e%W+LDIR[B.dir][0]===P.door[0]&&((e/W)|0)+LDIR[B.dir][1]===P.door[1]){labSpark(e,'#e0403a',26,4);labBossHit(now);if(B.hp>0){B.mode='stun';B.t=c}}else{B.mode='idle';B.wt=c+450}}}
     else if(B.mode==='stun'&&c-B.t>1300){B.phase++;labStierPhase()}}
   else{const p=L.boss.ph[B.phase],y=L.boss.lane;
     if(B.stun){if(c>B.stun){B.phase++;labKoenigPhase()}return}
